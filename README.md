@@ -4,13 +4,13 @@
 
 ## 特徴
 
-- **Python 3.11** を使用
+- **Python 3.13** を使用
 - あらかじめインストールされているツール:
   - `pytest`（テストフレームワーク）
-  - `flake8`（コードリントツール）
-  - `black`（コードフォーマッタ）
+  - `ruff`（リンタ兼フォーマッタ）
 - Devcontainer による一貫性のある開発環境
 - Docker ベースの隔離された環境で、設定の一貫性を保証
+- 非 root ユーザー (`vscode`) で動作し、マウントしたファイルの権限トラブルを回避
 - サンプルコードとリファレンス例の追加
   - Python の基本的な文法やデザインパターンをカバー
   - 詳細なテストケースを含む実装
@@ -22,7 +22,7 @@
 1. このリポジトリをクローンします:
 
    ```bash
-   git clone https://github.com/tomohiroJin/devcontainer-python.git -b feature/add-reference
+   git clone https://github.com/tomohiroJin/devcontainer-python.git
    cd devcontainer-python
    ```
 
@@ -46,21 +46,23 @@
 
 ### **リファレンスの内容**
 
-- `reference/basic`:
+- `src/reference/basic`:
   - **Python の基本文法**: 変数、関数、クラス、条件分岐、ループ、例外処理
   - 各実装には詳細なテストとコメント付きのコードが含まれています
-- `reference/patterns`:
+- `src/reference/patterns`:
   - **デザインパターンの実装例**:
     - Strategy パターン
-    - Observer パターン
+    - Observer パターン（`observer.py` と property を用いた `observer_property.py` の 2 種類）
     - Decorator パターン
     - Factory パターン
     - Template Method パターン
 
 ### **サンプルの内容**
 
-- `reference/samples`
-  - fizzbuzz
+- `src/hello_world`
+  - Hello, World! を出力するだけの最小サンプル
+- `src/reference/samples/fizzbuzz`
+  - FizzBuzz 実装
 
 ## 使用方法
 
@@ -79,7 +81,7 @@ pytest
 特定のテストファイルのみを実行したい場合は、ファイルパスを指定します。
 
 ```bash
-pytest tests/reference/basic/test_conditions.py
+pytest tests/reference/basic/test_conditionals_and_loops.py
 ```
 
 #### **テストの進捗と詳細を確認**
@@ -106,43 +108,26 @@ pytest -k "fizzbuzz"
 pytest -s
 ```
 
-#### **テスト結果をリポート形式で保存**
-
-`pytest-html`プラグインを使用して、HTML 形式のレポートを生成します。
-
-```bash
-pip install pytest-html
-pytest --html=report.html
-```
-
 ---
 
-### **2. コード品質チェック**
+### **2. コード品質チェック (Ruff)**
 
-`flake8`を使用してコードの品質を確認します。以下のオプションを組み合わせることで、詳細な結果を得ることができます。
+`ruff` を使用してコードの品質を確認します。設定は `pyproject.toml` の `[tool.ruff]` に集約されています。
 
 #### **基本的なコードチェック**
 
 プロジェクト全体をチェックします。
 
 ```bash
-flake8
+ruff check
 ```
 
-#### **最大行長を指定**
+#### **自動修正可能な問題を修正**
 
-Black と統一するために、最大行長を 88 文字に設定します（設定ファイルに記述しても OK）。
-
-```bash
-flake8 --max-line-length=88
-```
-
-#### **特定のルールを無視**
-
-Black と矛盾するルール（例: `E203`, `W503`）を無視して実行します。
+`--fix` オプションを使用すると、自動修正可能な問題を一括で修正します。
 
 ```bash
-flake8 --ignore=E203,W503
+ruff check --fix
 ```
 
 #### **特定のファイルのみをチェック**
@@ -150,38 +135,29 @@ flake8 --ignore=E203,W503
 特定のファイルやディレクトリだけをチェックします。
 
 ```bash
-flake8 src/fizzbuzz/fizzbuzz.py
-```
-
-#### **コード内の TODO や FIXME を確認**
-
-`--radar`や`--todo`プラグインを使用して、TODO コメントを含む箇所を一覧表示します（プラグインのインストールが必要）。
-
-```bash
-pip install flake8-todo
-flake8 --todo
+ruff check src/reference/samples/fizzbuzz/fizzbuzz.py
 ```
 
 ---
 
-### **3. コードのフォーマット**
+### **3. コードのフォーマット (Ruff)**
 
-`black`を使用してコードを自動整形します。
+`ruff format` を使用してコードを自動整形します。Ruff のフォーマッタは Black 互換の挙動です。
 
 #### **プロジェクト全体をフォーマット**
 
 プロジェクト内のすべての Python ファイルをフォーマットします。
 
 ```bash
-black .
+ruff format .
 ```
 
 #### **変更内容をプレビュー**
 
-`--check`オプションを使用すると、フォーマットの提案内容だけを確認できます（実際の変更は行われません）。
+`--check` オプションを使用すると、フォーマットの提案内容だけを確認できます（実際の変更は行われません）。
 
 ```bash
-black --check .
+ruff format --check .
 ```
 
 #### **特定のファイルやディレクトリだけをフォーマット**
@@ -189,18 +165,15 @@ black --check .
 特定の範囲だけを対象にする場合、パスを指定します。
 
 ```bash
-black src/fizzbuzz/fizzbuzz.py
+ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 ```
 
-## **カスタマイズ**:
+## **カスタマイズ**
 
-- `.devcontainer/devcontainer.json` ファイルを編集することで、開発環境をカスタマイズできます。
-- 例えば、Python のバージョン変更や追加ツールのインストールが可能です。
+- `.devcontainer/devcontainer.json` で VS Code 拡張や `remoteUser` を編集できます。
+- `.devcontainer/Dockerfile` で Python のバージョンや追加する OS パッケージを変更できます。
+- `requirements.txt` を変更した場合は Devcontainer をリビルドすることで反映されます（VS Code: `Dev Containers: Rebuild Container`）。
 
 ## ライセンス
 
 このプロジェクトは MIT ライセンスの下で提供されています。
-
-```
-
-```

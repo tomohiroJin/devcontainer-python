@@ -1,0 +1,16 @@
+.git
+.gitignore
+.github
+.vscode
+.devcontainer
+.idea
+.pytest_cache
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+venv
+env
+.env
+README.md
+LICENSE
