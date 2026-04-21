@@ -1,24 +1,23 @@
-# ベースイメージ
-FROM python:3.11-slim
+FROM python:3.13-slim
 
-# 必要な環境を更新・インストール
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-setuptools \
-    python3-venv \
-    build-essential \
-    curl \
-    wget \
-    git \
-    zip \
-    unzip \
-    vim \
-    iputils-ping \
-    net-tools \
-    software-properties-common \
+        build-essential \
+        curl \
+        git \
+        vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# pip インストール
-RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r /tmp/requirements.txt \
+    && rm /tmp/requirements.txt
+
+USER $USERNAME
