@@ -14,11 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
-COPY requirements.txt /tmp/requirements.txt
+COPY requirements-bootstrap.txt requirements.txt /tmp/
 RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export PIP_CERT=/run/secrets/proxy_ca; fi; \
-    python -m pip install --no-cache-dir --upgrade pip==26.3 \
+    python -m pip install --no-cache-dir --require-hashes --upgrade -r /tmp/requirements-bootstrap.txt \
     && python -m pip install --no-cache-dir --require-hashes -r /tmp/requirements.txt \
-    && rm /tmp/requirements.txt
+    && rm /tmp/requirements-bootstrap.txt /tmp/requirements.txt
 
 USER $USERNAME

@@ -1,7 +1,7 @@
 # Issue #6 検証記録
 
 日付: 2026-11-05。基準コミット: `88f32205b2579d9a827d2e31d067a4935b7c5afe`。
-記録対象はこのコミットを基にした未コミット変更です。
+この基準コミットを基にした初回ローカル検証と、その後のPR/CI検証の記録です。
 
 ## 実行結果
 
@@ -9,13 +9,13 @@
 - `pip-tools==7.6.2` を Python 3.15 コンテナで実行し、6件の直接・推移的依存をハッシュ固定。
 - 更新 Dockerfile を BuildKit でビルド成功（pip 用の任意 proxy_ca secret に CA bundle を使用）。
   その後、HTTPを使うaptステップの効力がない SSL_CERT_FILE export と secret mount を削除。
-  パッケージ構成は変更しておらず、この記述整理後の再ビルドは未実施。
+  その記述整理後の Dockerfile もPRの実CIでビルド・コンテナテスト成功を確認しました。
 - 最終イメージ ID: `sha256:45179cc09ce518fd54f001ce31efd280c69ee4ea37a6d0a726243108355a7428`。
 - イメージ内の `vscode`（UID 1000）で Python 3.15.2 / pytest 9.2.0 の49テストが成功。
-- 同環境で `ruff check --no-cache .`、`ruff format --no-cache --check .`（32ファイル）、`pip check` が成功。
-- `pip-audit==2.10.1 --strict --no-deps --disable-pip -r requirements.txt` は6依存すべて既知脆弱性なし。[JSON](pip-audit.json)
+- 同環境で `ruff check --no-cache .`、`ruff format --no-cache --check .`（初回記録時32ファイル。監査スクリプト追加後のPR CIでは37ファイル）、`pip check` が成功。
+- 初回pip-auditは開発依存6件とも既知脆弱性なし。PRレビュー対応でpip bootstrapを加えた7依存を再監査し、7件とも既知脆弱性なしの最新結果を [JSON](pip-audit.json) に保存しました。
 - VS Code の設定 JSON 解析、必須拡張と推奨拡張リストの一致、`git diff --check` が成功。
-- CI の actionlint は親担当が確認。GitHub Actions 自体の実行は未実施。
+- CI の actionlint は親担当が確認。PRの実GitHub ActionsでもPython・コンテナ検証が成功。
 
 ## コンテナ監査の残件
 
@@ -55,7 +55,8 @@ CIが成功しても、脆弱性対応の完全完了を意味しません。
   Python 3.15 は `bugfix`、初回公開2026-10-09、終了予定2031-10。
   根拠は [PEP 790](https://peps.python.org/pep-0790/) です。
   Debian の期限は次回確認期限までに公式表と照合します。
-- 環境公開、push、PR作成、Issue のクローズは行っていません。
+- 初回ローカル検証時は公開・push・PR作成を行わず、その後PR #7を作成して実CIを検証しました。
+  環境公開とIssueのクローズは行っていません。
 
 ## PR作成時の追加確認（2026-11-06）
 
@@ -64,3 +65,17 @@ GitHub Actions の Python ジョブは成功。コンテナ内の49テストも�
 ## CI再検証（2026-11-06）
 
 実CIの失敗原因は記録済みHigh検出を無条件にブロックしていたことと、Trivyがローカル検証と異なる既定版0.70.0だったこと。監査ツールを0.76.2に固定し、実CIの全55検出を版/CVE単位で[監査方針](ci-security-policy.md)に照合する。新規・修正版あり・期限切れを止める7つの判定テストが成功。pipのSBOMに関するコード不在の検証も最終イメージで成功した。テスト・lint・整形と全監査artifactの保存を維持する。
+
+## PRレビュー対応の追加検証
+
+[指摘別の判断と変更](review-response.md)を記録しました。期限は2026-11-12 09:00 JST（00:00 UTC）のままです。
+9件の監査判定テストで、残件ありの期限当日/期限後がブロックされ、期限切れでも完全なクリーンレポートが成功することを確認しました。
+以前の生レポート（HIGH55/CRITICAL0）に対する判定は確認済み55、ブロック0で、Step Summaryも同じ件数でした。
+Ruff lint/整形（37ファイル）、actionlint、差分チェックに成功しています。
+
+pip bootstrapは公式PyPIのwheel/sdistハッシュでクリーン仮想環境へ導入成功し、開発ロックも `--require-hashes` で導入成功しました。
+pip-audit 2.10.1でpip26.3を含む全7依存に既知脆弱性はありません。
+ハッシュ付きbootstrapを使う更新Dockerfileのビルドも成功しました（イメージID `sha256:85052d01f22ec636460545d0ec7737372a857f46398355775ecae0ae24f91111`）。
+
+更新後の最終イメージを非rootユーザーで実行し、49テスト・Ruff lint/整形・pip SBOMの実コード検証・pip checkがすべて成功しました。
+新しいsecurityジョブのartifact受渡しはローカルのactionlintと構成確認までで、push後のGitHub実行は未確認です。

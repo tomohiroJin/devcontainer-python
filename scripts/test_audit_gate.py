@@ -56,9 +56,23 @@ class AuditPolicyTests(unittest.TestCase):
             report["Results"][0]["Vulnerabilities"][0][field] = value
             self.assertTrue(evaluate(report, self.baseline, self.today)[0])
 
-    def test_expiry_fails_even_when_no_findings_remain(self):
-        with self.assertRaises(ValueError):
-            evaluate(self.report, self.baseline, datetime.date(2026, 11, 12))
+    def test_outstanding_findings_block_on_expiry_boundary(self):
+        for day in (datetime.date(2026, 11, 12), datetime.date(2026, 11, 13)):
+            blocked, accepted = evaluate(self.report, self.baseline, day)
+            self.assertIn("review expired", blocked[0])
+            self.assertFalse(accepted)
+
+    def test_clean_report_passes_even_after_baseline_expires(self):
+        self.result["Vulnerabilities"] = []
+        for day in (datetime.date(2026, 11, 12), datetime.date(2026, 11, 13)):
+            self.assertEqual(evaluate(self.report, self.baseline, day), ([], []))
+
+    def test_unrelated_expired_entries_do_not_block_a_clean_report(self):
+        self.result.pop("Vulnerabilities")
+        self.assertEqual(
+            evaluate(self.report, self.baseline, datetime.date(2026, 11, 13)),
+            ([], []),
+        )
 
     def test_missing_scan_results_fails_closed(self):
         with self.assertRaises(ValueError):

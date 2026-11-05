@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import os
 import sys
 
 
@@ -24,10 +25,7 @@ def evaluate(report, baseline, today):
         raise ValueError("OS vulnerability scan result is missing")
     if not baseline.get("owner") or not baseline.get("tracking_issue"):
         raise ValueError("Baseline needs an owner and tracking issue")
-    if today >= datetime.date.fromisoformat(baseline["review_due"]):
-        raise ValueError(
-            "Reviewed findings expired: reassess before renewing the baseline"
-        )
+    expired = today >= datetime.date.fromisoformat(baseline["review_due"])
     known = {}
     for entry in baseline["findings"]:
         if not entry.get("reason") or entry["kind"] not in ("unfixed", "pip-sbom-only"):
@@ -60,6 +58,8 @@ def evaluate(report, baseline, today):
                 and finding.get("FixedVersion") == "78.1.1"
             ):
                 blocked.append(label + ": outside reviewed pip SBOM scope")
+            elif expired:
+                blocked.append(label + ": review expired; reassess before renewal")
             else:
                 accepted.append(label)
     return blocked, accepted
@@ -77,7 +77,19 @@ def main():
     except (ValueError, KeyError, TypeError, IndexError, OSError) as exc:
         print(f"Audit gate failed: {exc}", file=sys.stderr)
         return 1
-    print(f"Reviewed: {len(accepted)}; blocking: {len(blocked)}")
+    counts = {severity: 0 for severity in ("HIGH", "CRITICAL")}
+    for result in report["Results"]:
+        for finding in result.get("Vulnerabilities") or []:
+            if finding.get("Severity") in counts:
+                counts[finding["Severity"]] += 1
+    summary = (
+        f"Raw findings: HIGH={counts['HIGH']}; CRITICAL={counts['CRITICAL']}\n"
+        f"Reviewed: {len(accepted)}; blocking: {len(blocked)}\n"
+    )
+    print(summary, end="")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as stream:
+            stream.write("### Container security gate\n\n" + summary)
     print(f"Owner: {baseline['owner']}; review due: {baseline['review_due']}")
     print(f"Tracking: {baseline['tracking_issue']}")
     for finding in blocked:

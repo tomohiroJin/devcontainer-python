@@ -189,7 +189,7 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 | pip | イメージ同梱 26.2.2 | 26.3。同梱ライブラリの既知脆弱性を修正 |
 | pytest | バージョン未指定 | 9.2.0（PyPI 最新安定版） |
 | Ruff | バージョン未指定 / py313 | 0.17.3 / py315。実行 Python と解析対象を統一 |
-| 推移的依存 | 未固定 | `requirements.txt` に全依存・配布ハッシュを記録 |
+| 開発依存 / pip | 未固定 / pip版のみ指定 | `requirements.txt` と `requirements-bootstrap.txt` に全依存・配布ハッシュを記録 |
 | CI | なし | テスト、lint、整形、pip-audit、コンテナビルド・Trivy、週次実行 |
 | Dev Container Features | なし | 追加なし |
 
@@ -199,6 +199,8 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 [Debian のサポート期限](https://www.debian.org/releases/)、
 [pytest](https://pypi.org/project/pytest/)、[Ruff](https://pypi.org/project/ruff/)。
 Python は `>=3.15,<3.16` をサポート対象とし、次の minor 版はテスト後に移行します。
+これは Dev Container と公開するパッケージメタデータを同じ検証済み minor に限定する意図的な契約です。
+`pip install .` は3.15以外では拒否され、3.16への対応時は `setup.py` の上限も明示的に更新します。
 Python 3.15 は公式 [リリース周期 API](https://peps.python.org/api/release-cycle.json) で
 `bugfix` サポート、初回公開日2026-10-09、サポート終了予定2031-10と確認しました。
 詳細は [PEP 790](https://peps.python.org/pep-0790/) を参照してください。
@@ -215,6 +217,7 @@ Python 3.15 で以下を実行できます。
 ```bash
 python -m venv .venv
 . .venv/bin/activate
+python -m pip install --require-hashes --upgrade -r requirements-bootstrap.txt
 python -m pip install --require-hashes -r requirements.txt
 python -m pytest
 ruff check .
@@ -224,6 +227,10 @@ ruff format --check .
 直接依存の変更は `requirements.in` で行い、Python 3.15 の一時仮想環境に
 `pip-tools==7.6.2` を導入して次のコマンドでロックを再生成してください。
 Dependabot の PR でも入力ファイルとロックの整合を確認します。
+`requirements-bootstrap.txt` も Dependabot の pip 更新と pip-audit の対象です。
+pip は別のハッシュ付きファイルで先に導入します。pip 更新PRではハッシュの公式PyPI照合、
+`scripts/verify_pip_sbom.py` の承認版と実コードの再評価、期限付きベースラインの手動レビューが必要です。
+依存botの提案だけで承認版や期限を自動更新しません。
 
 ```bash
 pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --no-emit-trusted-host requirements.in
@@ -249,14 +256,14 @@ F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時
 ### 監査
 
 CI は最小権限で動き、Actions をコミット SHA に固定しています。
-`pip-audit==2.10.1` はロック済み全依存を監査し、Trivy は完成イメージの
+`pip-audit==2.10.1` はpip bootstrapを含むロック済み全7依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
 従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
 修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
 
 ```bash
-pip-audit --strict --no-deps --disable-pip -r requirements.txt --format json --output pip-audit.json
+pip-audit --strict --no-deps --disable-pip -r requirements-bootstrap.txt -r requirements.txt --format json --output pip-audit.json
 docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:local .
 trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 devcontainer-python:local
 ```

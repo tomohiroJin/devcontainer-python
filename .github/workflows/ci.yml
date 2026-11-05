@@ -1,26 +1,32 @@
 name: Python and security
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
   schedule:
     - cron: '17 3 * * 1'
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   python:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.15.2'
           cache: pip
+      - run: python -m pip install --require-hashes --upgrade -r requirements-bootstrap.txt
       - run: python -m pip install --require-hashes -r requirements.txt
       - run: python -m pytest
       - run: ruff check . && ruff format --check .
       - run: python -m venv /tmp/audit && /tmp/audit/bin/pip install pip-audit==2.10.1
-      - run: /tmp/audit/bin/pip-audit --strict --no-deps --disable-pip -r requirements.txt --format json --output pip-audit.json
+      - run: /tmp/audit/bin/pip-audit --strict --no-deps --disable-pip -r requirements-bootstrap.txt -r requirements.txt --format json --output pip-audit.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -28,6 +34,7 @@ jobs:
           path: pip-audit.json
   container:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:ci .
@@ -44,12 +51,22 @@ jobs:
           ignore-unfixed: false
       - name: Verify pip SBOM assessment against installed code
         run: docker run --rm --mount type=bind,src="$PWD",dst=/workspace,readonly -w /workspace devcontainer-python:ci python scripts/verify_pip_sbom.py
-      - name: Test security gate policy
-        run: python3 -m unittest discover -s scripts -p 'test_audit_gate.py'
-      - name: Check new, fixable, or expired findings
-        run: python3 scripts/check_container_audit.py trivy.json security/container-baseline.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: container-audit
           path: trivy.json
+  security:
+    needs: container
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: container-audit
+          path: audit
+      - name: Test security gate policy
+        run: python3 -m unittest discover -s scripts -p 'test_audit_gate.py'
+      - name: Check new, fixable, or expired findings
+        run: python3 scripts/check_container_audit.py audit/trivy.json security/container-baseline.json

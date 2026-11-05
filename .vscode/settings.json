@@ -1,12 +1,4 @@
 {
-  "cSpell.words": [
-    "devcontainer",
-    "fizzbuzz",
-    "pyproject",
-    "pytest",
-    "ruff",
-    "wmaurer"
-  ],
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,

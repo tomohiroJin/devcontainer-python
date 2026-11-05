@@ -9,7 +9,12 @@ from pathlib import Path
 
 def main():
     site = Path(sysconfig.get_path("purelib"))
-    assert importlib.metadata.version("pip") == "26.3", "Reassess after pip changes"
+    # This deliberately does not derive the approved version from requirements:
+    # a dependency bot must not silently renew the source-code assessment.
+    approved_pip = "26.3"
+    assert importlib.metadata.version("pip") == approved_pip, (
+        "Reassess pip source/SBOM and baseline before approving a new pip version"
+    )
     assert importlib.util.find_spec("setuptools") is None, (
         "Installed setuptools needs audit"
     )
