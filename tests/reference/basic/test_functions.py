@@ -28,9 +28,9 @@ def test_sum_all():
 def test_describe_person():
     """キーワード引数を利用した説明文生成を確認する"""
     description = func.describe_person("Alice", age=30, job="Engineer")
-    assert (
-        description == "Name: Alice, age: 30, job: Engineer"
-    ), "説明文生成が正しくありません。"
+    assert description == "Name: Alice, age: 30, job: Engineer", (
+        "説明文生成が正しくありません。"
+    )
 
 
 def test_lambda():

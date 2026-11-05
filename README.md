@@ -4,7 +4,7 @@
 
 ## 特徴
 
-- **Python 3.13** を使用
+- **Python 3.15.2** を使用
 - あらかじめインストールされているツール:
   - `pytest`（テストフレームワーク）
   - `ruff`（リンタ兼フォーマッタ）
@@ -177,3 +177,92 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 ## ライセンス
 
 このプロジェクトは MIT ライセンスの下で提供されています。
+
+## 更新・セキュリティ運用（Issue #6）
+
+調査日: 2026-11-05。既定ブランチ `88f32205b2579d9a827d2e31d067a4935b7c5afe`
+を基に更新しています。採用版は日付から推測せず、公式の公開 API で取得した安定版です。
+
+| 対象 | 更新前 | 採用版・理由 |
+| --- | --- | --- |
+| Python / OS | `3.13-slim`（OS 不定） | `3.15.2-slim-trixie`、Debian 13。公式公開タグの最新安定系列を採用し digest 固定 |
+| pip | イメージ同梱 26.2.2 | 26.3。同梱ライブラリの既知脆弱性を修正 |
+| pytest | バージョン未指定 | 9.2.0（PyPI 最新安定版） |
+| Ruff | バージョン未指定 / py313 | 0.17.3 / py315。実行 Python と解析対象を統一 |
+| 推移的依存 | 未固定 | `requirements.txt` に全依存・配布ハッシュを記録 |
+| CI | なし | テスト、lint、整形、pip-audit、コンテナビルド・Trivy、週次実行 |
+| Dev Container Features | なし | 追加なし |
+
+公式情報: [Python イメージ](https://hub.docker.com/_/python)、
+[採用タグのメタデータ](https://hub.docker.com/v2/repositories/library/python/tags/3.15.2-slim-trixie)、
+[Python サポート状況](https://devguide.python.org/versions/)、
+[Debian のサポート期限](https://www.debian.org/releases/)、
+[pytest](https://pypi.org/project/pytest/)、[Ruff](https://pypi.org/project/ruff/)。
+Python は `>=3.15,<3.16` をサポート対象とし、次の minor 版はテスト後に移行します。
+Python 3.15 は公式 [リリース周期 API](https://peps.python.org/api/release-cycle.json) で
+`bugfix` サポート、初回公開日2026-10-09、サポート終了予定2031-10と確認しました。
+詳細は [PEP 790](https://peps.python.org/pep-0790/) を参照してください。
+Devguide 本体はHTTP403でしたが、同サイトが参照する公式APIで期限を照合済みです。
+Debian のサポート期限は上記公式表を次回更新時（2026-11-12）に再確認します。
+Dependabot は pip/Docker/Actions の週次更新を提案します。Python minor 更新時には
+`setup.py`、Ruff target、CI の Python 指定も合わせて更新してください。
+
+### 依存を再現・更新する
+
+Dev Container 内にはハッシュ検証済みの依存が導入済みです。コンテナ外でも
+Python 3.15 で以下を実行できます。
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install --require-hashes -r requirements.txt
+python -m pytest
+ruff check .
+ruff format --check .
+```
+
+直接依存の変更は `requirements.in` で行い、Python 3.15 の一時仮想環境に
+`pip-tools==7.6.2` を導入して次のコマンドでロックを再生成してください。
+Dependabot の PR でも入力ファイルとロックの整合を確認します。
+
+```bash
+pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --no-emit-trusted-host requirements.in
+```
+
+### VS Code
+
+必須構成は Microsoft Python / Pylance / Python Debugger と Astral Ruff の4件です。
+各 ID は提供元の現行公式拡張であることと Marketplace の公開状態を確認済みです
+（Python 2026-10-29、Pylance 2026-10-16、Debugger 2026-11-02、Ruff 2026-10-27 更新）。
+[Python 公式ガイド](https://code.visualstudio.com/docs/python/python-tutorial)、
+[Ruff 公式ガイド](https://docs.astral.sh/ruff/editors/setup/) に基づく構成です。
+`.vscode/extensions.json` と Dev Container の必須リストを共通にし、Ruff は
+コンテナに固定した版を優先、lint/format/import 整理を担当します。
+Pylance が型診断、pytest がテスト検出、debugpy がデバッグを担当します。
+Notebook を含まないため Jupyter は任意です。Git Graph、スペルチェック、Live Share、
+change-case、Prettier も必要な利用者だけ導入してください。Python の整形は Ruff に統一します。
+
+VS Code で開いたら Python インタープリター `/usr/local/bin/python`、テスト一覧の49件、
+F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時整形と import 整理を確認します。
+コンテナ外ではインタープリターを自身の `.venv` に選び直してください。
+
+### 監査
+
+CI は最小権限で動き、Actions をコミット SHA に固定しています。
+`pip-audit==2.10.1` はロック済み全依存を監査し、Trivy は完成イメージの
+OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
+従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。HIGH/CRITICAL は未修正版を含めて失敗扱いです。
+結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
+修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
+
+```bash
+pip-audit --strict --no-deps --disable-pip -r requirements.txt --format json --output pip-audit.json
+docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:local .
+trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 devcontainer-python:local
+```
+
+pip の HTTPS 通信にプロキシ CA が必要な環境では、Dockerfile の任意 BuildKit secret `proxy_ca` に
+信頼済み CA バンドルを渡します（例: `--secret id=proxy_ca,src=/path/to/ca-bundle.pem`）。
+CA をイメージへコピーしたり TLS 検証を無効化したりしません。
+
+検証結果・制限は [検証記録](docs/maintenance-validation.md) を参照してください。

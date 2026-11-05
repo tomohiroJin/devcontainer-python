@@ -7,9 +7,9 @@ def test_person():
     person = Person("Alice", 30)
     assert person.name == "Alice", "名前が正しくありません。"
     assert person.age == 30, "年齢が正しくありません。"
-    assert (
-        person.introduce() == "My name is Alice and I am 30 years old."
-    ), "自己紹介が正しくありません。"
+    assert person.introduce() == "My name is Alice and I am 30 years old.", (
+        "自己紹介が正しくありません。"
+    )
 
 
 def test_counter():

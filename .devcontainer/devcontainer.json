@@ -10,13 +10,7 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.debugpy",
-        "charliermarsh.ruff",
-        "ms-toolsai.jupyter",
-        "mhutchie.git-graph",
-        "streetsidesoftware.code-spell-checker",
-        "ms-vsliveshare.vsliveshare",
-        "wmaurer.change-case",
-        "esbenp.prettier-vscode"
+        "charliermarsh.ruff"
       ]
     }
   },
