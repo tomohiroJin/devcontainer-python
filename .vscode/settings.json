@@ -1,18 +1,18 @@
 {
-  "cSpell.words": [
-    "devcontainer",
-    "fizzbuzz",
-    "pyproject",
-    "pytest",
-    "ruff",
-    "wmaurer"
-  ],
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
     }
-  }
+  },
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
+  "ruff.importStrategy": "fromEnvironment"
 }

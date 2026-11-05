@@ -1,4 +1,5 @@
 import pytest
+
 from reference.patterns.factory import Circle, ShapeFactory, Square, Triangle
 
 
