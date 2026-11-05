@@ -251,7 +251,7 @@ F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時
 CI は最小権限で動き、Actions をコミット SHA に固定しています。
 `pip-audit==2.10.1` はロック済み全依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
-従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。HIGH/CRITICAL は未修正版を含めて失敗扱いです。
+従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
 修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
 
