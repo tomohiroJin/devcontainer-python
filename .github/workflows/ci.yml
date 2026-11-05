@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:ci .
-      - run: docker run --rm --mount type=bind,src="$PWD",dst=/workspace -w /workspace devcontainer-python:ci sh -c 'python -m pytest && ruff check . && ruff format --check .'
+      - run: docker run --rm --mount type=bind,src="$PWD",dst=/workspace -w /workspace devcontainer-python:ci sh -c 'python -m pytest -o cache_dir=/tmp/pytest-cache && ruff check --no-cache . && ruff format --no-cache --check .'
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: devcontainer-python:ci

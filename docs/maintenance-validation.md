@@ -56,3 +56,7 @@ Trivy 0.76.2、DB更新時刻 2026-11-05 13:09:41 UTC。
   根拠は [PEP 790](https://peps.python.org/pep-0790/) です。
   Debian の期限は次回確認期限までに公式表と照合します。
 - 環境公開、push、PR作成、Issue のクローズは行っていません。
+
+## PR作成時の追加確認（2026-11-06）
+
+GitHub Actions の Python ジョブは成功。コンテナ内の49テストも成功したが、runner と vscode の UID の違いで Ruff のキャッシュ作成が失敗した。CIでは pytest のキャッシュを `/tmp/pytest-cache` に置き、Ruff を `--no-cache` で実行するよう修正した。読み取り可能なソースコピーをUID1001でマウントしたコンテナで49テスト・lint・整形が成功し、actionlintも成功。脆弱性ゲートの残件は上記のとおり。
