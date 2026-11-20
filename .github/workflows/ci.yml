@@ -54,7 +54,9 @@ jobs:
           exit-code: '0'
           ignore-unfixed: false
       - name: Record installed OS packages
-        run: docker run --rm devcontainer-python:ci dpkg-query -W -f '${binary:Package}\t${Version}\n' > os-packages.txt
+        run: |
+          docker run --rm devcontainer-python:ci dpkg-query -W -f '${binary:Package}\t${Version}\n' > os-packages.txt
+          diff -u docs/os-packages.txt os-packages.txt || echo '::warning::OS packages differ from docs/os-packages.txt; refresh it during the next audit review'
       - name: Verify pip SBOM assessment against installed code
         run: docker run --rm --mount type=bind,src="$PWD",dst=/workspace,readonly -w /workspace devcontainer-python:ci python scripts/verify_pip_sbom.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

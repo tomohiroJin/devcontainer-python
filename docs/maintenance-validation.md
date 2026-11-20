@@ -39,8 +39,8 @@ Trivy 0.76.2、DB更新時刻 2026-11-05 13:09:41 UTC。
 - 不要な build-essential/curl/vim を外して OS パッケージを174件から119件に削減し、
   初回の OS HIGH 79件を54件に削減しました。
 
-残件は既存の [Issue #6](https://github.com/tomohiroJin/devcontainer-python/issues/6) で追跡します。
-担当: Repository maintainer。初回の確認期限は **2026-11-12** でした（2026-11-20 の再評価は末尾の節を参照）。
+残件は当時、既存の [Issue #6](https://github.com/tomohiroJin/devcontainer-python/issues/6) で追跡していました（2026-11-20 に [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) へ移し、担当を tomohiroJin にしました）。
+当時の担当表記: Repository maintainer。初回の確認期限は **2026-11-12** でした（2026-11-20 の再評価は末尾の節を参照）。
 週次 CI で再検査し、修正公開時にベース digest / pip を更新してビルド・監査を再実行します。
 当面の緩和策は非root実行、不要パッケージの削除、信頼できないプロジェクトやファイルの
 実行を避けることです。CIの現行判定は[期限付き監査方針](ci-security-policy.md)に従います。
@@ -102,8 +102,10 @@ pip-audit 2.10.1でpip26.3を含む全7依存に既知脆弱性はありませ�
 - ベースライン: [security/container-baseline.json](../security/container-baseline.json) を現在の119件に置き換え、OS の各項目の理由に Debian 側の状況と緩和策を書きました。全検出は [JSON](security-findings.json) に記録しています。
   新しい確認期限は **2026-12-18** です。毎週の CI は、修正版が出た時点や導入版が変わった時点でブロックするため、修正が出ても気付かずに残ることはありません。
   期限を4週間としたのは、Debian での修正待ちが大半で、1週間では毎回同じ再評価を繰り返すだけになるためです。
-- Debian 側の区分: OS の118件の内訳は、no-dsa の指定なしが64件、no-dsa（Minor issue）が49件、postponed（perl）が4件、point release で修正予定（acl）が1件です。各項目の理由に区分を書きました。
+- Debian 側の区分: OS の118件の内訳は、no-dsa の指定なしが64件、no-dsa が50件（Minor issue 49件と、point release で修正予定の acl 1件）、postponed（perl）が4件です。各項目の理由に区分を書きました。
 - 追跡: 作業用の #6 を閉じても残件を追えるよう、[Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) を作り、ベースラインの追跡先と担当（tomohiroJin）を更新しました。
 - OS パッケージの一覧: `apt-get upgrade` を入れたため、OS の版はビルドした日によって変わります。監査したイメージの一覧を [os-packages.txt](os-packages.txt) に保存し、CI でも `container-audit` artifact に保存するようにしました。
 - 判定: 新しいベースラインで `Reviewed: 119; blocking: 0`。判定テスト9件も成功しました。
+- 監査の対象: Dockerfile とロックファイルはコミット `31d2abe` 時点のものです（後のコミットでも変更していません）。ローカルのイメージ ID は再現できないため、CI での確認として run 44667812184（コミット `1abf8d2`）の `container-audit` artifact で同じ119件を確認しました。
+- git の緩和策: CVE-2026-105437 は merge・rebase・cherry-pick で起きるため、信頼できないブランチをこのコンテナで統合しないこと、上流の回避策 `conflict-marker-size=7` を、README とベースラインに書きました。
 - 未実施: VS Code GUI での確認、Debian のサポート期限の公式表との照合（www.debian.org が HTTP 403）。

@@ -1568,5 +1568,7 @@
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-47273",
       "Note": "Listed only in the SBOM vendored by pip 26.3; the Debian python-setuptools package is unrelated and not installed."
     }
-  ]
+  ],
+  "audited_tree": "Dockerfile and lock files as of commit 31d2abe597a38b536a87c710847be1a0d2c4147b (unchanged in later commits)",
+  "image_id_note": "image_id is from the local re-assessment build and is not reproducible elsewhere (apt-get upgrade and timestamps). CI confirmation of the same 119 findings: GitHub Actions run 44667812184 (commit 1abf8d26a36eb0233b63d06a0bf5cf71e436bc50), container-audit artifact."
 }

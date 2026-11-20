@@ -36,3 +36,11 @@ PR #8 に対する別エージェントの検証で出た指摘への対応で�
 - **README の Trivy 例**: `--exit-code 1` は常に失敗するため、JSON 出力と `check_container_audit.py` で判定する手順に替えました。
 - **棚卸し**: 推移的依存と GitHub Actions の採用版を README に書きました。
 - **情報の指摘**: `verify_pip_sbom.py` の `assert` を明示的なチェックに替え、`python -O` でも検査が働くようにしました。pip 同梱の setuptools に付いていた Debian 側の状態は、無関係なので削りました。pip-audit 本体のハッシュ固定は、監査ツールが一時環境の中でしか動かないため見送りました。
+
+## 2回目の敵対的検証への対応（2026-11-20）
+
+- **M1（git の緩和策）**: CVE-2026-105437 の攻撃経路は merge・rebase・cherry-pick です。README とベースラインに、信頼できないブランチを統合しないことと、上流の回避策 `* conflict-marker-size=7` を書きました。
+- **L1**: ゲートが再評価を求めるのは、検出のあるパッケージの版が変わった場合だけ、と文言を直しました。CI で `docs/os-packages.txt` との差分を警告として表示するようにしました。
+- **L2**: acl は no-dsa として数え、no-dsa を50件に直しました。
+- **L3**: 監査したツリーのコミットと、CI で確認した run・artifact を `docs/security-findings.json` に記録しました。
+- **L4**: #6 で追跡していた頃の記述が「当時の状態」とわかるように直し、PR 本文の run を最新のものに更新しました。

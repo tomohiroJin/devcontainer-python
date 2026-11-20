@@ -208,7 +208,7 @@ GitHub Actions（コミット SHA で固定。タグはピン留めした SHA �
 **OS 層の再現性**: ベースイメージは digest で固定していますが、ビルド時の `apt-get upgrade` が、その時点で Debian が公開しているセキュリティ修正を取り込みます。
 そのため OS パッケージの版はビルドした日によって変わります（Python と pip の依存はハッシュで固定しているので変わりません）。
 監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit` artifact の `os-packages.txt` に残しています。
-版が変わると監査ゲートが再評価を求めます（[CI監査方針](docs/ci-security-policy.md)）。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
+監査ゲートが再評価を求めるのは、High/Critical の検出があるパッケージの版が変わった場合だけです（[CI監査方針](docs/ci-security-policy.md)）。それ以外のパッケージの版が変わっても、CI は `docs/os-packages.txt` との差分を警告として表示するだけで失敗しません。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
 
 公式情報: [Python イメージ](https://hub.docker.com/_/python)、
 [採用タグのメタデータ](https://hub.docker.com/v2/repositories/library/python/tags/3.15.2-slim-trixie)、
@@ -277,7 +277,11 @@ CI は最小権限で動き、Actions をコミット SHA に固定していま�
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
 従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。
 Git が引き込む krb5・expat・curl のライブラリには Debian 未修正の High が残ります（[全検出一覧](docs/security-findings.json)）。
-信頼できないリポジトリをサブモジュール付きで clone しない、信頼できない `git fast-import` ストリーム・XML・SQLite ファイルを扱わない、という運用で緩和してください。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
+次の運用で緩和してください。
+
+- 信頼できないリポジトリを `--recurse-submodules` 付きで clone しない。
+- 信頼できないブランチや PR を、このコンテナで merge・rebase・cherry-pick しない（CVE-2026-105437）。どうしても行う場合は、上流が示す回避策として、各リポジトリの `.git/info/attributes` に `* conflict-marker-size=7` を書く。
+- 信頼できない `git fast-import` ストリーム、XML、SQLite ファイルを扱わない。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
 修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
 

@@ -52,7 +52,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigation: do not clone or fetch untrusted repositories with submodules, and do not run git fast-import on untrusted streams. Retained in the full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-111760",
@@ -62,7 +62,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigation: do not clone or fetch untrusted repositories with submodules, and do not run git fast-import on untrusted streams. Retained in the full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-114466",
@@ -72,7 +72,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigation: do not clone or fetch untrusted repositories with submodules, and do not run git fast-import on untrusted streams. Retained in the full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-105437",
@@ -82,7 +82,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigation: do not clone or fetch untrusted repositories with submodules, and do not run git fast-import on untrusted streams. Retained in the full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-111760",
@@ -92,7 +92,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigation: do not clone or fetch untrusted repositories with submodules, and do not run git fast-import on untrusted streams. Retained in the full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-114466",
@@ -102,7 +102,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigation: do not clone or fetch untrusted repositories with submodules, and do not run git fast-import on untrusted streams. Retained in the full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-54369",
