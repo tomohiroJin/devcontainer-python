@@ -178,7 +178,7 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 
 このプロジェクトは MIT ライセンスの下で提供されています。
 
-## 更新・セキュリティ運用（Issue #6）
+## 更新・セキュリティ運用（Issue #6 / 残件は Issue #9）
 
 調査日: 2026-11-05（初回）、2026-11-20（再確認）。既定ブランチ `88f32205b2579d9a827d2e31d067a4935b7c5afe`
 を基に更新しています。採用版は日付から推測せず、公式の公開 API で取得した安定版です。
@@ -208,7 +208,7 @@ GitHub Actions（コミット SHA で固定。タグはピン留めした SHA �
 **OS 層の再現性**: ベースイメージは digest で固定していますが、ビルド時の `apt-get upgrade` が、その時点で Debian が公開しているセキュリティ修正を取り込みます。
 そのため OS パッケージの版はビルドした日によって変わります（Python と pip の依存はハッシュで固定しているので変わりません）。
 監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit` artifact の `os-packages.txt` に残しています。
-監査ゲートが再評価を求めるのは、High/Critical の検出があるパッケージの版が変わった場合だけです（[CI監査方針](docs/ci-security-policy.md)）。それ以外のパッケージの版が変わっても、CI は `docs/os-packages.txt` との差分を警告として表示するだけで失敗しません。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
+監査ゲートは、ベースラインにない High/Critical の検出をすべて止めます（[CI監査方針](docs/ci-security-policy.md)）。具体的には、検出のあるパッケージの版が変わった場合、修正版が出た場合、新しい検出が出た場合です。検出が修正で消えただけの場合や、検出のないパッケージの版が変わっただけの場合は止めません。その場合、CI は `docs/os-packages.txt` との差分を警告として表示するだけです。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
 
 公式情報: [Python イメージ](https://hub.docker.com/_/python)、
 [採用タグのメタデータ](https://hub.docker.com/v2/repositories/library/python/tags/3.15.2-slim-trixie)、
@@ -280,8 +280,10 @@ Git が引き込む krb5・expat・curl のライブラリには Debian 未修�
 次の運用で緩和してください。
 
 - 信頼できないリポジトリを `--recurse-submodules` 付きで clone しない。
-- 信頼できないブランチや PR を、このコンテナで merge・rebase・cherry-pick しない（CVE-2026-105437）。どうしても行う場合は、上流が示す回避策として、各リポジトリの `.git/info/attributes` に `* conflict-marker-size=7` を書く。
-- 信頼できない `git fast-import` ストリーム、XML、SQLite ファイルを扱わない。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
+- 信頼できないブランチや PR を、このコンテナで merge・rebase・cherry-pick・merge-tree しない（CVE-2026-105437）。どうしても行う場合は、上流が示す回避策として、各リポジトリの `.git/info/attributes` に `* conflict-marker-size=7` を書く。
+- 信頼できない `git fast-import` ストリーム、XML、SQLite ファイルを扱わない。
+
+HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
 修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
 
