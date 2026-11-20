@@ -193,6 +193,23 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 | CI | なし | テスト、lint、整形、pip-audit、コンテナビルド・Trivy、週次実行 |
 | Dev Container Features | なし | 追加なし |
 
+推移的依存（`requirements.txt` で固定、2026-11-20 時点の PyPI 最新安定版）: iniconfig 2.3.1、packaging 26.3、pluggy 1.7.0、pygments 2.21.0。
+
+GitHub Actions（コミット SHA で固定。タグはピン留めした SHA に付けたコメントの値です。github.com のリリースページにはこの検証環境から届かないため、最新版かどうかは Dependabot の github-actions 更新で追います。調査日 2026-11-20）:
+
+| Action | 採用版 | 公式 |
+| --- | --- | --- |
+| actions/checkout | v7.0.1 | https://github.com/actions/checkout |
+| actions/setup-python | v7.1.0 | https://github.com/actions/setup-python |
+| actions/upload-artifact | v7.0.2 | https://github.com/actions/upload-artifact |
+| actions/download-artifact | v8.0.2 | https://github.com/actions/download-artifact |
+| aquasecurity/trivy-action | v0.36.0（Trivy 本体は 0.76.2 に固定） | https://github.com/aquasecurity/trivy-action |
+
+**OS 層の再現性**: ベースイメージは digest で固定していますが、ビルド時の `apt-get upgrade` が、その時点で Debian が公開しているセキュリティ修正を取り込みます。
+そのため OS パッケージの版はビルドした日によって変わります（Python と pip の依存はハッシュで固定しているので変わりません）。
+監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit` artifact の `os-packages.txt` に残しています。
+版が変わると監査ゲートが再評価を求めます（[CI監査方針](docs/ci-security-policy.md)）。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
+
 公式情報: [Python イメージ](https://hub.docker.com/_/python)、
 [採用タグのメタデータ](https://hub.docker.com/v2/repositories/library/python/tags/3.15.2-slim-trixie)、
 [Python サポート状況](https://devguide.python.org/versions/)、
@@ -205,7 +222,7 @@ Python 3.15 は公式 [リリース周期 API](https://peps.python.org/api/relea
 `bugfix` サポート、初回公開日2026-10-09、サポート終了予定2031-10と確認しました。
 詳細は [PEP 790](https://peps.python.org/pep-0790/) を参照してください。
 Devguide 本体はHTTP403でしたが、同サイトが参照する公式APIで期限を照合済みです。
-Debian のサポート期限は www.debian.org がこの検証環境から HTTP 403 のため未照合です。次回確認期限（2026-12-18）までに上記公式表と照合します。
+Debian のサポート期限は www.debian.org がこの検証環境から HTTP 403 のため未照合です。次回確認期限（2026-12-18）までに上記公式表と照合します（[Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9)）。
 Dependabot は pip/Docker/Actions の週次更新を提案します。Python minor 更新時には
 `setup.py`、Ruff target、CI の Python 指定も合わせて更新してください。
 
@@ -267,8 +284,11 @@ Git が引き込む krb5・expat・curl のライブラリには Debian 未修�
 ```bash
 pip-audit --strict --no-deps --disable-pip -r requirements-bootstrap.txt -r requirements.txt --format json --output pip-audit.json
 docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:local .
-trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 devcontainer-python:local
+trivy image --scanners vuln --severity HIGH,CRITICAL --format json --output trivy.json devcontainer-python:local
+python3 scripts/check_container_audit.py trivy.json security/container-baseline.json
 ```
+
+既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧と方針は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) で追跡しています。
 
 pip の HTTPS 通信にプロキシ CA が必要な環境では、Dockerfile の任意 BuildKit secret `proxy_ca` に
 信頼済み CA バンドルを渡します（例: `--secret id=proxy_ca,src=/path/to/ca-bundle.pem`）。

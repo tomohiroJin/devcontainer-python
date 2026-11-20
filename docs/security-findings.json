@@ -5,8 +5,8 @@
   "tool": "Trivy 0.76.2",
   "database_updated": "2026-11-20T01:04:07Z",
   "debian_tracker_checked": "2026-11-20",
-  "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/6",
-  "owner": "Repository maintainer",
+  "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/9",
+  "owner": "tomohiroJin (repository owner)",
   "review_due": "2026-12-18",
   "resolved_since_previous": [
     {
@@ -31,7 +31,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -43,7 +44,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -55,7 +57,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -67,7 +70,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-105437",
@@ -79,7 +83,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-105437"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-105437",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-111760",
@@ -91,7 +96,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-111760"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-111760",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-114466",
@@ -103,7 +109,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-114466"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-114466",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-105437",
@@ -115,7 +122,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-105437"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-105437",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-111760",
@@ -127,7 +135,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-111760"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-111760",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-114466",
@@ -139,7 +148,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-114466"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-114466",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-54369",
@@ -151,7 +161,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54369"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54369",
+      "DebianClassification": "no-dsa (Will be fixed first in unstable, then point release update; not to be backported by individual patches)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -163,7 +174,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -175,7 +187,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -187,7 +200,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -199,7 +213,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-12064",
@@ -211,7 +226,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-12064"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-12064",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-8458",
@@ -223,7 +239,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-8458"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-8458",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-113351",
@@ -235,7 +252,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-113351"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-113351",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-115506",
@@ -247,7 +265,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-115506"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-115506",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-117610",
@@ -259,7 +278,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-117610"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-117610",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-118370",
@@ -271,7 +291,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118370"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118370",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-107364",
@@ -283,7 +304,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112315",
@@ -295,7 +317,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112316",
@@ -307,7 +330,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112317",
@@ -319,7 +343,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112318",
@@ -331,7 +356,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112319",
@@ -343,7 +369,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112320",
@@ -355,7 +382,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112321",
@@ -367,7 +395,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112322",
@@ -379,7 +408,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112323",
@@ -391,7 +421,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-118380",
@@ -403,7 +434,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-119079",
@@ -415,7 +447,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71199",
@@ -427,7 +460,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71200",
@@ -439,7 +473,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-107364",
@@ -451,7 +486,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112315",
@@ -463,7 +499,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112316",
@@ -475,7 +512,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112317",
@@ -487,7 +525,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112318",
@@ -499,7 +538,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112319",
@@ -511,7 +551,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112320",
@@ -523,7 +564,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112321",
@@ -535,7 +577,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112322",
@@ -547,7 +590,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112323",
@@ -559,7 +603,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-118380",
@@ -571,7 +616,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-119079",
@@ -583,7 +629,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71199",
@@ -595,7 +642,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71200",
@@ -607,7 +655,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-107364",
@@ -619,7 +668,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112315",
@@ -631,7 +681,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112316",
@@ -643,7 +694,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112317",
@@ -655,7 +707,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112318",
@@ -667,7 +720,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112319",
@@ -679,7 +733,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112320",
@@ -691,7 +746,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112321",
@@ -703,7 +759,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112322",
@@ -715,7 +772,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112323",
@@ -727,7 +785,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-118380",
@@ -739,7 +798,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-119079",
@@ -751,7 +811,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71199",
@@ -763,7 +824,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71200",
@@ -775,7 +837,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-107364",
@@ -787,7 +850,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112315",
@@ -799,7 +863,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112316",
@@ -811,7 +876,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112317",
@@ -823,7 +889,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112318",
@@ -835,7 +902,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112319",
@@ -847,7 +915,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112320",
@@ -859,7 +928,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112321",
@@ -871,7 +941,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112322",
@@ -883,7 +954,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-112323",
@@ -895,7 +967,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-118380",
@@ -907,7 +980,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-119079",
@@ -919,7 +993,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71199",
@@ -931,7 +1006,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-71200",
@@ -943,7 +1019,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
+      "DebianClassification": "no DSA decision yet"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -955,7 +1032,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -967,7 +1045,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -979,7 +1058,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -991,7 +1071,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1003,7 +1084,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -1015,7 +1097,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -1027,7 +1110,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -1039,7 +1123,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -1051,7 +1136,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -1063,7 +1149,8 @@
       "Status": "fix_deferred",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538",
+      "DebianClassification": "postponed (Minor issue; wait for regressions upstream sorted out)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1075,7 +1162,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -1087,7 +1175,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -1099,7 +1188,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -1111,7 +1201,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-119373",
@@ -1123,7 +1214,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119373"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119373",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-119374",
@@ -1135,7 +1227,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119374"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119374",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-119379",
@@ -1147,7 +1240,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119379"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119379",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-16742",
@@ -1159,7 +1253,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-16742"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-16742",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -1171,7 +1266,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-16742",
@@ -1183,7 +1279,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-16742"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-16742",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1195,7 +1292,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -1207,7 +1305,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -1219,7 +1318,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -1231,7 +1331,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1243,7 +1344,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -1255,7 +1357,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -1267,7 +1370,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -1279,7 +1383,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1291,7 +1396,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -1303,7 +1409,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -1315,7 +1422,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -1327,7 +1435,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -1339,7 +1448,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -1351,7 +1461,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-69720",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -1363,7 +1474,8 @@
       "Status": "fix_deferred",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538",
+      "DebianClassification": "postponed (Minor issue; wait for regressions upstream sorted out)"
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -1375,7 +1487,8 @@
       "Status": "fix_deferred",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538",
+      "DebianClassification": "postponed (Minor issue; wait for regressions upstream sorted out)"
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -1387,7 +1500,8 @@
       "Status": "fix_deferred",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-9538",
+      "DebianClassification": "postponed (Minor issue; wait for regressions upstream sorted out)"
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1399,7 +1513,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-76642",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -1411,7 +1526,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78408",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -1423,7 +1539,8 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78409",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -1435,19 +1552,21 @@
       "Status": "affected",
       "DebianTrixieStatus": "open",
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-78410",
+      "DebianClassification": "no-dsa (Minor issue)"
     },
     {
       "VulnerabilityID": "CVE-2025-47273",
       "PkgName": "setuptools",
-      "SourcePackage": "setuptools",
+      "SourcePackage": null,
       "InstalledVersion": "70.3.0",
       "FixedVersion": "78.1.1",
       "Severity": "HIGH",
       "Status": "fixed",
-      "DebianTrixieStatus": "resolved",
+      "DebianTrixieStatus": null,
       "NewSinceBaseline": false,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-47273"
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-47273",
+      "Note": "Listed only in the SBOM vendored by pip 26.3; the Debian python-setuptools package is unrelated and not installed."
     }
   ]
 }

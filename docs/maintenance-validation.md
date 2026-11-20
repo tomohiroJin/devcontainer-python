@@ -95,12 +95,15 @@ pip-audit 2.10.1でpip26.3を含む全7依存に既知脆弱性はありませ�
 - 実行確認: 非 root（UID 1001）で Python 3.15.2 / pip 26.3 / Ruff 0.17.6 を使い、49テスト、`ruff check --no-cache .`、`ruff format --no-cache --check .`、`pip check`、`scripts/verify_pip_sbom.py` がすべて成功しました。
 - pip-audit 2.10.1: pip を含む7依存すべてで既知脆弱性なし（[JSON](pip-audit.json)）。
 - Trivy 0.76.2（DB 2026-11-20 01:04:07 UTC）: HIGH 119件・CRITICAL 0件。内訳は OS 118件と、pip の SBOM 由来の setuptools 1件です。
-  前回から zlib の CVE-2026-76844 が消え、新たに出た CVE-2026-85091 は修正済み版で解消しました。新規65件は krb5（52件）、git（6件）、expat（1件）、sqlite3（2件）などです。
+  前回から zlib の CVE-2026-76844 が消え、新たに出た CVE-2026-85091 は修正済み版で解消しました。新規65件の内訳は krb5 56件、git 6件、sqlite3 2件、expat 1件です。
 - Debian Security Tracker（`security-tracker.debian.org/tracker/data/json`、2026-11-20 取得）で、残る OS の検出はすべて trixie で `open`（修正版なし）であることを確認しました。
   krb5・expat・curl は git の依存（`libcurl3t64-gnutls`）として入ります。krb5 の多くは KDC/kadmind 側の問題で、これらのサーバーはイメージに入っていません。
   git は開発に必要なため削除しません。緩和策は README に記載しています。
 - ベースライン: [security/container-baseline.json](../security/container-baseline.json) を現在の119件に置き換え、OS の各項目の理由に Debian 側の状況と緩和策を書きました。全検出は [JSON](security-findings.json) に記録しています。
   新しい確認期限は **2026-12-18** です。毎週の CI は、修正版が出た時点や導入版が変わった時点でブロックするため、修正が出ても気付かずに残ることはありません。
   期限を4週間としたのは、Debian での修正待ちが大半で、1週間では毎回同じ再評価を繰り返すだけになるためです。
+- Debian 側の区分: OS の118件の内訳は、no-dsa の指定なしが64件、no-dsa（Minor issue）が49件、postponed（perl）が4件、point release で修正予定（acl）が1件です。各項目の理由に区分を書きました。
+- 追跡: 作業用の #6 を閉じても残件を追えるよう、[Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) を作り、ベースラインの追跡先と担当（tomohiroJin）を更新しました。
+- OS パッケージの一覧: `apt-get upgrade` を入れたため、OS の版はビルドした日によって変わります。監査したイメージの一覧を [os-packages.txt](os-packages.txt) に保存し、CI でも `container-audit` artifact に保存するようにしました。
 - 判定: 新しいベースラインで `Reviewed: 119; blocking: 0`。判定テスト9件も成功しました。
 - 未実施: VS Code GUI での確認、Debian のサポート期限の公式表との照合（www.debian.org が HTTP 403）。

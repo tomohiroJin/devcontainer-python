@@ -23,3 +23,16 @@
 4. **古い一文**: artifact の受け渡しは run 42080383425 で確認済みと書き直しました。
 
 あわせて、期限 2026-11-12 の失効を受けて全件を再評価しました。ベース digest の更新、Ruff 0.17.6 への更新、`apt-get upgrade` による zlib の修正、新しいベースライン（期限 2026-12-18）の内容は、[検証記録](maintenance-validation.md#再評価2026-11-20) にまとめています。
+
+## 敵対的検証（2026-11-20）への対応
+
+PR #8 に対する別エージェントの検証で出た指摘への対応です。
+
+- **追跡先と担当**: 残件の追跡用に [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) を作り、ベースライン・README・監査方針の追跡先と担当（tomohiroJin）を更新しました。
+- **OS 層の再現性**: `apt-get upgrade` によって OS の版がビルド日で変わることを README に書きました。監査したイメージのパッケージ一覧を `docs/os-packages.txt` に、CI の artifact にも `os-packages.txt` を残すようにしました。snapshot.debian.org での固定は、修正の取り込みが遅れるため見送りました。
+- **数値の誤り**: 新規65件の内訳を krb5 56 / git 6 / sqlite3 2 / expat 1 に直しました。
+- **Debian 側の区分**: ベースラインの理由文に no-dsa / postponed / 未判断の区分を書き、no-dsa の項目を受け入れ続ける条件を監査方針に加えました。
+- **concurrency のコメント**: 待機中の run は置き換えられることがある、と実際の挙動に合わせて書き直しました。
+- **README の Trivy 例**: `--exit-code 1` は常に失敗するため、JSON 出力と `check_container_audit.py` で判定する手順に替えました。
+- **棚卸し**: 推移的依存と GitHub Actions の採用版を README に書きました。
+- **情報の指摘**: `verify_pip_sbom.py` の `assert` を明示的なチェックに替え、`python -O` でも検査が働くようにしました。pip 同梱の setuptools に付いていた Debian 側の状態は、無関係なので削りました。pip-audit 本体のハッシュ固定は、監査ツールが一時環境の中でしか動かないため見送りました。

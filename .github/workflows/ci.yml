@@ -10,7 +10,8 @@ permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # Supersede only PR runs; keep main pushes and weekly audits in history.
+  # Cancel superseded PR runs only. Runs on main are not cancelled mid-run, but a
+  # pending run can still be replaced by a newer one in the same group.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   python:
@@ -22,7 +23,8 @@ jobs:
         with:
           python-version: '3.15.2'
           cache: pip
-      # setup-python may already ship the same pip; force a download so hashes are checked.
+      # setup-python may already ship the same pip; force a reinstall so the
+      # hashes are checked (the wheel may come from the pip cache).
       - run: python -m pip install --require-hashes --force-reinstall --no-deps -r requirements-bootstrap.txt
       - run: python -m pip install --require-hashes -r requirements.txt
       - run: python -m pytest
@@ -51,13 +53,17 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: '0'
           ignore-unfixed: false
+      - name: Record installed OS packages
+        run: docker run --rm devcontainer-python:ci dpkg-query -W -f '${binary:Package}\t${Version}\n' > os-packages.txt
       - name: Verify pip SBOM assessment against installed code
         run: docker run --rm --mount type=bind,src="$PWD",dst=/workspace,readonly -w /workspace devcontainer-python:ci python scripts/verify_pip_sbom.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: container-audit
-          path: trivy.json
+          path: |
+            trivy.json
+            os-packages.txt
   security:
     needs: container
     runs-on: ubuntu-latest
