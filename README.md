@@ -180,15 +180,15 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 
 ## 更新・セキュリティ運用（Issue #6）
 
-調査日: 2026-11-05。既定ブランチ `88f32205b2579d9a827d2e31d067a4935b7c5afe`
+調査日: 2026-11-05（初回）、2026-11-20（再確認）。既定ブランチ `88f32205b2579d9a827d2e31d067a4935b7c5afe`
 を基に更新しています。採用版は日付から推測せず、公式の公開 API で取得した安定版です。
 
 | 対象 | 更新前 | 採用版・理由 |
 | --- | --- | --- |
-| Python / OS | `3.13-slim`（OS 不定） | `3.15.2-slim-trixie`、Debian 13。公式公開タグの最新安定系列を採用し digest 固定 |
+| Python / OS | `3.13-slim`（OS 不定） | `3.15.2-slim-trixie`、Debian 13。公式公開タグの最新安定系列を採用し digest 固定（2026-11-20 に再ビルド版 `sha256:65a65fc7…` へ更新）。ビルド時に `apt-get upgrade` で Debian のセキュリティ修正を適用 |
 | pip | イメージ同梱 26.2.2 | 26.3。同梱ライブラリの既知脆弱性を修正 |
 | pytest | バージョン未指定 | 9.2.0（PyPI 最新安定版） |
-| Ruff | バージョン未指定 / py313 | 0.17.3 / py315。実行 Python と解析対象を統一 |
+| Ruff | バージョン未指定 / py313 | 0.17.6 / py315（2026-11-20 時点の PyPI 最新安定版）。実行 Python と解析対象を統一 |
 | 開発依存 / pip | 未固定 / pip版のみ指定 | `requirements.txt` と `requirements-bootstrap.txt` に全依存・配布ハッシュを記録 |
 | CI | なし | テスト、lint、整形、pip-audit、コンテナビルド・Trivy、週次実行 |
 | Dev Container Features | なし | 追加なし |
@@ -205,7 +205,7 @@ Python 3.15 は公式 [リリース周期 API](https://peps.python.org/api/relea
 `bugfix` サポート、初回公開日2026-10-09、サポート終了予定2031-10と確認しました。
 詳細は [PEP 790](https://peps.python.org/pep-0790/) を参照してください。
 Devguide 本体はHTTP403でしたが、同サイトが参照する公式APIで期限を照合済みです。
-Debian のサポート期限は上記公式表を次回更新時（2026-11-12）に再確認します。
+Debian のサポート期限は www.debian.org がこの検証環境から HTTP 403 のため未照合です。次回確認期限（2026-12-18）までに上記公式表と照合します。
 Dependabot は pip/Docker/Actions の週次更新を提案します。Python minor 更新時には
 `setup.py`、Ruff target、CI の Python 指定も合わせて更新してください。
 
@@ -225,7 +225,7 @@ ruff format --check .
 ```
 
 直接依存の変更は `requirements.in` で行い、Python 3.15 の一時仮想環境に
-`pip-tools==7.6.2` を導入して次のコマンドでロックを再生成してください。
+`pip-tools==7.7.0` を導入して次のコマンドでロックを再生成してください。
 Dependabot の PR でも入力ファイルとロックの整合を確認します。
 `requirements-bootstrap.txt` も Dependabot の pip 更新と pip-audit の対象です。
 pip は別のハッシュ付きファイルで先に導入します。pip 更新PRではハッシュの公式PyPI照合、
@@ -258,7 +258,9 @@ F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時
 CI は最小権限で動き、Actions をコミット SHA に固定しています。
 `pip-audit==2.10.1` はpip bootstrapを含むロック済み全7依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
-従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
+従来の build-essential/curl/vim を外し、Git と CA 証明書に OS 追加パッケージを絞っています。
+Git が引き込む krb5・expat・curl のライブラリには Debian 未修正の High が残ります（[全検出一覧](docs/security-findings.json)）。
+信頼できないリポジトリをサブモジュール付きで clone しない、信頼できない `git fast-import` ストリーム・XML・SQLite ファイルを扱わない、という運用で緩和してください。HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
 修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
 

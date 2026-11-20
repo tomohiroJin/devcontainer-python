@@ -12,3 +12,14 @@
 ## 検証
 
 更新したハッシュ要件のクリーン導入、pipを含む全7依存の監査、判定9テスト、更新Dockerfileのビルド、最終イメージ内の49サンプルテスト、Ruff lint/整形、pip実コード評価、pip check、actionlint、差分空白チェックを確認しました。結果の詳細と未実施項目は [検証記録](maintenance-validation.md) に追記します。CIの新しいartifact受渡しがGitHub上で成功したとは、push前のローカル確認段階では主張しません。
+
+## 再検証コメントへの対応（2026-11-20）
+
+対象: [再検証コメント](https://github.com/tomohiroJin/devcontainer-python/pull/7#issuecomment-6673024214) の「新たな指摘」1〜4。
+
+1. **ファイル数の記述**: Ruff 0.17 は Markdown 内のコードブロックも数えるため、ドキュメントを足すたびに件数が変わります。検証記録から件数を消し、成功したかどうかだけを書くようにしました。
+2. **concurrency**: `cancel-in-progress` を `${{ github.event_name == 'pull_request' }}` に変えました。PR の古い実行だけを打ち切り、main への push と週次監査は打ち切りません。
+3. **Python ジョブのハッシュ検証**: bootstrap を `--force-reinstall --no-deps` に変え、`setup-python` がすでに同じ pip を入れていても、配布ファイルを取り直してハッシュを検証するようにしました。
+4. **古い一文**: artifact の受け渡しは run 42080383425 で確認済みと書き直しました。
+
+あわせて、期限 2026-11-12 の失効を受けて全件を再評価しました。ベース digest の更新、Ruff 0.17.6 への更新、`apt-get upgrade` による zlib の修正、新しいベースライン（期限 2026-12-18）の内容は、[検証記録](maintenance-validation.md#再評価2026-11-20) にまとめています。

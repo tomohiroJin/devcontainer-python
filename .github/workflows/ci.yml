@@ -10,7 +10,8 @@ permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Supersede only PR runs; keep main pushes and weekly audits in history.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   python:
     runs-on: ubuntu-latest
@@ -21,7 +22,8 @@ jobs:
         with:
           python-version: '3.15.2'
           cache: pip
-      - run: python -m pip install --require-hashes --upgrade -r requirements-bootstrap.txt
+      # setup-python may already ship the same pip; force a download so hashes are checked.
+      - run: python -m pip install --require-hashes --force-reinstall --no-deps -r requirements-bootstrap.txt
       - run: python -m pip install --require-hashes -r requirements.txt
       - run: python -m pytest
       - run: ruff check . && ruff format --check .
