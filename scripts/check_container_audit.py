@@ -1,6 +1,5 @@
-"""Block new/fixable findings; retain reviewed, expiring findings in the report."""
+"""Block new/fixable findings; retain reviewed known findings in the report."""
 
-import datetime
 import json
 import os
 import sys
@@ -16,7 +15,7 @@ def identity(result, finding):
     )
 
 
-def evaluate(report, baseline, today):
+def evaluate(report, baseline):
     if not isinstance(report.get("Results"), list) or not report.get(
         "Metadata", {}
     ).get("OS"):
@@ -25,7 +24,6 @@ def evaluate(report, baseline, today):
         raise ValueError("OS vulnerability scan result is missing")
     if not baseline.get("owner") or not baseline.get("tracking_issue"):
         raise ValueError("Baseline needs an owner and tracking issue")
-    expired = today >= datetime.date.fromisoformat(baseline["review_due"])
     known = {}
     for entry in baseline["findings"]:
         if not entry.get("reason") or entry["kind"] not in ("unfixed", "pip-sbom-only"):
@@ -58,8 +56,6 @@ def evaluate(report, baseline, today):
                 and finding.get("FixedVersion") == "78.1.1"
             ):
                 blocked.append(label + ": outside reviewed pip SBOM scope")
-            elif expired:
-                blocked.append(label + ": review expired; reassess before renewal")
             else:
                 accepted.append(label)
     return blocked, accepted
@@ -71,9 +67,7 @@ def main():
             report = json.load(stream)
         with open(sys.argv[2]) as stream:
             baseline = json.load(stream)
-        blocked, accepted = evaluate(
-            report, baseline, datetime.datetime.now(datetime.timezone.utc).date()
-        )
+        blocked, accepted = evaluate(report, baseline)
     except (ValueError, KeyError, TypeError, IndexError, OSError) as exc:
         print(f"Audit gate failed: {exc}", file=sys.stderr)
         return 1
@@ -90,7 +84,7 @@ def main():
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as stream:
             stream.write("### Container security gate\n\n" + summary)
-    print(f"Owner: {baseline['owner']}; review due: {baseline['review_due']}")
+    print(f"Owner: {baseline['owner']}")
     print(f"Tracking: {baseline['tracking_issue']}")
     for finding in blocked:
         print(f"BLOCK: {finding}", file=sys.stderr)

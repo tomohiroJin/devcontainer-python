@@ -109,3 +109,12 @@ pip-audit 2.10.1でpip26.3を含む全7依存に既知脆弱性はありませ�
 - 監査の対象: Dockerfile とロックファイルはコミット `31d2abe` 時点のものです（後のコミットでも変更していません）。ローカルのイメージ ID は再現できないため、CI での確認として run 44667812184（コミット `1abf8d2`）の `container-audit` artifact で同じ119件を確認しました。
 - git の緩和策: CVE-2026-105437 は merge・rebase・cherry-pick で起きるため、信頼できないブランチをこのコンテナで統合しないこと、上流の回避策 `conflict-marker-size=7` を、README とベースラインに書きました。
 - 未実施: VS Code GUI での確認、Debian のサポート期限の公式表との照合（www.debian.org が HTTP 403）。
+
+## 運用の変更（2026-11-20）
+
+リポジトリ所有者の判断で、次のとおり運用を簡略化しました。上の節にある「確認期限」「週次 CI」の記述は、当時の方針として残しています。
+
+- 既知残件の確認期限（`review_due`）を廃止しました。判定スクリプトから期限の判定を外し、ベースラインと全件一覧から `review_due` を削除しました。
+- CI の週次の定期実行（`schedule`）を廃止しました。CI は push（main）・PR・手動実行のときだけ動きます。Dependabot の週次の更新提案はそのまま残しています。
+- Debian の修正待ちの残件（High 118件）は、[Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録したうえで一旦閉じました。Debian のサポート期限の照合も対象外にしました。
+- 判定テストは9件のまま成功し、新しいベースラインでの判定は `Reviewed: 119; blocking: 0` です。

@@ -7,7 +7,6 @@
   "debian_tracker_checked": "2026-11-20",
   "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/9",
   "owner": "tomohiroJin (repository owner)",
-  "review_due": "2026-12-18",
   "resolved_since_previous": [
     {
       "VulnerabilityID": "CVE-2026-76844",
