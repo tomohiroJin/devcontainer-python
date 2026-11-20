@@ -1,0 +1,16 @@
+# System-wide Git defaults for the Dev Container (/etc/gitconfig).
+# Values in ~/.gitconfig (including the one VS Code copies from the host) and in
+# each repository's .git/config take precedence over this file.
+[core]
+	pager = less -FRX
+	# Show non-ASCII (for example Japanese) file names as they are.
+	quotepath = false
+[color]
+	ui = auto
+[diff]
+	algorithm = histogram
+	colorMoved = default
+[log]
+	date = iso
+[init]
+	defaultBranch = main

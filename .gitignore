@@ -17,3 +17,14 @@ venv/
 *.egg-info/
 build/
 dist/
+
+# Tool caches and reports
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+pip-audit.json
+trivy.json
+.venv-audit/
+.venv-lock/

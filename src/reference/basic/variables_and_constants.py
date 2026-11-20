@@ -28,7 +28,7 @@ student["major"] = "Physics"  # キーと値の追加
 point = (10, 20)
 
 # **集合（セット）**
-unique_numbers = {1, 2, 3, 3, 2}  # 重複は自動的に削除
+unique_numbers = {1, 2, 3, 3, 2}  # noqa: B033  重複は自動的に削除
 unique_numbers.add(4)
 
 # **代入とアンパック**

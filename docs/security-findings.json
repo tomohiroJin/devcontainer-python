@@ -1,24 +1,13 @@
 {
   "date": "2026-11-20",
-  "image_id": "sha256:918f891b23fffeaa24c8a8a51094f395a4f4884e48e7fecd0585e732113516c9",
+  "image_id": "sha256:7f6160f3d0fc0a408ba63f272cc4597f5f6f0ae831021530146ea8bed4cb08a0",
   "base_image": "python:3.15.2-slim-trixie@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928",
   "tool": "Trivy 0.76.2",
   "database_updated": "2026-11-20T01:04:07Z",
   "debian_tracker_checked": "2026-11-20",
   "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/9",
   "owner": "tomohiroJin (repository owner)",
-  "resolved_since_previous": [
-    {
-      "VulnerabilityID": "CVE-2026-76844",
-      "PkgName": "zlib1g",
-      "note": "No longer reported for 1:1.3.dfsg+really1.3.1-1+deb13u1"
-    },
-    {
-      "VulnerabilityID": "CVE-2026-85091",
-      "PkgName": "zlib1g",
-      "note": "New on 2026-11-20 with a Debian fix; resolved by apt-get upgrade to 1:1.3.dfsg+really1.3.1-1+deb13u1"
-    }
-  ],
+  "resolved_since_previous": [],
   "findings": [
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -73,6 +62,32 @@
       "DebianClassification": "no-dsa (Minor issue)"
     },
     {
+      "VulnerabilityID": "CVE-2026-12064",
+      "PkgName": "curl",
+      "SourcePackage": null,
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-12064",
+      "DebianClassification": "no-dsa (Minor issue)"
+    },
+    {
+      "VulnerabilityID": "CVE-2026-8458",
+      "PkgName": "curl",
+      "SourcePackage": null,
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-8458",
+      "DebianClassification": "no-dsa (Minor issue)"
+    },
+    {
       "VulnerabilityID": "CVE-2026-105437",
       "PkgName": "git",
       "SourcePackage": "git",
@@ -81,7 +96,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-105437",
       "DebianClassification": "no DSA decision yet"
     },
@@ -94,7 +109,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-111760",
       "DebianClassification": "no DSA decision yet"
     },
@@ -107,7 +122,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-114466",
       "DebianClassification": "no DSA decision yet"
     },
@@ -120,7 +135,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-105437",
       "DebianClassification": "no DSA decision yet"
     },
@@ -133,7 +148,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-111760",
       "DebianClassification": "no DSA decision yet"
     },
@@ -146,7 +161,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-114466",
       "DebianClassification": "no DSA decision yet"
     },
@@ -242,6 +257,32 @@
       "DebianClassification": "no-dsa (Minor issue)"
     },
     {
+      "VulnerabilityID": "CVE-2026-12064",
+      "PkgName": "libcurl4t64",
+      "SourcePackage": null,
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-12064",
+      "DebianClassification": "no-dsa (Minor issue)"
+    },
+    {
+      "VulnerabilityID": "CVE-2026-8458",
+      "PkgName": "libcurl4t64",
+      "SourcePackage": null,
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-8458",
+      "DebianClassification": "no-dsa (Minor issue)"
+    },
+    {
       "VulnerabilityID": "CVE-2026-113351",
       "PkgName": "libexpat1",
       "SourcePackage": "expat",
@@ -263,7 +304,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-115506",
       "DebianClassification": "no-dsa (Minor issue)"
     },
@@ -302,7 +343,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
       "DebianClassification": "no DSA decision yet"
     },
@@ -315,7 +356,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
       "DebianClassification": "no DSA decision yet"
     },
@@ -328,7 +369,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
       "DebianClassification": "no DSA decision yet"
     },
@@ -341,7 +382,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
       "DebianClassification": "no DSA decision yet"
     },
@@ -354,7 +395,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
       "DebianClassification": "no DSA decision yet"
     },
@@ -367,7 +408,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
       "DebianClassification": "no DSA decision yet"
     },
@@ -380,7 +421,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
       "DebianClassification": "no DSA decision yet"
     },
@@ -393,7 +434,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
       "DebianClassification": "no DSA decision yet"
     },
@@ -406,7 +447,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
       "DebianClassification": "no DSA decision yet"
     },
@@ -419,7 +460,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
       "DebianClassification": "no DSA decision yet"
     },
@@ -432,7 +473,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
       "DebianClassification": "no DSA decision yet"
     },
@@ -445,7 +486,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
       "DebianClassification": "no DSA decision yet"
     },
@@ -458,7 +499,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
       "DebianClassification": "no DSA decision yet"
     },
@@ -471,7 +512,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
       "DebianClassification": "no DSA decision yet"
     },
@@ -484,7 +525,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
       "DebianClassification": "no DSA decision yet"
     },
@@ -497,7 +538,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
       "DebianClassification": "no DSA decision yet"
     },
@@ -510,7 +551,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
       "DebianClassification": "no DSA decision yet"
     },
@@ -523,7 +564,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
       "DebianClassification": "no DSA decision yet"
     },
@@ -536,7 +577,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
       "DebianClassification": "no DSA decision yet"
     },
@@ -549,7 +590,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
       "DebianClassification": "no DSA decision yet"
     },
@@ -562,7 +603,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
       "DebianClassification": "no DSA decision yet"
     },
@@ -575,7 +616,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
       "DebianClassification": "no DSA decision yet"
     },
@@ -588,7 +629,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
       "DebianClassification": "no DSA decision yet"
     },
@@ -601,7 +642,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
       "DebianClassification": "no DSA decision yet"
     },
@@ -614,7 +655,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
       "DebianClassification": "no DSA decision yet"
     },
@@ -627,7 +668,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
       "DebianClassification": "no DSA decision yet"
     },
@@ -640,7 +681,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
       "DebianClassification": "no DSA decision yet"
     },
@@ -653,7 +694,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
       "DebianClassification": "no DSA decision yet"
     },
@@ -666,7 +707,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
       "DebianClassification": "no DSA decision yet"
     },
@@ -679,7 +720,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
       "DebianClassification": "no DSA decision yet"
     },
@@ -692,7 +733,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
       "DebianClassification": "no DSA decision yet"
     },
@@ -705,7 +746,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
       "DebianClassification": "no DSA decision yet"
     },
@@ -718,7 +759,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
       "DebianClassification": "no DSA decision yet"
     },
@@ -731,7 +772,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
       "DebianClassification": "no DSA decision yet"
     },
@@ -744,7 +785,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
       "DebianClassification": "no DSA decision yet"
     },
@@ -757,7 +798,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
       "DebianClassification": "no DSA decision yet"
     },
@@ -770,7 +811,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
       "DebianClassification": "no DSA decision yet"
     },
@@ -783,7 +824,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
       "DebianClassification": "no DSA decision yet"
     },
@@ -796,7 +837,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
       "DebianClassification": "no DSA decision yet"
     },
@@ -809,7 +850,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
       "DebianClassification": "no DSA decision yet"
     },
@@ -822,7 +863,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
       "DebianClassification": "no DSA decision yet"
     },
@@ -835,7 +876,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
       "DebianClassification": "no DSA decision yet"
     },
@@ -848,7 +889,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-107364",
       "DebianClassification": "no DSA decision yet"
     },
@@ -861,7 +902,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112315",
       "DebianClassification": "no DSA decision yet"
     },
@@ -874,7 +915,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112316",
       "DebianClassification": "no DSA decision yet"
     },
@@ -887,7 +928,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112317",
       "DebianClassification": "no DSA decision yet"
     },
@@ -900,7 +941,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112318",
       "DebianClassification": "no DSA decision yet"
     },
@@ -913,7 +954,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112319",
       "DebianClassification": "no DSA decision yet"
     },
@@ -926,7 +967,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112320",
       "DebianClassification": "no DSA decision yet"
     },
@@ -939,7 +980,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112321",
       "DebianClassification": "no DSA decision yet"
     },
@@ -952,7 +993,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112322",
       "DebianClassification": "no DSA decision yet"
     },
@@ -965,7 +1006,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-112323",
       "DebianClassification": "no DSA decision yet"
     },
@@ -978,7 +1019,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-118380",
       "DebianClassification": "no DSA decision yet"
     },
@@ -991,7 +1032,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119079",
       "DebianClassification": "no DSA decision yet"
     },
@@ -1004,7 +1045,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71199",
       "DebianClassification": "no DSA decision yet"
     },
@@ -1017,7 +1058,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-71200",
       "DebianClassification": "no DSA decision yet"
     },
@@ -1225,7 +1266,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119374",
       "DebianClassification": "no-dsa (Minor issue)"
     },
@@ -1238,7 +1279,7 @@
       "Severity": "HIGH",
       "Status": "affected",
       "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
+      "NewSinceBaseline": false,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-119379",
       "DebianClassification": "no-dsa (Minor issue)"
     },
@@ -1568,6 +1609,6 @@
       "Note": "Listed only in the SBOM vendored by pip 26.3; the Debian python-setuptools package is unrelated and not installed."
     }
   ],
-  "audited_tree": "Dockerfile and lock files as of commit 31d2abe597a38b536a87c710847be1a0d2c4147b (unchanged in later commits)",
-  "image_id_note": "image_id is from the local re-assessment build and is not reproducible elsewhere (apt-get upgrade and timestamps). CI confirmation of the same 119 findings: GitHub Actions run 44667812184 (commit 1abf8d26a36eb0233b63d06a0bf5cf71e436bc50), container-audit artifact."
+  "audited_tree": "Dockerfile and lock files of the Issue #11 change (branch claude/loving-brown-1sq29a)",
+  "image_id_note": "image_id is from the local Issue #11 build and is not reproducible elsewhere (apt-get upgrade and timestamps). The 4 findings marked NewSinceBaseline come from adding the curl command-line tool (curl, libcurl4t64). The CI run of the pull request collects the same report as the container-audit artifact."
 }

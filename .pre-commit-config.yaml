@@ -1,0 +1,42 @@
+# Commit hooks, run by prek (https://prek.j178.dev/), a runner that reads the
+# pre-commit configuration format. `make hooks` registers them with Git and
+# `make pre-commit` (also run in CI) applies them to every tracked file.
+#
+# Every hook uses a tool that is already in the image at a pinned version, so
+# nothing is downloaded when the hooks run:
+# - `repo: builtin` hooks are implemented inside prek itself.
+# - `repo: local` hooks call Ruff and mypy from requirements.txt.
+repos:
+  - repo: builtin
+    hooks:
+      - id: trailing-whitespace
+        # Markdown uses two trailing spaces as a line break.
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types_or: [python, pyi, toml]
+        pass_filenames: false

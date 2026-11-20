@@ -71,7 +71,7 @@ def main():
     except (ValueError, KeyError, TypeError, IndexError, OSError) as exc:
         print(f"Audit gate failed: {exc}", file=sys.stderr)
         return 1
-    counts = {severity: 0 for severity in ("HIGH", "CRITICAL")}
+    counts = dict.fromkeys(("HIGH", "CRITICAL"), 0)
     for result in report["Results"]:
         for finding in result.get("Vulnerabilities") or []:
             if finding.get("Severity") in counts:

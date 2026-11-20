@@ -4,6 +4,13 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
+  "mounts": [
+    "source=devcontainer-python-history-${devcontainerId},target=/commandhistory,type=volume"
+  ],
+  "containerEnv": {
+    "TZ": "${localEnv:TZ:Asia/Tokyo}"
+  },
+  "postCreateCommand": "make hooks",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -11,7 +18,15 @@
         "ms-python.vscode-pylance",
         "ms-python.debugpy",
         "charliermarsh.ruff"
-      ]
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        }
+      }
     }
   },
   "remoteUser": "vscode"

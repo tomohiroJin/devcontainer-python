@@ -6,7 +6,7 @@ Observer パターンは、オブジェクト間の1対多の依存関係を構�
 このファイルでは、Observer パターンを Python で実装し、テストコードを含めています。
 """
 
-from typing import List, Protocol
+from typing import Protocol
 
 
 # **Observer インターフェース**
@@ -26,7 +26,7 @@ class Subject:
     """
 
     def __init__(self):
-        self._observers: List[Observer] = []
+        self._observers: list[Observer] = []
 
     def add_observer(self, observer: Observer):
         self._observers.append(observer)
@@ -46,7 +46,7 @@ class ConcreteObserverA:
     """
 
     def __init__(self):
-        self.messages: List[str] = []
+        self.messages: list[str] = []
 
     def update(self, message: str):
         self.messages.append(f"ObserverA received: {message}")
@@ -58,7 +58,7 @@ class ConcreteObserverB:
     """
 
     def __init__(self):
-        self.messages: List[str] = []
+        self.messages: list[str] = []
 
     def update(self, message: str):
         self.messages.append(f"ObserverB received: {message}")
