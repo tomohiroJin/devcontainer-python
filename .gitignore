@@ -12,3 +12,8 @@ venv/
 
 # IDE / Editor settings
 .idea/
+.venv/
+.ruff_cache/
+*.egg-info/
+build/
+dist/

@@ -1,9 +1,9 @@
 from reference.patterns.decorator import (
-    uppercase_decorator,
-    exclamation_decorator,
-    greet,
     BaseNotifier,
     DecoratedNotifier,
+    exclamation_decorator,
+    greet,
+    uppercase_decorator,
 )
 
 

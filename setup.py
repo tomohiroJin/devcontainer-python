@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="devcontainer-python",
@@ -8,5 +8,5 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[],
-    tests_require=["pytest"],
+    python_requires=">=3.15,<3.16",
 )
