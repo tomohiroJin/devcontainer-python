@@ -190,7 +190,7 @@ ruff format src/reference/samples/fizzbuzz/fizzbuzz.py
 | pytest | バージョン未指定 | 9.2.0（PyPI 最新安定版） |
 | Ruff | バージョン未指定 / py313 | 0.17.6 / py315（2026-11-20 時点の PyPI 最新安定版）。実行 Python と解析対象を統一 |
 | 開発依存 / pip | 未固定 / pip版のみ指定 | `requirements.txt` と `requirements-bootstrap.txt` に全依存・配布ハッシュを記録 |
-| CI | なし | テスト、lint、整形、pip-audit、コンテナビルド・Trivy、週次実行 |
+| CI | なし | テスト、lint、整形、pip-audit、コンテナビルド・Trivy（push・PR・手動実行時。定期実行はなし） |
 | Dev Container Features | なし | 追加なし |
 
 推移的依存（`requirements.txt` で固定、2026-11-20 時点の PyPI 最新安定版）: iniconfig 2.3.1、packaging 26.3、pluggy 1.7.0、pygments 2.21.0。
@@ -222,7 +222,7 @@ Python 3.15 は公式 [リリース周期 API](https://peps.python.org/api/relea
 `bugfix` サポート、初回公開日2026-10-09、サポート終了予定2031-10と確認しました。
 詳細は [PEP 790](https://peps.python.org/pep-0790/) を参照してください。
 Devguide 本体はHTTP403でしたが、同サイトが参照する公式APIで期限を照合済みです。
-Debian のサポート期限は www.debian.org がこの検証環境から HTTP 403 のため未照合です。次回確認期限（2026-12-18）までに上記公式表と照合します（[Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9)）。
+Debian のサポート期限は www.debian.org がこの検証環境から HTTP 403 のため未照合です（必要になった時点で上記公式表と照合してください）。
 Dependabot は pip/Docker/Actions の週次更新を提案します。Python minor 更新時には
 `setup.py`、Ruff target、CI の Python 指定も合わせて更新してください。
 
@@ -246,8 +246,8 @@ ruff format --check .
 Dependabot の PR でも入力ファイルとロックの整合を確認します。
 `requirements-bootstrap.txt` も Dependabot の pip 更新と pip-audit の対象です。
 pip は別のハッシュ付きファイルで先に導入します。pip 更新PRではハッシュの公式PyPI照合、
-`scripts/verify_pip_sbom.py` の承認版と実コードの再評価、期限付きベースラインの手動レビューが必要です。
-依存botの提案だけで承認版や期限を自動更新しません。
+`scripts/verify_pip_sbom.py` の承認版と実コードの再評価、ベースラインの手動レビューが必要です。
+依存botの提案だけで承認版を自動更新しません。
 
 ```bash
 pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --no-emit-trusted-host requirements.in
@@ -283,9 +283,9 @@ Git が引き込む krb5・expat・curl のライブラリには Debian 未修�
 - 信頼できないブランチや PR を、このコンテナで merge・rebase・cherry-pick・merge-tree しない（CVE-2026-105437）。どうしても行う場合は、上流が示す回避策として、各リポジトリの `.git/info/attributes` に `* conflict-marker-size=7` を書く。
 - 信頼できない `git fast-import` ストリーム、XML、SQLite ファイルを扱わない。
 
-HIGH/CRITICALは全件を記録し、新規・修正可能・期限切れの項目を失敗させます。既知残件に限定した期限付き判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
+HIGH/CRITICALは全件を記録し、新規・修正可能な項目を失敗させます。既知残件に限定した判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
-修正版、担当、期限、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
+修正版、担当、追跡 Issue を記録してください。秘密や未公開の脆弱性情報は公開しません。
 
 ```bash
 pip-audit --strict --no-deps --disable-pip -r requirements-bootstrap.txt -r requirements.txt --format json --output pip-audit.json
@@ -294,7 +294,7 @@ trivy image --scanners vuln --severity HIGH,CRITICAL --format json --output triv
 python3 scripts/check_container_audit.py trivy.json security/container-baseline.json
 ```
 
-既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧と方針は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) で追跡しています。
+既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。2026-11-20 時点の残件の一覧は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（Debian の修正待ちとして一旦閉じています）。
 
 pip の HTTPS 通信にプロキシ CA が必要な環境では、Dockerfile の任意 BuildKit secret `proxy_ca` に
 信頼済み CA バンドルを渡します（例: `--secret id=proxy_ca,src=/path/to/ca-bundle.pem`）。
