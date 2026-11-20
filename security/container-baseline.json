@@ -1,7 +1,8 @@
 {
-  "owner": "Repository maintainer",
-  "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/6",
-  "review_due": "2026-11-12",
+  "owner": "tomohiroJin (repository owner)",
+  "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/9",
+  "review_due": "2026-12-18",
+  "reviewed_on": "2026-11-20",
   "findings": [
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -11,7 +12,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -21,7 +22,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -31,7 +32,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -41,7 +42,67 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-105437",
+      "PkgName": "git",
+      "InstalledVersion": "1:2.47.3-0+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-111760",
+      "PkgName": "git",
+      "InstalledVersion": "1:2.47.3-0+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-114466",
+      "PkgName": "git",
+      "InstalledVersion": "1:2.47.3-0+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-105437",
+      "PkgName": "git-man",
+      "InstalledVersion": "1:2.47.3-0+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-111760",
+      "PkgName": "git-man",
+      "InstalledVersion": "1:2.47.3-0+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-114466",
+      "PkgName": "git-man",
+      "InstalledVersion": "1:2.47.3-0+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): git is 'open' for trixie with no fixed version; no DSA decision yet. git is a required development tool. Mitigations: do not clone untrusted repositories with --recurse-submodules (CVE-2026-111760); do not merge, rebase or cherry-pick untrusted branches in this image, or set \"* conflict-marker-size=7\" in .git/info/attributes as the upstream workaround (CVE-2026-105437); do not run git fast-import/fast-export on untrusted streams (CVE-2026-114466). Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-54369",
@@ -51,7 +112,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): acl is 'open' for trixie with no fixed version; no-dsa (Will be fixed first in unstable, then point release update; not to be backported by individual patches). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -61,7 +122,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -71,7 +132,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -81,7 +142,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -91,7 +152,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-12064",
@@ -101,7 +162,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Pulled in by git (libcurl3t64-gnutls). Mitigation: fetch only from trusted remotes. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-8458",
@@ -111,7 +172,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Pulled in by git (libcurl3t64-gnutls). Mitigation: fetch only from trusted remotes. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-113351",
@@ -121,7 +182,17 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): expat is 'open' for trixie with no fixed version; no-dsa (Minor issue). Pulled in by git. Mitigation: do not parse untrusted XML with tools in this image. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-115506",
+      "PkgName": "libexpat1",
+      "InstalledVersion": "2.9.0-1~deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): expat is 'open' for trixie with no fixed version; no-dsa (Minor issue). Pulled in by git. Mitigation: do not parse untrusted XML with tools in this image. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-117610",
@@ -131,7 +202,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): expat is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git. Mitigation: do not parse untrusted XML with tools in this image. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-118370",
@@ -141,7 +212,567 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): expat is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git. Mitigation: do not parse untrusted XML with tools in this image. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-107364",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112315",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112316",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112317",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112318",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112319",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112320",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112321",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112322",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112323",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-118380",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-119079",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71199",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71200",
+      "PkgName": "libgssapi-krb5-2",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-107364",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112315",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112316",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112317",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112318",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112319",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112320",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112321",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112322",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112323",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-118380",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-119079",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71199",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71200",
+      "PkgName": "libk5crypto3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-107364",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112315",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112316",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112317",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112318",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112319",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112320",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112321",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112322",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112323",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-118380",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-119079",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71199",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71200",
+      "PkgName": "libkrb5-3",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-107364",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112315",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112316",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112317",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112318",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112319",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112320",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112321",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112322",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-112323",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-118380",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-119079",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71199",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-71200",
+      "PkgName": "libkrb5support0",
+      "InstalledVersion": "1.21.3-5+deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): krb5 is 'open' for trixie with no fixed version; no DSA decision yet. Pulled in by git via libcurl3t64-gnutls (client libraries only). The KDC/kadmind server daemons named in most advisories are not installed. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -151,7 +782,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -161,7 +792,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -171,7 +802,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -181,7 +812,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -191,7 +822,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -201,7 +832,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -211,7 +842,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -221,7 +852,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -231,7 +862,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): ncurses is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -241,7 +872,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): perl is 'open' for trixie with no fixed version; postponed (Minor issue; wait for regressions upstream sorted out). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -251,7 +882,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -261,7 +892,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -271,7 +902,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -281,7 +912,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-119373",
@@ -291,7 +922,27 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): sqlite3 is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image library (used by liblastlog2/Python sqlite3). Mitigation: do not open untrusted SQLite databases or changesets. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-119374",
+      "PkgName": "libsqlite3-0",
+      "InstalledVersion": "3.46.1-7+deb13u2",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): sqlite3 is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image library (used by liblastlog2/Python sqlite3). Mitigation: do not open untrusted SQLite databases or changesets. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-119379",
+      "PkgName": "libsqlite3-0",
+      "InstalledVersion": "3.46.1-7+deb13u2",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): sqlite3 is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image library (used by liblastlog2/Python sqlite3). Mitigation: do not open untrusted SQLite databases or changesets. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-16742",
@@ -301,7 +952,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): systemd is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -311,7 +962,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): ncurses is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-16742",
@@ -321,7 +972,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): systemd is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -331,7 +982,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -341,7 +992,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -351,7 +1002,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -361,7 +1012,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -371,7 +1022,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -381,7 +1032,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -391,7 +1042,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -401,7 +1052,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -411,7 +1062,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -421,7 +1072,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -431,7 +1082,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -441,7 +1092,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -451,7 +1102,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): ncurses is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2025-69720",
@@ -461,7 +1112,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): ncurses is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -471,7 +1122,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): perl is 'open' for trixie with no fixed version; postponed (Minor issue; wait for regressions upstream sorted out). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -481,7 +1132,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): perl is 'open' for trixie with no fixed version; postponed (Minor issue; wait for regressions upstream sorted out). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-9538",
@@ -491,7 +1142,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): perl is 'open' for trixie with no fixed version; postponed (Minor issue; wait for regressions upstream sorted out). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -501,7 +1152,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78408",
@@ -511,7 +1162,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78409",
@@ -521,7 +1172,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2026-78410",
@@ -531,17 +1182,7 @@
       "Class": "os-pkgs",
       "Type": "debian",
       "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
-    },
-    {
-      "VulnerabilityID": "CVE-2026-76844",
-      "PkgName": "zlib1g",
-      "InstalledVersion": "1:1.3.dfsg+really1.3.1-1+b1",
-      "Severity": "HIGH",
-      "Class": "os-pkgs",
-      "Type": "debian",
-      "kind": "unfixed",
-      "reason": "Vendor has no fixed version in the Trivy DB. Existing development-image finding; retained in full artifact and tracked by the repository issue."
+      "reason": "Debian security tracker (checked 2026-11-20): util-linux is 'open' for trixie with no fixed version; no-dsa (Minor issue). Base-image package; not used by the sample code. Retained in the full artifact and tracked by the repository issue."
     },
     {
       "VulnerabilityID": "CVE-2025-47273",
