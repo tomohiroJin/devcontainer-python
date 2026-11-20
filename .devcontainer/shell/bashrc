@@ -12,6 +12,11 @@ esac
 # survives a container rebuild. Fall back to the home directory without it.
 if [ -d /commandhistory ] && [ -w /commandhistory ]; then
     HISTFILE=/commandhistory/.bash_history
+    # A file left by another UID (the volume outlives a UID change) cannot be
+    # written; keep a separate file in that case.
+    if [ -e "$HISTFILE" ] && [ ! -w "$HISTFILE" ]; then
+        HISTFILE=/commandhistory/.bash_history.$UID
+    fi
 fi
 HISTSIZE=10000
 HISTFILESIZE=10000

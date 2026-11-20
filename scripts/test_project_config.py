@@ -79,6 +79,11 @@ class ProjectConfigTests(unittest.TestCase):
         assert match is not None
         self.assertIn(match.group(1), make_targets())
 
+    def test_files_are_checked_out_with_lf(self):
+        # CRLF in the bashrc or the shell scripts breaks them inside the image.
+        attributes = (ROOT / ".gitattributes").read_text(encoding="utf-8")
+        self.assertIn("* text=auto eol=lf\n", attributes)
+
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")
         dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")

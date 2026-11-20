@@ -66,6 +66,8 @@ japanese='日本語のテスト'
 # Start a real interactive bash with the image's rc files and inspect it.
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+# Do not let the developer's own Git settings (signing, hooks) change the result.
+export GIT_CONFIG_GLOBAL=/dev/null
 repo="$tmp/repo"
 git init -q "$repo" 2>/dev/null
 git -C "$repo" -c user.name=t -c user.email=t@example.invalid \
@@ -133,9 +135,10 @@ fi
     ok "history size and de-duplication" || ng "history size and de-duplication"
 check "/commandhistory is writable" test -w /commandhistory
 marker="history-marker-$$"
-# Checked inside the same shell: the file must be written before the shell exits.
+# Checked inside the same shell: the file must be written before the shell
+# exits. A temporary file keeps the marker out of the real history.
 check "the prompt saves each command to the history file" interactive \
-    "history -s 'echo $marker'; __devcontainer_prompt; grep -q $marker \$HISTFILE"
+    "HISTFILE=$tmp/history; history -s 'echo $marker'; __devcontainer_prompt; grep -q $marker \$HISTFILE"
 [ "$(interactive 'echo $PAGER:$LESS:$EDITOR')" = less:-FRX:nano ] &&
     ok "pager and editor defaults" || ng "pager and editor defaults"
 # Dev Containers may change the UID of the user to match the host, so the
