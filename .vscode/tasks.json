@@ -1,0 +1,83 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "test",
+      "detail": "make test: pytest と scripts/ の単体テスト",
+      "type": "shell",
+      "command": "make test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cov",
+      "detail": "make cov: カバレッジ付きテスト（htmlcov/ と coverage.xml を出力）",
+      "type": "shell",
+      "command": "make cov",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "lint",
+      "detail": "make lint: ruff check と ruff format --check",
+      "type": "shell",
+      "command": "make lint",
+      "problemMatcher": []
+    },
+    {
+      "label": "fmt",
+      "detail": "make fmt: ruff の自動修正と整形",
+      "type": "shell",
+      "command": "make fmt",
+      "problemMatcher": []
+    },
+    {
+      "label": "typecheck",
+      "detail": "make typecheck: mypy",
+      "type": "shell",
+      "command": "make typecheck",
+      "problemMatcher": {
+        "owner": "mypy",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(.+?):(\\d+): (error|warning|note): (.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "check",
+      "detail": "make check: lint・型チェック・テスト",
+      "type": "shell",
+      "command": "make check",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "pre-commit",
+      "detail": "make pre-commit: コミット前フックを全ファイルに実行",
+      "type": "shell",
+      "command": "make pre-commit",
+      "problemMatcher": []
+    },
+    {
+      "label": "audit",
+      "detail": "make audit: pip-audit で Python 依存を監査",
+      "type": "shell",
+      "command": "make audit",
+      "problemMatcher": []
+    }
+  ]
+}

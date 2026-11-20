@@ -4,7 +4,7 @@ Trivy 0.76.2でHigh/Criticalを除外せずJSONに保存し、`scripts/check_con
 
 OS パッケージは Dockerfile の `apt-get upgrade` で Debian の公開済みセキュリティ修正を取り込みます。修正版が出た検出は、CI で導入版の変更（新しい組み合わせとしてブロック）か `FixedVersion` 付きの検出（ブロック）として現れるため、ベースラインの見直しが必要になります。
 
-`python` はテスト・lint・Python依存監査、`container` は1回だけのイメージビルド・テスト・Trivy収集・pip実コード検証を行います。全レポートを `container-audit` artifactに保存した後、別の `security` ジョブが同じartifactを取得して判定します。イメージの再ビルドはしません。`security` が新規検出で失敗しても、成功したテスト・lintのチェック結果は独立して残ります。スキャンやpipコード検証が失敗した場合は `container` も失敗し、セキュリティ判定を成功扱いにはしません。
+`python` はテスト・lint・型チェック・カバレッジ・コミット前フック・Python依存監査、`container` は1回だけのイメージビルド・イメージ内での `make check`・ターミナル環境の確認（`scripts/check_devcontainer.sh`）・Trivy収集・pip実コード検証を行います。どちらも `Makefile` のターゲットを呼びます。全レポートを `container-audit` artifactに保存した後、別の `security` ジョブが同じartifactを取得して判定します。イメージの再ビルドはしません。`security` が新規検出で失敗しても、成功したテスト・lintのチェック結果は独立して残ります。スキャンやpipコード検証が失敗した場合は `container` も失敗し、セキュリティ判定を成功扱いにはしません。
 
 [既知残件](../security/container-baseline.json)は、CVE・パッケージ・導入版・深刻度・エコシステムの完全一致で限定します。パッケージの再ビルドや深刻度の再評価も影響確認が必要なため、照合キーから外しません。新規検出や修正版の提供はブロックします。
 

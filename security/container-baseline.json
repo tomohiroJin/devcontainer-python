@@ -1192,6 +1192,46 @@
       "Type": "python-pkg",
       "kind": "pip-sbom-only",
       "reason": "pip 26.3 vendors pkg_resources with setuptools 70.3.0 SBOM metadata, but not setuptools/package_index.py. CI verifies code absence. https://github.com/advisories/GHSA-5rjg-fvgr-3xxf"
+    },
+    {
+      "VulnerabilityID": "CVE-2026-12064",
+      "PkgName": "curl",
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with the curl command-line tool (Issue #11); same source package and CVEs as libcurl3t64-gnutls, which git already pulls in. Mitigation: always write the scheme (https://) in URLs and do not use curl for SFTP/SCP. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-8458",
+      "PkgName": "curl",
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with the curl command-line tool (Issue #11); same source package and CVEs as libcurl3t64-gnutls, which git already pulls in. Mitigation: use curl only against trusted hosts. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-12064",
+      "PkgName": "libcurl4t64",
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with the curl command-line tool (Issue #11); same source package and CVEs as libcurl3t64-gnutls, which git already pulls in. Mitigation: always write the scheme (https://) in URLs and do not use curl for SFTP/SCP. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-8458",
+      "PkgName": "libcurl4t64",
+      "InstalledVersion": "8.14.1-2+deb13u7",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with the curl command-line tool (Issue #11); same source package and CVEs as libcurl3t64-gnutls, which git already pulls in. Mitigation: use curl only against trusted hosts. Retained in the full artifact and tracked by the repository issue."
     }
   ]
 }

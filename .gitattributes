@@ -1,0 +1,4 @@
+# Files are copied into a Linux image and run there, so always check them out
+# with LF line endings (Git for Windows would otherwise convert them to CRLF
+# and break the shell scripts).
+* text=auto eol=lf

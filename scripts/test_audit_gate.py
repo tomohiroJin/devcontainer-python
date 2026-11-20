@@ -1,23 +1,24 @@
 import copy
 import unittest
+from typing import Any
 
 from check_container_audit import evaluate
 
 
 class AuditPolicyTests(unittest.TestCase):
     def setUp(self):
-        self.finding = dict(
-            VulnerabilityID="CVE-example",
-            PkgName="libexample",
-            InstalledVersion="1",
-            Severity="HIGH",
-        )
-        self.result = {
+        self.finding: dict[str, str] = {
+            "VulnerabilityID": "CVE-example",
+            "PkgName": "libexample",
+            "InstalledVersion": "1",
+            "Severity": "HIGH",
+        }
+        self.result: dict[str, Any] = {
             "Class": "os-pkgs",
             "Type": "debian",
             "Vulnerabilities": [self.finding],
         }
-        self.report = {
+        self.report: dict[str, Any] = {
             "Metadata": {"OS": {"Family": "debian"}},
             "Results": [self.result],
         }
@@ -28,11 +29,11 @@ class AuditPolicyTests(unittest.TestCase):
             kind="unfixed",
             reason="Vendor has no fix",
         )
-        self.baseline = dict(
-            owner="maintainer",
-            tracking_issue="issue",
-            findings=[entry],
-        )
+        self.baseline: dict[str, Any] = {
+            "owner": "maintainer",
+            "tracking_issue": "issue",
+            "findings": [entry],
+        }
 
     def test_known_unfixed_is_reported(self):
         blocked, accepted = evaluate(self.report, self.baseline)

@@ -1,0 +1,104 @@
+# Interactive bash settings for the Dev Container.
+# Installed as /etc/devcontainer/bashrc and sourced from ~/.bashrc.
+# Put personal overrides in ~/.bashrc after the line that sources this file.
+
+case $- in
+    *i*) ;;
+    *) return ;;
+esac
+
+# --- History -----------------------------------------------------------------
+# /commandhistory is a named volume (see devcontainer.json), so the history
+# survives a container rebuild. Fall back to the home directory without it.
+if [ -d /commandhistory ] && [ -w /commandhistory ]; then
+    HISTFILE=/commandhistory/.bash_history
+    # A file left by another UID (the volume outlives a UID change) cannot be
+    # written; keep a separate file in that case.
+    if [ -e "$HISTFILE" ] && [ ! -w "$HISTFILE" ]; then
+        HISTFILE=/commandhistory/.bash_history.$UID
+    fi
+fi
+HISTSIZE=10000
+HISTFILESIZE=10000
+# ignoreboth: skip repeated and space-prefixed commands; erasedups: drop older
+# copies of a command from the list of the running shell.
+HISTCONTROL=ignoreboth:erasedups
+HISTTIMEFORMAT='%F %T '
+shopt -s histappend checkwinsize
+
+# --- Pager and editor ----------------------------------------------------------
+export PAGER="${PAGER:-less}"
+# -F: quit if the text fits on one screen, -R: keep colours, -X: keep the text
+# on screen after quitting.
+export LESS="${LESS:--FRX}"
+export EDITOR="${EDITOR:-nano}"
+
+# --- Colours and aliases -------------------------------------------------------
+if command -v dircolors >/dev/null 2>&1; then
+    eval "$(dircolors -b)"
+fi
+alias ls='ls --color=auto'
+alias ll='ls -alF'
+alias la='ls -A'
+alias grep='grep --color=auto'
+alias ..='cd ..'
+alias gs='git status --short --branch'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate -20'
+alias py='python'
+alias ipy='ipython'
+
+# --- Completion ----------------------------------------------------------------
+if ! shopt -oq posix && [ -r /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+
+# --- Prompt --------------------------------------------------------------------
+# Line 1: user, directory, git branch and state, virtual environment, and the
+# exit code of the last command when it failed. Line 2: the input marker.
+# Git state marks: * unstaged, + staged, % untracked, $ stashed,
+# < behind, > ahead, <> diverged, = in sync with upstream.
+if [ -r /usr/lib/git-core/git-sh-prompt ]; then
+    . /usr/lib/git-core/git-sh-prompt
+    GIT_PS1_SHOWDIRTYSTATE=1
+    GIT_PS1_SHOWUNTRACKEDFILES=1
+    GIT_PS1_SHOWSTASHSTATE=1
+    GIT_PS1_SHOWUPSTREAM=auto
+fi
+# The prompt shows the virtual environment itself.
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+__devcontainer_prompt() {
+    local status=$?
+    local reset='\[\e[0m\]' green='\[\e[32m\]' blue='\[\e[1;34m\]'
+    local yellow='\[\e[33m\]' cyan='\[\e[36m\]' red='\[\e[1;31m\]'
+    local git='' venv='' failed=''
+    if declare -F __git_ps1 >/dev/null; then
+        git=$(__git_ps1 ' (%s)')
+    fi
+    if [ -n "${VIRTUAL_ENV:-}" ]; then
+        venv=" [${VIRTUAL_ENV##*/}]"
+    fi
+    # Branch and directory names are untrusted text: escape the characters
+    # that bash would otherwise expand when it prints the prompt.
+    local text
+    for text in git venv; do
+        local value=${!text}
+        value=${value//\\/\\\\}
+        value=${value//\$/\\\$}
+        value=${value//\`/\\\`}
+        printf -v "$text" '%s' "$value"
+    done
+    if [ "$status" -ne 0 ]; then
+        failed=" ${red}[exit ${status}]${reset}"
+    fi
+    PS1="${green}\u${reset} ${blue}\w${reset}${yellow}${git}${reset}${cyan}${venv}${reset}${failed}\n\\$ "
+    # Save each command at once so that the history survives an abrupt stop.
+    history -a
+    # Hand the exit code on to any later PROMPT_COMMAND entry.
+    return "$status"
+}
+case ";${PROMPT_COMMAND:-};" in
+    *";__devcontainer_prompt;"*) ;;
+    *) PROMPT_COMMAND="__devcontainer_prompt${PROMPT_COMMAND:+;$PROMPT_COMMAND}" ;;
+esac

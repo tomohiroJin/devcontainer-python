@@ -3,4 +3,27 @@ line-length = 88
 target-version = "py315"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+# E/W: pycodestyle, F: Pyflakes, I: isort, UP: pyupgrade, B: flake8-bugbear,
+# SIM: flake8-simplify, N: pep8-naming, C4: flake8-comprehensions.
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "C4"]
+
+[tool.mypy]
+python_version = "3.15"
+files = ["src", "tests", "scripts"]
+# src/ and scripts/ hold top-level modules; the sample packages have no
+# __init__.py, so resolve them as namespace packages from these roots.
+mypy_path = ["src", "scripts"]
+namespace_packages = true
+explicit_package_bases = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

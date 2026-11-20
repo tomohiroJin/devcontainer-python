@@ -24,23 +24,41 @@ jobs:
       # setup-python may already ship the same pip; force a reinstall so the
       # hashes are checked (the wheel may come from the pip cache).
       - run: python -m pip install --require-hashes --force-reinstall --no-deps -r requirements-bootstrap.txt
-      - run: python -m pip install --require-hashes -r requirements.txt
-      - run: python -m pytest
-      - run: ruff check . && ruff format --check .
-      - run: python -m venv /tmp/audit && /tmp/audit/bin/pip install pip-audit==2.10.1
-      - run: /tmp/audit/bin/pip-audit --strict --no-deps --disable-pip -r requirements-bootstrap.txt -r requirements.txt --format json --output pip-audit.json
+      - run: 'python -m pip install --require-hashes --only-binary :all: -r requirements.txt'
+      # The same Makefile targets that developers and the VS Code tasks use.
+      - run: make lint
+      - run: make typecheck
+      - run: make test
+      - run: make cov
+      - run: make pre-commit
+      - run: make audit
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: python-audit
-          path: pip-audit.json
+          path: |
+            pip-audit.json
+            coverage.xml
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:ci .
-      - run: docker run --rm --mount type=bind,src="$PWD",dst=/workspace -w /workspace devcontainer-python:ci sh -c 'python -m pytest -o cache_dir=/tmp/pytest-cache && ruff check --no-cache . && ruff format --no-cache --check .'
+      # The runner and the image user have different UIDs, so mount the source
+      # read-only and keep every tool cache out of the workspace.
+      - name: Run checks inside the image
+        run: >
+          docker run --rm
+          --mount type=bind,src="$PWD",dst=/workspace,readonly -w /workspace
+          -e RUFF_NO_CACHE=true -e MYPY_CACHE_DIR=/tmp/mypy-cache
+          -e PYTEST_ADDOPTS='-p no:cacheprovider'
+          devcontainer-python:ci make check
+      - name: Check the terminal environment of the image
+        run: >
+          docker run --rm
+          --mount type=bind,src="$PWD",dst=/workspace,readonly -w /workspace
+          devcontainer-python:ci bash scripts/check_devcontainer.sh
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: v0.76.2
