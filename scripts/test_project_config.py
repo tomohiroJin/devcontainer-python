@@ -37,10 +37,19 @@ class ProjectConfigTests(unittest.TestCase):
                 self.assertIsNotNone(match, "tasks must call a make target")
                 assert match is not None
                 self.assertIn(match.group(1), targets)
+                self.assertEqual(match.group(1), task["label"])
 
     def test_ci_runs_the_make_targets(self):
         workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-        used = set(re.findall(r"\bmake ([a-z-]+)", workflow))
+        # Only whole steps count: a target that is commented out, or whose
+        # failure is ignored with "||", is not a check.
+        used = set(re.findall(r"^ +- run: make ([a-z-]+)$", workflow, flags=re.M))
+        used |= set(
+            re.findall(
+                r"^ +devcontainer-python:ci make ([a-z-]+)$", workflow, flags=re.M
+            )
+        )
+        self.assertNotIn("continue-on-error", workflow)
         self.assertLessEqual(used, make_targets())
         for target in ("lint", "typecheck", "test", "cov", "pre-commit", "audit"):
             with self.subTest(target=target):
@@ -63,6 +72,12 @@ class ProjectConfigTests(unittest.TestCase):
         )
         self.assertIn("/commandhistory", dockerfile)
         self.assertIn("HISTFILE=/commandhistory/.bash_history", bashrc)
+
+    def test_post_create_command_calls_an_existing_make_target(self):
+        command = load_json(".devcontainer/devcontainer.json")["postCreateCommand"]
+        match = re.match(r"make ([a-z-]+) \|\| echo ", command)
+        assert match is not None
+        self.assertIn(match.group(1), make_targets())
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")

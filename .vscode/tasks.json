@@ -13,7 +13,7 @@
       "problemMatcher": []
     },
     {
-      "label": "coverage",
+      "label": "cov",
       "detail": "make cov: カバレッジ付きテスト（htmlcov/ と coverage.xml を出力）",
       "type": "shell",
       "command": "make cov",
@@ -28,7 +28,7 @@
       "problemMatcher": []
     },
     {
-      "label": "format",
+      "label": "fmt",
       "detail": "make fmt: ruff の自動修正と整形",
       "type": "shell",
       "command": "make fmt",

@@ -24,7 +24,7 @@ dist/
 .coverage.*
 coverage.xml
 htmlcov/
-pip-audit.json
-trivy.json
+/pip-audit.json
+/trivy.json
 .venv-audit/
 .venv-lock/

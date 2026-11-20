@@ -1,5 +1,6 @@
-# Single entry point for everyday tasks. The README, the VS Code tasks and CI
-# all call these targets, so a check behaves the same everywhere.
+# Single entry point for everyday tasks. The README, the VS Code tasks and the
+# Python checks in CI all call these targets, so a check behaves the same
+# everywhere.
 .DEFAULT_GOAL := help
 
 PYTHON ?= python
@@ -43,7 +44,7 @@ pre-commit: ## コミット前フックを全ファイルに実行（CI と同�
 	prek run --all-files
 
 hooks: ## コミット前フックを Git に登録（Git リポジトリでなければ何もしない）
-	@if git rev-parse --git-dir >/dev/null 2>&1; then \
+	@if [ -e .git ]; then \
 		prek install; \
 	else \
 		echo 'Git リポジトリではないため、フックの登録を省略しました。'; \

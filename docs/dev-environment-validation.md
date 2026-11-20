@@ -55,6 +55,28 @@
 - **Trivy**: 新しい[ベースライン](../security/container-baseline.json)で `Reviewed: 123; blocking: 0`。[全検出一覧](security-findings.json)と [OS パッケージ一覧](os-packages.txt)を更新しました。
 - **pip の SBOM**: 新しいイメージで `scripts/verify_pip_sbom.py` と `pip check` が成功しました。
 
+## 敵対的レビューで見つかった問題と対応
+
+実装後に、別の担当が「壊す」前提で2系統のレビュー（実行時の挙動、要件と記述の正確さ）を行いました。致命的な問題はありませんでした。再現できた問題と対応は次のとおりです。
+
+| 問題 | 対応 |
+| --- | --- |
+| ホストの UID が 1000 以外の Linux では、Dev Containers が `vscode` の UID を変えるため、`/commandhistory` に書けず、履歴が黙ってホームに保存される | `/commandhistory` を `/tmp` と同じ 1777 にしました。UID 1234 で新しいボリュームに書けることを確認しました |
+| ホストの Git 設定に `core.hooksPath` があると `make hooks` が失敗し、コンテナの作成がエラーになる | `postCreateCommand` は失敗してもメッセージを出して続行するようにしました。`make hooks` 自体は失敗を返します |
+| `make hooks` が Git のエラー（所有者の不一致など）を「Git リポジトリではない」と表示して成功扱いにする | `.git` がある場合は `prek install` をそのまま実行し、エラーを表示するようにしました |
+| `check_devcontainer.sh` が、バッククォートのエスケープや `history -a` を消しても成功する | バッククォートを含むブランチ名、`$()` を含む仮想環境名、変更ありの記号、履歴ファイルへの即時保存、`PAGER`・`LESS`・`EDITOR` の検査を追加しました。エスケープや `history -a` を消した bashrc で失敗することを確認しました |
+| コミット済みの競合マーカーを `check-merge-conflict` が検出しない | `--assume-in-merge` を付け、検出することを確認しました |
+| `test_project_config.py` が、CI の手順をコメントアウトしたり `|| true` を付けたりしても成功する | 手順全体が `make <ターゲット>` である行だけを数えるようにし、`postCreateCommand` のターゲットも検査するようにしました |
+| `.gitignore` の `pip-audit.json` が `docs/pip-audit.json` にも一致する | ルート直下だけに一致するようにしました |
+| bashrc が `PAGER` と `LESS` を常に上書きする | 未設定のときだけ既定値を入れるようにしました |
+| README の記述の誤りや不足（タスク名、履歴の重複除去、curl の CVE の説明、pyright を選ばなかった理由、prek の配布元、`~/.bashrc` が作り直しで戻ること、Issue #9 との関係） | README を直し、タスク名を `make` のターゲット名に合わせました |
+
+対応しなかったもの:
+
+- フックを登録すると、prek のないホストからのコミットが失敗します。README に書いたうえで、既定で登録する方針のままにしています。
+- プロンプトの関数は終了コードを返すため、利用者が `ERR` トラップを設定していると、失敗のたびに2回呼ばれます。後続の `PROMPT_COMMAND` に終了コードを渡すことを優先しました。
+- カバレッジの下限（`fail_under`）は設けていません。
+
 ## 未実施
 
 - **VS Code の GUI での確認**: 補完、型診断、保存時の整形、テスト一覧、pytest のデバッグ、タスクの実行は、この検証環境に VS Code の GUI がないため実施していません。設定ファイルの JSON の構文、必須拡張の一覧の一致、タスクが実在する `make` ターゲットを呼ぶことは、`scripts/test_project_config.py` で検査しています。README の手順で確認してください。

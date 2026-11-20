@@ -109,11 +109,22 @@ case $prompt in
     *'[.venv]'*) ok "prompt shows the virtual environment" ;;
     *) ng "prompt shows the virtual environment" ;;
 esac
-# A branch name must never be executed by prompt expansion.
-git -C "$repo" checkout -q -b 'x$(touch${IFS}pwned)'
+prompt=$(render_prompt 'git commit -q --allow-empty -m x; : >tracked.txt; git add tracked.txt; echo change >tracked.txt')
+case $prompt in
+    *'*+'*) ok "prompt shows unstaged and staged changes" ;;
+    *) ng "prompt shows unstaged and staged changes" ;;
+esac
+# Branch and directory names must never be executed by prompt expansion.
+git -C "$repo" checkout -q -b 'x$(touch${IFS}pwned1)'
 render_prompt true >/dev/null
-[ ! -e "$repo/pwned" ] && ok "prompt does not execute branch names" ||
-    ng "prompt does not execute branch names"
+git -C "$repo" checkout -q -b 'y`touch${IFS}pwned2`'
+render_prompt true >/dev/null
+render_prompt 'VIRTUAL_ENV='"'"'/tmp/$(touch${IFS}pwned3)`touch${IFS}pwned4`'"'" >/dev/null
+if ls "$repo" | grep -q pwned; then
+    ng "prompt does not execute branch or environment names"
+else
+    ok "prompt does not execute branch or environment names"
+fi
 
 [ "$(interactive 'echo $HISTFILE')" = /commandhistory/.bash_history ] &&
     ok "history is kept in /commandhistory" ||
@@ -121,8 +132,20 @@ render_prompt true >/dev/null
 [ "$(interactive 'echo $HISTSIZE:$HISTCONTROL')" = 10000:ignoreboth:erasedups ] &&
     ok "history size and de-duplication" || ng "history size and de-duplication"
 check "/commandhistory is writable" test -w /commandhistory
+marker="history-marker-$$"
+# Checked inside the same shell: the file must be written before the shell exits.
+check "the prompt saves each command to the history file" interactive \
+    "history -s 'echo $marker'; __devcontainer_prompt; grep -q $marker \$HISTFILE"
+[ "$(interactive 'echo $PAGER:$LESS:$EDITOR')" = less:-FRX:nano ] &&
+    ok "pager and editor defaults" || ng "pager and editor defaults"
+# Dev Containers may change the UID of the user to match the host, so the
+# mount point must not depend on UID 1000.
+[ "$(stat -c %a /commandhistory)" = 1777 ] &&
+    ok "/commandhistory is writable for any UID" ||
+    ng "/commandhistory is writable for any UID"
 check "alias ll" interactive 'alias ll'
 check "alias gs" interactive 'alias gs'
+check "alias gl" interactive 'alias gl'
 check "bash-completion is loaded" interactive 'declare -F _comp_initialize || declare -F _init_completion'
 check "git completion is available" \
     interactive '__load_completion git 2>/dev/null || _comp_load git; declare -F __git_main'

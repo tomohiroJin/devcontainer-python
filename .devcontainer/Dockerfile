@@ -30,11 +30,13 @@ COPY .devcontainer/shell/bashrc /etc/devcontainer/bashrc
 COPY .devcontainer/shell/gitconfig /etc/gitconfig
 
 # /commandhistory is the mount point of the shell-history volume. A new named
-# volume copies this directory's ownership, so the non-root user can write to it.
+# volume copies this directory's mode. It is world-writable with the sticky bit
+# (like /tmp) because Dev Containers may change the user's UID to match the
+# host, and that change only re-owns the home directory.
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash -m $USERNAME \
     && printf '\n# Dev Container shell settings (prompt, history, aliases).\n[ -r /etc/devcontainer/bashrc ] && . /etc/devcontainer/bashrc\n' >> /home/$USERNAME/.bashrc \
-    && install -d -o $USERNAME -g $USERNAME /commandhistory
+    && install -d -m 1777 /commandhistory
 
 COPY requirements-bootstrap.txt requirements.txt /tmp/
 RUN --mount=type=secret,id=proxy_ca \
