@@ -525,7 +525,7 @@ make audit-container
 
 `make audit` は pip-audit を、`make audit-container` はイメージのビルド・Trivy・ベースラインとの照合を実行します。実行されるコマンドは [Makefile](Makefile) にあります。
 
-既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧は [docs/security-findings.json](docs/security-findings.json) にあります。Debian の修正待ちの118件は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（修正待ちとして一旦閉じています）。curl コマンドの追加で増えた4件は Issue #9 の記載には含まれていないため、一覧とベースラインの理由を参照してください。
+既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧は [docs/security-findings.json](docs/security-findings.json) にあります。Debian の修正待ちの118件は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（修正待ちとして一旦閉じています）。curl コマンドの追加で増えた4件は Issue #9 の記載には含まれていないため、一覧とベースラインの理由を参照してください。2026-11-21 に追加した OpenSSL の3件（CVE-2026-124709）も同じです。経緯は[検証記録](docs/mob-feedback-validation.md)にあります。
 
 pip の HTTPS 通信にプロキシ CA が必要な環境では、Dockerfile の任意 BuildKit secret `proxy_ca` に
 信頼済み CA バンドルを渡します（例: `--secret id=proxy_ca,src=/path/to/ca-bundle.pem`）。

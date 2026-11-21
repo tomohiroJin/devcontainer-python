@@ -35,6 +35,25 @@ Dockerfile と同じ手順でビルドしたイメージで確かめました。
 - **pip の SBOM**: `scripts/verify_pip_sbom.py` と `pip check` が成功しました。
 - **ロックファイル**: `requirements.txt` の差分は、pytest-watcher と watchdog の追加だけです。既存の依存の版とハッシュは変わっていません。
 
+## CI で見つかった新しい検出（この変更とは無関係）
+
+この PR の最初の CI（run 44901086769、2026-11-21）で、`python` と `container` は成功し、`security` が次の3件をブロックしました。
+
+```text
+BLOCK: CVE-2026-124709 libssl3t64 3.5.9-1~deb13u1: new finding or changed package/severity
+BLOCK: CVE-2026-124709 openssl 3.5.9-1~deb13u1: new finding or changed package/severity
+BLOCK: CVE-2026-124709 openssl-provider-legacy 3.5.9-1~deb13u1: new finding or changed package/severity
+Raw findings: HIGH=126; CRITICAL=0
+Reviewed: 123; blocking: 3
+```
+
+- **この PR との関係**: ありません。この PR は OS パッケージを変えていません。追加した pytest-watcher と watchdog からは、検出が出ていません。ビルド時の `apt-get upgrade` が Debian trixie の更新を取り込み、OpenSSL が 3.5.7-1~deb13u3 から 3.5.9-1~deb13u1 に上がりました。あわせて `base-files`・`libc-bin`・`libc6`・`libnghttp2-14` も上がっています。既存の123件は、同じ run ですべてベースラインと一致しました。
+- **内容**: OpenSSL の QUIC サーバーが、相手がリセットしたストリームの状態を解放しない問題です。QUIC で接続したクライアントが、サーバーのメモリを使い切らせることができます（サービス拒否）。
+- **Debian の状況**: Debian Security Tracker（2026-11-21 取得）では、trixie・forky・sid が `open` で修正版がなく、緊急度は未割り当てです。リビルドでは解消しません。
+- **このコンテナへの影響**: QUIC サーバーを動かした場合だけ該当します。この開発コンテナは、OpenSSL を TLS のクライアント（Python の `ssl`、curl）としてだけ使います。
+- **対応**: 担当者（リポジトリ所有者）の承認を得て（2026-11-21、PR #23）、3件を理由付きで[ベースライン](../security/container-baseline.json)に追加しました。[全検出一覧](security-findings.json)と [OS パッケージ一覧](os-packages.txt)も更新しています。Debian が修正版を出すと、ゲートが「a fix is now available」でブロックするので、そのときに取り込みます。
+- **記録の作り方**: この検証環境からは CI の artifact（`trivy.json`）を取得できません。そのため、3件は `security` ジョブのログの表示（CVE・パッケージ・版）から書きました。OS パッケージ一覧は、キャッシュなしで手元でビルドしたイメージから作り、CI のログに出た差分と一致することを確かめました。ベースラインの照合は、CI の再実行で確かめます。
+
 ## 確かめていないこと
 
 - **Trivy**: この PR は OS パッケージを変えていません。Python パッケージ2件の追加による検出の増減は、CI の `container`・`security` ジョブで確かめます。
