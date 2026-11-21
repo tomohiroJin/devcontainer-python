@@ -2,6 +2,7 @@
 
 import json
 import re
+import tomllib
 import unittest
 from pathlib import Path
 from typing import Any
@@ -83,6 +84,26 @@ class ProjectConfigTests(unittest.TestCase):
         # CRLF in the bashrc or the shell scripts breaks them inside the image.
         attributes = (ROOT / ".gitattributes").read_text(encoding="utf-8")
         self.assertIn("* text=auto eol=lf\n", attributes)
+
+    def test_japanese_names_are_allowed(self):
+        # pep8-naming rejects every identifier that contains Japanese. The
+        # regression test file makes `make lint` fail if such a rule returns.
+        with (ROOT / "pyproject.toml").open("rb") as file:
+            lint = tomllib.load(file)["tool"]["ruff"]["lint"]
+        self.assertFalse([rule for rule in lint["select"] if rule.startswith("N")])
+        self.assertTrue((ROOT / "tests/test_日本語の名前.py").is_file())
+
+    def test_user_installed_commands_are_on_path(self):
+        dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
+        # At the end of PATH: the pinned tools of the image must win.
+        self.assertIn("ENV PATH=$PATH:/home/$USERNAME/.local/bin\n", dockerfile)
+
+    def test_watch_uses_the_runner_script(self):
+        with (ROOT / "pyproject.toml").open("rb") as file:
+            watcher = tomllib.load(file)["tool"]["pytest-watcher"]
+        self.assertEqual(watcher["runner"], "python")
+        for argument in watcher["runner_args"]:
+            self.assertTrue((ROOT / argument).is_file())
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")

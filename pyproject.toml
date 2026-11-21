@@ -4,8 +4,27 @@ target-version = "py315"
 
 [tool.ruff.lint]
 # E/W: pycodestyle, F: Pyflakes, I: isort, UP: pyupgrade, B: flake8-bugbear,
-# SIM: flake8-simplify, N: pep8-naming, C4: flake8-comprehensions.
-select = ["E", "F", "W", "I", "UP", "B", "SIM", "N", "C4"]
+# SIM: flake8-simplify, C4: flake8-comprehensions.
+#
+# N (pep8-naming) is left out on purpose: it rejects every identifier that
+# contains Japanese (test names, arguments, variables, classes, file names),
+# and Japanese names must be usable everywhere in this repository. For the same
+# reason, check RUF001-RUF003 and PLC2401/PLC2403 against Japanese text before
+# enabling them. tests/test_日本語の名前.py fails `make lint` if such a rule
+# comes back.
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4"]
+
+[tool.pytest-watcher]
+# Settings for `ptw` (pytest-watcher), which `make watch` runs.
+# now: run the tests once at start-up instead of waiting for the first change.
+# patterns: the default "*.py" matches no file in a subdirectory with
+# watchdog 7 (it matches whole paths), so tests would never be re-run.
+now = true
+patterns = ["**/*.py"]
+# ptw ignores the changes that arrive while the tests are running. The runner
+# script runs pytest and repeats the run when a file was saved meanwhile.
+runner = "python"
+runner_args = ["scripts/watch_runner.py"]
 
 [tool.mypy]
 python_version = "3.15"

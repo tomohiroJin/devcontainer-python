@@ -1,7 +1,7 @@
 {
   "owner": "tomohiroJin (repository owner)",
   "tracking_issue": "https://github.com/tomohiroJin/devcontainer-python/issues/9",
-  "reviewed_on": "2026-11-20",
+  "reviewed_on": "2026-11-21",
   "findings": [
     {
       "VulnerabilityID": "CVE-2026-76642",
@@ -1232,6 +1232,36 @@
       "Type": "debian",
       "kind": "unfixed",
       "reason": "Debian security tracker (checked 2026-11-20): curl is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with the curl command-line tool (Issue #11); same source package and CVEs as libcurl3t64-gnutls, which git already pulls in. Mitigation: use curl only against trusted hosts. Retained in the full artifact and tracked by the repository issue."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-124709",
+      "PkgName": "libssl3t64",
+      "InstalledVersion": "3.5.9-1~deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssl is 'open' for trixie with no fixed version; urgency not yet assigned (no DSA or no-dsa decision yet). Memory leak in the OpenSSL QUIC server (denial of service by a remote QUIC client). The container runs no QUIC server; OpenSSL is used only as a TLS client (Python ssl, curl). First reported after the trixie update to openssl 3.5.9. Approved by the repository owner on 2026-11-21 (pull request #23). Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-124709",
+      "PkgName": "openssl",
+      "InstalledVersion": "3.5.9-1~deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssl is 'open' for trixie with no fixed version; urgency not yet assigned (no DSA or no-dsa decision yet). Memory leak in the OpenSSL QUIC server (denial of service by a remote QUIC client). The container runs no QUIC server; OpenSSL is used only as a TLS client (Python ssl, curl). First reported after the trixie update to openssl 3.5.9. Approved by the repository owner on 2026-11-21 (pull request #23). Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-124709",
+      "PkgName": "openssl-provider-legacy",
+      "InstalledVersion": "3.5.9-1~deb13u1",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssl is 'open' for trixie with no fixed version; urgency not yet assigned (no DSA or no-dsa decision yet). Memory leak in the OpenSSL QUIC server (denial of service by a remote QUIC client). The container runs no QUIC server; OpenSSL is used only as a TLS client (Python ssl, curl). First reported after the trixie update to openssl 3.5.9. Approved by the repository owner on 2026-11-21 (pull request #23). Retained in the full artifact."
     }
   ]
 }

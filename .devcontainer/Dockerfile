@@ -33,10 +33,21 @@ COPY .devcontainer/shell/gitconfig /etc/gitconfig
 # volume copies this directory's mode. It is world-writable with the sticky bit
 # (like /tmp) because Dev Containers may change the user's UID to match the
 # host, and that change only re-owns the home directory.
+# Debian's ~/.profile would put ~/.local/bin in front of PATH in login shells;
+# that block is removed because ENV PATH below adds the directory at the end.
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash -m $USERNAME \
     && printf '\n# Dev Container shell settings (prompt, history, aliases).\n[ -r /etc/devcontainer/bashrc ] && . /etc/devcontainer/bashrc\n' >> /home/$USERNAME/.bashrc \
+    && sed -i '/^if \[ -d "\$HOME\/\.local\/bin" \] ; then$/,/^fi$/d' /home/$USERNAME/.profile \
+    && ! grep -q '\.local/bin' /home/$USERNAME/.profile \
     && install -d -m 1777 /commandhistory
+
+# `pip install` as the non-root user puts commands in ~/.local/bin. Debian adds
+# that directory to PATH only in login shells (~/.profile), and only when it
+# already exists, so a VS Code terminal would not find those commands.
+# It goes last: a command of the same name there (for example the `ptw` of the
+# unmaintained pytest-watch) must not replace a pinned tool of the image.
+ENV PATH=$PATH:/home/$USERNAME/.local/bin
 
 COPY requirements-bootstrap.txt requirements.txt /tmp/
 RUN --mount=type=secret,id=proxy_ca \
