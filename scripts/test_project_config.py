@@ -145,8 +145,9 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertIn("*.gpg binary\n", attributes)
 
     def test_commit_hook_is_registered_from_the_repository(self):
-        # The hook is a tracked file, so it must be executable in the checkout
-        # and `make hooks` must point Git at its directory.
+        # The hook is a tracked file that `make hooks` copies into .git/hooks:
+        # it must be executable in the checkout and carry the text by which
+        # the installer and the doctor recognise the installed copy.
         hook = ROOT / "scripts/git-hooks/pre-commit"
         self.assertTrue(os.access(hook, os.X_OK))
         self.assertTrue(hook.read_text(encoding="utf-8").startswith("#!/bin/sh\n"))

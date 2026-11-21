@@ -21,8 +21,24 @@
 marker=${DEVCONTAINER_HOOK_MARKER:-/etc/devcontainer/bashrc}
 
 root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-# A branch from before the checks were added has nothing to run.
-[ -f "$root/.pre-commit-config.yaml" ] || exit 0
+# A branch from before the checks were added has nothing to run. Look in the
+# index as well: a configuration that is only missing from the working tree
+# must not switch the checks off.
+configured=0
+for name in .pre-commit-config.yaml .pre-commit-config.yml prek.toml; do
+    [ -f "$root/$name" ] && configured=1
+done
+[ "$configured" -eq 1 ] ||
+    git -C "$root" ls-files -- .pre-commit-config.yaml .pre-commit-config.yml prek.toml 2>/dev/null |
+    grep -q . || exit 0
+
+# This file is a copy made by `make hooks`. Say so when the repository has a
+# different version (after a pull, or on another branch); it is not replaced
+# automatically, because that would run code from whatever branch is checked out.
+tracked="$root/scripts/git-hooks/pre-commit"
+if [ -f "$tracked" ] && ! cmp -s "$tracked" "$0"; then
+    printf '%s\n' '[pre-commit] 登録されているコミット前フックが、リポジトリのものと違います。make hooks で登録し直してください。' >&2
+fi
 
 if [ -r "$marker" ]; then
     where=container
@@ -37,6 +53,12 @@ MESSAGE
     exit 0
 fi
 
+# A commit started with an almost empty environment (some GUI clients, env -i)
+# still finds the tools of the image.
+if [ "$where" = container ] && ! command -v prek >/dev/null 2>&1; then
+    PATH="/usr/local/bin:/usr/bin:/bin${PATH:+:$PATH}"
+    export PATH
+fi
 if ! command -v prek >/dev/null 2>&1; then
     if [ "$where" = container ]; then
         cat >&2 <<'MESSAGE'
@@ -56,10 +78,13 @@ fi
 # with what is installed, as before, but say so: results can differ from CI.
 lock="$root/requirements.txt"
 for tool in prek ruff mypy; do
-    want=$(sed -n "s/^$tool==\([^ ]*\).*/\1/p" "$lock" 2>/dev/null | head -n 1)
+    # "ruff==0.17.6 \" as pip-compile writes it; stop at anything that is not
+    # part of a version (space, backslash, ";", a carriage return).
+    want=$(sed -n "s/^$tool==\([0-9][0-9A-Za-z.+!-]*\).*/\1/p" "$lock" 2>/dev/null | head -n 1)
     command -v "$tool" >/dev/null 2>&1 || continue
-    have=$("$tool" --version 2>/dev/null | head -n 1 |
-        sed 's/^[^0-9]*\([0-9][0-9A-Za-z.+-]*\).*/\1/')
+    # "ruff 0.17.6", "mypy 2.4.1 (compiled: yes)": only a line that starts
+    # with the tool's name counts, not a warning printed before it.
+    have=$("$tool" --version 2>/dev/null | sed -n "s/^$tool \([0-9][^ ]*\).*/\1/p" | head -n 1)
     if [ -n "$want" ] && [ -n "$have" ] && [ "$have" != "$want" ]; then
         printf '[pre-commit] %s の版が requirements.txt と違います（必要: %s、実際: %s）。検査の結果が CI と変わることがあります。\n' \
             "$tool" "$want" "$have" >&2

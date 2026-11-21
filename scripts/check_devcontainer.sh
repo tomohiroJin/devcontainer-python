@@ -386,6 +386,38 @@ in_project git add src/needs_format.py
 commit 'formatted now' && ok "the commit goes through after the fix" ||
     ng "the commit goes through after the fix"
 
+# Only the staged files are checked: an unformatted file that is tracked but
+# not part of this commit does not stop it (mypy still checks the project).
+add_file not_staged.py 'u = 1'
+commit 'file that is changed later' || true
+printf 'u=2\n' >"$work/src/not_staged.py"
+add_file staged.py 's = 1'
+commit 'only the staged file is checked' &&
+    ok "the commit hook checks the staged files only" ||
+    ng "the commit hook checks the staged files only"
+in_project git checkout -q -- src/not_staged.py
+# A commit started with an empty environment still finds the image's tools.
+add_file empty_env.py 'e=1'
+if in_project env -i HOME="$tmp/home" /usr/bin/git commit -q -m 'empty environment' >"$tmp/commit.log" 2>&1; then
+    ng "a commit with an empty environment is still checked"
+elif grep -q 'ruff format.*Failed' "$tmp/commit.log"; then
+    ok "a commit with an empty environment is still checked"
+else
+    ng "a commit with an empty environment is still checked (it failed for another reason)"
+fi
+in_project git reset -q --hard >/dev/null 2>&1
+# A configuration file that is only missing from the working tree does not
+# switch the checks off.
+mv "$work/.pre-commit-config.yaml" "$tmp/config.saved"
+add_file config_missing.py 'c=1'
+if commit 'configuration missing from the working tree'; then
+    ng "a configuration that is still tracked keeps the checks on"
+else
+    ok "a configuration that is still tracked keeps the checks on"
+fi
+mv "$tmp/config.saved" "$work/.pre-commit-config.yaml"
+in_project git reset -q --hard >/dev/null 2>&1
+
 # A requirements.txt that is ahead of the image (pulled, not rebuilt yet) must
 # not switch the checks off in the container: they run, with a notice.
 sed -i 's/^ruff==[^ ]*/ruff==99.0.0/' "$work/requirements.txt"
@@ -401,6 +433,21 @@ fi
 in_project git checkout -q -- requirements.txt
 in_project git rm -q -f --cached src/pin_ahead.py >/dev/null
 rm -f "$work/src/pin_ahead.py"
+# The notice names each tool that differs, and nothing else: the unchanged
+# requirements.txt (with pip-compile's "name==version \\" lines) gives none.
+sed -i 's/^mypy==[^ ]*/mypy==99.0.0/; s/^prek==[^ ]*/prek==99.0.0/' "$work/requirements.txt"
+add_file pin_others.py 'q = 1'
+commit 'pins of mypy and prek differ' || true
+grep -q 'mypy の版が requirements.txt と違います' "$tmp/commit.log" &&
+    grep -q 'prek の版が requirements.txt と違います' "$tmp/commit.log" &&
+    ! grep -q 'ruff の版が' "$tmp/commit.log" &&
+    ok "the version notice names exactly the tools that differ" ||
+    ng "the version notice names exactly the tools that differ"
+in_project git reset -q --hard >/dev/null 2>&1
+add_file no_notice.py 'm = 1'
+commit 'no notice when the versions match' && ! grep -q 'の版が' "$tmp/commit.log" &&
+    ok "no version notice when the versions match" ||
+    ng "no version notice when the versions match"
 
 # On the host (no image marker) the hook never blocks, whatever is installed.
 host() { printf '%s\n' env DEVCONTAINER_HOOK_MARKER=/nonexistent "$@"; }
@@ -424,7 +471,7 @@ done <<CASES
 $host_cases
 CASES
 # Opting in on the host runs the checks there; they can then stop a commit.
-in_project git config hooks.devcontainerRunOnHost true
+in_project git config hooks.devcontainerRunOnHost yes
 add_file host_opted_in.py 'o=1'
 if commit 'host, opted in' env DEVCONTAINER_HOOK_MARKER=/nonexistent; then
     ng "hooks.devcontainerRunOnHost runs the checks on the host"
@@ -440,15 +487,14 @@ else
     ng "the opt-in does not block a host without prek"
 fi
 in_project git config --unset hooks.devcontainerRunOnHost
-# In the container a missing prek is a broken image: say so instead of
-# silently committing unchecked code.
-add_file no_prek.py 'n = 1'
-if commit 'container without prek' env PATH=/usr/bin:/bin; then
-    ng "in the container a missing prek stops the commit with advice"
+# In the container the tools are found even when PATH does not list them.
+add_file short_path.py 'n=1'
+if commit 'container with a short PATH' env PATH=/usr/bin:/bin; then
+    ng "in the container the checks run although PATH lacks /usr/local/bin"
 else
-    grep -q 'Dev Container をリビルドしてください' "$tmp/commit.log" &&
-        ok "in the container a missing prek stops the commit with advice" ||
-        ng "in the container a missing prek stops the commit with advice"
+    grep -q 'ruff format.*Failed' "$tmp/commit.log" &&
+        ok "in the container the checks run although PATH lacks /usr/local/bin" ||
+        ng "in the container the checks run although PATH lacks /usr/local/bin"
 fi
 in_project git reset -q --hard >/dev/null 2>&1
 in_project prek run --all-files >/dev/null 2>&1
@@ -463,19 +509,33 @@ in_project prek install >/dev/null 2>&1
     ng "prek install does not modify tracked files"
 in_project make -s hooks >/dev/null
 cmp -s "$work/scripts/git-hooks/pre-commit" "$installed_hook" &&
-    [ ! -e "$installed_hook.before-devcontainer" ] &&
-    ok "make hooks replaces a hook generated by prek" ||
-    ng "make hooks replaces a hook generated by prek"
-rm -f "$installed_hook.legacy"
+    [ ! -e "$installed_hook.before-devcontainer" ] && [ ! -e "$installed_hook.legacy" ] &&
+    ok "make hooks replaces a hook generated by prek and leaves nothing behind" ||
+    ng "make hooks replaces a hook generated by prek and leaves nothing behind"
 
-# A hook of the developer's own is kept aside and comes back with unhooks;
-# other hooks in .git/hooks keep running.
+# The installed copy says when the repository has another version of the hook.
+printf '# changed later\n' >>"$work/scripts/git-hooks/pre-commit"
+add_file stale.py 't = 1'
+commit 'stale installed hook' || true
+grep -q '登録されているコミット前フックが、リポジトリのものと違います' "$tmp/commit.log" &&
+    ok "a stale installed hook says so at commit time" ||
+    ng "a stale installed hook says so at commit time"
+in_project git checkout -q -- scripts/git-hooks/pre-commit
+in_project git reset -q --hard >/dev/null 2>&1
+
+# What belongs to the user is kept. A hook of their own is moved aside and
+# comes back with unhooks; other hooks in .git/hooks keep running.
 in_project make -s unhooks >/dev/null
 [ ! -e "$installed_hook" ] && ok "make unhooks removes the hook" ||
     ng "make unhooks removes the hook"
-printf '#!/bin/sh\n# my own hook\nexit 0\n' >"$installed_hook"
+own_hook() {
+    # $1: a comment line for the user's own hook.
+    printf '#!/bin/sh\n# my own hook\n%s\nexit 0\n' "$1" >"$installed_hook"
+    chmod +x "$installed_hook"
+}
+own_hook '# nothing special'
 printf '#!/bin/sh\necho commit-msg-hook-ran >&2\n' >"$work/.git/hooks/commit-msg"
-chmod +x "$installed_hook" "$work/.git/hooks/commit-msg"
+chmod +x "$work/.git/hooks/commit-msg"
 in_project make -s hooks >/dev/null
 grep -q 'my own hook' "$installed_hook.before-devcontainer" 2>/dev/null &&
     ok "make hooks keeps an existing hook aside" ||
@@ -484,38 +544,105 @@ add_file other_hooks.py 'k = 1'
 commit 'other hooks' && grep -q commit-msg-hook-ran "$tmp/commit.log" &&
     ok "other hooks in .git/hooks keep running" ||
     ng "other hooks in .git/hooks keep running"
+# A second hook of the user's own must not overwrite the one kept aside.
+own_hook '# a second hook'
+if in_project make -s hooks >/dev/null 2>&1; then
+    ng "make hooks refuses to overwrite a hook it keeps aside"
+else
+    grep -q 'a second hook' "$installed_hook" &&
+        grep -q 'nothing special' "$installed_hook.before-devcontainer" &&
+        ok "make hooks refuses to overwrite a hook it keeps aside" ||
+        ng "make hooks refuses to overwrite a hook it keeps aside"
+fi
+# unhooks only removes our hook: here the installed one is the user's.
 in_project make -s unhooks >/dev/null
-grep -q 'my own hook' "$installed_hook" 2>/dev/null &&
+grep -q 'a second hook' "$installed_hook" 2>/dev/null &&
+    ok "make unhooks leaves a hook that is not ours" ||
+    ng "make unhooks leaves a hook that is not ours"
+rm -f "$installed_hook"
+mv "$installed_hook.before-devcontainer" "$installed_hook"
+in_project make -s hooks >/dev/null
+in_project make -s unhooks >/dev/null
+grep -q 'nothing special' "$installed_hook" 2>/dev/null &&
     [ ! -e "$installed_hook.before-devcontainer" ] &&
     ok "make unhooks restores the existing hook" ||
     ng "make unhooks restores the existing hook"
+rm -f "$installed_hook"
+# A hook of the user's own that merely mentions our marker, or the words of a
+# generated hook, is still theirs.
+for words in '# then the devcontainer-python pre-commit hook runs' \
+    '# NOT a File generated by pre-commit; my own'; do
+    own_hook "$words"
+    in_project make -s hooks >/dev/null
+    in_project make -s unhooks >/dev/null
+    grep -qF "$words" "$installed_hook" 2>/dev/null &&
+        ok "a user's hook that mentions '${words#\# }' survives hooks and unhooks" ||
+        ng "a user's hook that mentions '${words#\# }' survives hooks and unhooks"
+    rm -f "$installed_hook" "$installed_hook.before-devcontainer"
+done
+# The hook that `prek install` kept as pre-commit.legacy is the user's too.
+own_hook '# kept by prek as legacy'
+in_project prek install >/dev/null 2>&1
+in_project make -s hooks >"$tmp/hooks.log" 2>&1
+grep -q '退避しました' "$tmp/hooks.log" && [ ! -e "$installed_hook.legacy" ] &&
+    ok "make hooks keeps the hook that prek had kept as legacy, and says so" ||
+    ng "make hooks keeps the hook that prek had kept as legacy, and says so"
+in_project make -s unhooks >/dev/null
+grep -q 'kept by prek as legacy' "$installed_hook" 2>/dev/null &&
+    ok "make unhooks restores that hook" || ng "make unhooks restores that hook"
+rm -f "$installed_hook"
+# A hook that is a symbolic link is never written through.
+printf '#!/bin/sh\n# File generated by pre-commit: shared\nexit 0\n' >"$tmp/shared-hook"
+cp "$tmp/shared-hook" "$tmp/shared-hook.orig"
+ln -s "$tmp/shared-hook" "$installed_hook"
+in_project make -s hooks >/dev/null
+in_project make -s unhooks >/dev/null
+cmp -s "$tmp/shared-hook" "$tmp/shared-hook.orig" && [ -L "$installed_hook" ] &&
+    ok "a hook that is a symbolic link is kept aside, not written through" ||
+    ng "a hook that is a symbolic link is kept aside, not written through"
 rm -f "$installed_hook" "$work/.git/hooks/commit-msg"
 
-# A core.hooksPath from ~/.gitconfig (copied from the host) would make Git
-# ignore .git/hooks: the hook would silently never run.
+# core.hooksPath belongs to the user: it is never changed, at any level. When it
+# makes Git ignore .git/hooks, `make hooks` says so.
 in_project git config --global core.hooksPath /somewhere/else
-in_project make -s hooks >/dev/null
-[ "$(in_project git config --get core.hooksPath)" = .git/hooks ] &&
-    ok "make hooks overrides a global core.hooksPath for this repository" ||
-    ng "make hooks overrides a global core.hooksPath for this repository"
-add_file global_hooks_path.py 'g=1'
-if commit 'global hooksPath'; then
-    ng "the hook runs although a global core.hooksPath is set"
-else
-    ok "the hook runs although a global core.hooksPath is set"
-fi
-in_project git reset -q --hard >/dev/null 2>&1
+in_project make -s hooks >"$tmp/hooks.log" 2>&1
+[ "$(in_project git config --get-all core.hooksPath)" = /somewhere/else ] &&
+    [ -z "$(in_project git config --local --get-all core.hooksPath)" ] &&
+    ok "make hooks does not change a global core.hooksPath" ||
+    ng "make hooks does not change a global core.hooksPath"
+grep -q 'Git は .git/hooks を使いません' "$tmp/hooks.log" &&
+    ok "make hooks says that the hook will not run with that core.hooksPath" ||
+    ng "make hooks says that the hook will not run with that core.hooksPath"
 in_project git config --global --unset core.hooksPath
-in_project make -s unhooks >/dev/null
-[ -z "$(in_project git config --local --get core.hooksPath)" ] &&
-    ok "make unhooks removes its core.hooksPath setting" ||
-    ng "make unhooks removes its core.hooksPath setting"
+in_project git config --local core.hooksPath .husky
+in_project make -s hooks >/dev/null 2>&1
+in_project make -s unhooks >/dev/null 2>&1
+[ "$(in_project git config --local --get-all core.hooksPath)" = .husky ] &&
+    ok "hooks and unhooks leave the repository's own core.hooksPath alone" ||
+    ng "hooks and unhooks leave the repository's own core.hooksPath alone"
+in_project git config --local --unset core.hooksPath
 # The registration made by the first version of this change is migrated.
 in_project git config --local core.hooksPath scripts/git-hooks
-in_project make -s hooks >/dev/null
-[ -z "$(in_project git config --get core.hooksPath)" ] && [ -x "$installed_hook" ] &&
+in_project make -s hooks >"$tmp/hooks.log" 2>&1
+[ -z "$(in_project git config --get-all core.hooksPath)" ] && [ -x "$installed_hook" ] &&
+    ! grep -q '注意' "$tmp/hooks.log" &&
     ok "make hooks migrates core.hooksPath = scripts/git-hooks" ||
     ng "make hooks migrates core.hooksPath = scripts/git-hooks"
+
+# Linked worktrees share the hooks directory: the hook runs there too.
+in_project git worktree add -q "$tmp/linked" -b linked >/dev/null 2>&1
+(cd "$tmp/linked" && HOME="$tmp/home" env -u GIT_CONFIG_GLOBAL make -s hooks >/dev/null 2>&1)
+printf 'w=1\n' >"$tmp/linked/src/in_worktree.py"
+if (cd "$tmp/linked" && env -u GIT_CONFIG_GLOBAL HOME="$tmp/home" sh -c \
+    'git add src/in_worktree.py && git commit -q -m "in a linked worktree"') >"$tmp/commit.log" 2>&1; then
+    ng "the hook checks commits in a linked worktree"
+else
+    grep -q 'ruff format.*Failed' "$tmp/commit.log" &&
+        ok "the hook checks commits in a linked worktree" ||
+        ng "the hook checks commits in a linked worktree (it failed for another reason)"
+fi
+in_project git worktree remove --force "$tmp/linked" >/dev/null 2>&1
+in_project git branch -q -D linked >/dev/null 2>&1
 
 # Checking out a branch must not run code from that branch.
 in_project git checkout -q -b with-extra-hook
@@ -607,7 +734,52 @@ expect_absent "masks the query string of the remote URL" 'querysecret'
 in_project git remote set-url origin 'alice.smith@corp.example.com:owner/repo.git'
 doctor env -u SSH_AUTH_SOCK
 expect_absent "masks the user of an SSH remote" 'alice.smith'
+in_project git remote set-url origin git@gitlab.example.org:owner/repo.git
+doctor env -u SSH_AUTH_SOCK
+printf '%s\n' "$doctor_report" | grep -q 'push 先: origin（git@gitlab.example.org:owner/repo.git）' &&
+    ok "doctor: keeps the conventional git@ user and the host readable" ||
+    ng "doctor: keeps the conventional git@ user and the host readable"
 in_project git remote set-url origin https://github.com/owner/repo.git
+# Names chosen by the user are masked too.
+in_project git remote rename origin ghp_remotenamesecret1234567890
+in_project git checkout -q -b 'someone@corp.example.com/ghp_branchnamesecret1234'
+doctor
+expect_absent "masks a token in the remote name" 'remotenamesecret'
+expect_absent "masks an address in the branch name" 'someone@corp'
+expect_absent "masks a token in the branch name" 'branchnamesecret'
+in_project git checkout -q -
+in_project git branch -q -D 'someone@corp.example.com/ghp_branchnamesecret1234'
+in_project git remote rename ghp_remotenamesecret1234567890 origin
+# Each kind of secret, through the doctor's own mask().
+masked=$(
+    home=/home/someone
+    eval "$(sed -n '/^home_pattern=/,/^esac/p; /^mask() {/,/^}/p' "$work/scripts/doctor.sh")"
+    printf '%s\n' 'file:/home/someone/.gitconfig' 'https://alice@github.com/o/r' \
+        'https://alice:pa/ss@github.com/o/r' 'https://h/o/r?token=querysecret' \
+        'ghp_aaaa1111 gho_bbbb2222 github_pat_cccc3333 glpat-dddd4444' \
+        'xoxb-eeee5555 AKIAABCDEFGHIJKLMNOP Bearer ffff6666 Basic Z2dnZzc3Nzc=' \
+        "$(printf 'ren\351@example.com')" '太郎@example.jp x@localhost' | mask
+)
+leaks=''
+for secret in /home/someone alice 'pa/ss' querysecret aaaa1111 bbbb2222 cccc3333 dddd4444 \
+    eeee5555 ABCDEFGHIJKLMNOP ffff6666 Z2dnZzc3Nzc 'ren' '太郎' 'x@'; do
+    printf '%s\n' "$masked" | grep -qF -- "$secret" && leaks="$leaks $secret"
+done
+[ -z "$leaks" ] && ok "doctor: mask() hides every kind of secret it lists" ||
+    ng "doctor: mask() hides every kind of secret it lists (leaked:$leaks)"
+printf '%s\n' "$masked" | grep -q 'file:~/.gitconfig' && printf '%s\n' "$masked" | grep -q 'github.com/o/r' &&
+    ok "doctor: mask() keeps the rest readable" || ng "doctor: mask() keeps the rest readable"
+# A home directory that is "/" or contains characters special to sed.
+doctor HOME=/
+printf '%s\n' "$doctor_report" | grep -q 'https://github.com/owner/repo.git' &&
+    ok "doctor: HOME=/ does not garble the report" || ng "doctor: HOME=/ does not garble the report"
+mkdir -p "$tmp/h#o&me"
+cp "$tmp/home/.gitconfig" "$tmp/h#o&me/.gitconfig"
+doctor HOME="$tmp/h#o&me"
+printf '%s\n' "$doctor_report" | grep -q 'https://github.com/owner/repo.git' &&
+    ! printf '%s\n' "$doctor_report" | grep -q 'unknown option' &&
+    ok "doctor: a home directory with # and & does not break the masking" ||
+    ng "doctor: a home directory with # and & does not break the masking"
 
 # Credential helpers: what Git would really do decides, not the configuration.
 gitconfig --replace-all credential.helper osxkeychain
@@ -625,14 +797,56 @@ in_project git remote set-url origin https://git.example.org/owner/repo.git
 doctor
 expect "no credential helper is a warning for other hosts" warn 'git.example.org の認証情報を取得できません'
 in_project git remote set-url origin https://github.com/owner/repo.git
-gitconfig credential.helper "$helper_ok"
+# The whole URL is asked about, as a push does: settings per path or per user.
+gitconfig credential.useHttpPath true
+gitconfig credential.https://github.com/owner/repo.git.helper "$helper_ok"
+doctor
+expect "a helper configured for the repository path is found" ok '認証情報を取得できます'
+gitconfig --unset credential.useHttpPath
+gitconfig --remove-section credential.https://github.com/owner/repo.git
+in_project git remote set-url origin https://alice@github.com/owner/repo.git
+gitconfig credential.helper '!f() { grep -q "^username=bob" || exit 0; echo password=bobstoken1234567890; }; f'
+doctor
+expect "another user's stored credential does not count" FAIL 'github.com の認証情報を取得できません'
+in_project git remote set-url origin https://github.com/owner/repo.git
+gitconfig --unset-all credential.helper
+# An askpass program is a way to authenticate, but it asks a person: it is
+# reported, and it is never run by the doctor.
+printf '#!/bin/sh\ntouch "%s/askpass-ran"\necho answer\n' "$tmp" >"$tmp/askpass"
+chmod +x "$tmp/askpass"
+doctor GIT_ASKPASS="$tmp/askpass"
+expect "with an askpass program, missing credentials are a warning" warn '認証情報は保存されていません'
+gitconfig core.askPass "$tmp/askpass"
+doctor
+expect "the same for core.askPass" warn '認証情報は保存されていません'
+gitconfig --unset core.askPass
+[ ! -e "$tmp/askpass-ran" ] && ok "doctor: does not run the askpass program" ||
+    ng "doctor: does not run the askpass program"
+# A helper that hangs is given up on.
+gitconfig credential.helper '!f() { sleep 61.8033; }; f'
+started=$(date +%s)
+doctor
+elapsed=$(($(date +%s) - started))
+# Longer than the limit (the helper really hung), shorter than the helper.
+[ "$elapsed" -ge 15 ] && [ "$elapsed" -lt 45 ] && [ "$(pgrep -fc 'sleep 61.8033')" = 0 ] &&
+    ok "doctor: a credential helper that hangs is stopped and not left running" ||
+    ng "doctor: a credential helper that hangs is stopped and not left running"
+gitconfig --replace-all credential.helper "$helper_ok"
 
 # Identity.
 gitconfig --unset user.email
 doctor
 expect "a missing user.email fails" FAIL '名前とメールアドレスが決まりません'
 doctor GIT_AUTHOR_NAME=a GIT_AUTHOR_EMAIL=a@example.invalid GIT_COMMITTER_NAME=a GIT_COMMITTER_EMAIL=a@example.invalid
-expect "an identity from the environment passes" ok '環境変数で設定されています'
+expect "an identity from the environment passes" ok '名前とメールアドレスが設定されています'
+doctor GIT_AUTHOR_NAME=a GIT_AUTHOR_EMAIL=a@example.invalid
+expect "an author without a committer fails" FAIL '名前とメールアドレスが決まりません'
+in_project git config author.email a@example.invalid
+in_project git config committer.email c@example.invalid
+doctor
+expect "an identity from author.* and committer.* passes" ok '名前とメールアドレスが設定されています'
+in_project git config --unset author.email
+in_project git config --unset committer.email
 in_project git config user.email local@example.invalid
 doctor
 expect "an identity in the repository's own configuration passes" ok '名前とメールアドレスが設定されています'
@@ -651,8 +865,12 @@ ssh-keygen -q -t ed25519 -N 'a passphrase' -f "$tmp/sign_key_locked" </dev/null
 gitconfig gpg.format ssh
 gitconfig commit.gpgsign true
 in_project git config user.signingkey "$tmp/sign_key.pub"
+objects_before=$(in_project git count-objects -v | tr '\n' ' ')
 doctor
 expect "SSH signing with a key from the repository's configuration passes" ok 'コミットに署名できます'
+[ "$(in_project git count-objects -v | tr '\n' ' ')" = "$objects_before" ] &&
+    ok "doctor: the signing check writes nothing into the repository" ||
+    ng "doctor: the signing check writes nothing into the repository"
 in_project git config user.signingkey "$tmp/sign_key_locked.pub"
 started=$(date +%s)
 doctor
@@ -666,6 +884,28 @@ gitconfig gpg.format openpgp
 gitconfig gpg.program /nonexistent/gpg
 doctor
 expect "tag signing that cannot work fails" FAIL 'タグの署名に失敗します'
+printf '%s\n' "$doctor_report" | grep -q 'git config tag.gpgsign false' &&
+    ok "doctor: the advice names the setting that is on" ||
+    ng "doctor: the advice names the setting that is on"
+# A missing smartcard is a failure, not "needs a passphrase".
+printf '#!/bin/sh\necho "gpg: signing failed: No such device" >&2\nexit 2\n' >"$tmp/gpg-card"
+chmod +x "$tmp/gpg-card"
+gitconfig gpg.program "$tmp/gpg-card"
+doctor
+expect "a missing smartcard fails" FAIL 'タグの署名に失敗します'
+# An error that names the key's owner does not show the name.
+cat >"$tmp/gpg-name" <<'STUB'
+#!/bin/sh
+echo 'gpg: skipped "Alice Example <alice@corp.example>": No secret key' >&2
+exit 2
+STUB
+chmod +x "$tmp/gpg-name"
+gitconfig gpg.program "$tmp/gpg-name"
+doctor
+printf '%s\n' "$doctor_report" | grep -q 'gpg: skipped' &&
+    ok "doctor: shows the reason of a signing failure" ||
+    ng "doctor: shows the reason of a signing failure"
+expect_absent "does not print the key owner's name from an error" 'Alice Example'
 gitconfig --unset tag.gpgsign
 gitconfig --unset gpg.program
 gitconfig --unset gpg.format
@@ -698,19 +938,44 @@ printf '# local edit\n' >>"$work/.git/hooks/pre-commit"
 doctor
 expect "an outdated installed hook is a warning" warn 'リポジトリのものと違います'
 in_project make -s hooks >/dev/null
+chmod -x "$work/.git/hooks/pre-commit"
+doctor
+expect "an installed hook that is not executable is a warning" warn '実行権限がありません'
+in_project make -s hooks >/dev/null
 rm -f "$work/.git/hooks/pre-commit.legacy"
 
 # Remotes.
 in_project git remote set-url origin git@gitlab.example.org:owner/repo.git
 doctor env -u SSH_AUTH_SOCK
 expect "an SSH remote without any key fails" FAIL '使える SSH の鍵がありません'
-# ssh itself says which key files it would try (defaults and ~/.ssh/config);
-# a stand-in ssh reports one that exists.
-mkdir -p "$tmp/sshbin"
-printf '#!/bin/sh\necho "identityfile %s/sign_key"\n' "$tmp" >"$tmp/sshbin/ssh"
-chmod +x "$tmp/sshbin/ssh"
+# ssh itself says which agent and key files it would use (defaults and
+# ~/.ssh/config); a stand-in ssh reports them.
+mkdir -p "$tmp/sshbin" "$tmp/my keys"
+cp "$tmp/sign_key" "$tmp/my keys/id"
+stub_ssh() { printf '#!/bin/sh\n%s\n' "$1" >"$tmp/sshbin/ssh" && chmod +x "$tmp/sshbin/ssh"; }
+stub_ssh "echo 'identityfile $tmp/my keys/id'"
 doctor env -u SSH_AUTH_SOCK PATH="$tmp/sshbin:$PATH"
-expect "an SSH remote with a key file that ssh would use passes" info '鍵のファイルを使います'
+expect "a key file that ssh would use (with a space in its path) passes" info '鍵のファイルを使います'
+eval "$(ssh-agent -s -a "$tmp/agent.sock")" >/dev/null
+ssh-add -q "$tmp/sign_key" 2>/dev/null
+doctor SSH_AUTH_SOCK="$tmp/agent.sock"
+expect "a key in the SSH agent passes" ok 'SSH エージェントに鍵があります（1 件）'
+stub_ssh "echo 'identityagent $tmp/agent.sock'"
+doctor env -u SSH_AUTH_SOCK PATH="$tmp/sshbin:$PATH"
+expect "an agent named by IdentityAgent in the ssh configuration passes" ok 'SSH エージェントに鍵があります'
+kill "$SSH_AGENT_PID" 2>/dev/null
+unset SSH_AUTH_SOCK SSH_AGENT_PID
+gitconfig core.sshCommand "$tmp/sshbin/ssh"
+doctor env -u SSH_AUTH_SOCK
+expect "with a custom ssh command the keys are not judged" info '独自の ssh コマンド'
+gitconfig --unset core.sshCommand
+in_project git remote set-url origin git://git.example.org/owner/repo.git
+doctor
+expect "a git:// push URL is a warning" warn 'git:// 形式'
+in_project git remote set-url origin 'ext::sh -c "touch '"$tmp"'/ext-ran"'
+doctor --online
+[ ! -e "$tmp/ext-ran" ] && ok "doctor: a remote-helper URL is not executed" ||
+    ng "doctor: a remote-helper URL is not executed"
 in_project git remote set-url origin git@github.com:owner/repo.git
 doctor
 expect "a github.com SSH remote is checked as HTTPS" info 'github.com に HTTPS で接続します'
@@ -718,6 +983,37 @@ in_project git remote rename origin upstream
 doctor
 expect "a single remote that is not called origin is used" info 'push 先: upstream'
 in_project git remote rename upstream origin
+in_project git remote add other https://git.example.org/other/repo.git
+gitconfig remote.pushDefault other
+in_project git config "branch.$(in_project git symbolic-ref --short HEAD).remote" origin
+doctor
+expect "remote.pushDefault wins over the branch's own remote" info 'push 先: other'
+in_project git config --unset "branch.$(in_project git symbolic-ref --short HEAD).remote"
+gitconfig remote.pushDefault missing-remote
+doctor
+expect "a push remote that does not exist is a warning" warn 'リモート（missing-remote）がありません'
+gitconfig --unset remote.pushDefault
+in_project git remote remove other
+in_project git checkout -q --detach
+doctor
+expect "a detached HEAD is mentioned" info 'detached HEAD'
+in_project git checkout -q -
+in_project git remote set-url origin https://GitHub.com/owner/repo.git
+gitconfig --unset-all credential.helper
+doctor
+expect "the host name is compared without regard to case" FAIL 'github.com の認証情報を取得できません'
+gitconfig credential.helper "$helper_ok"
+in_project git remote set-url origin https://github.com/owner/repo.git
+# A host setting that turns HTTPS back into SSH, on top of the image's rule: the
+# connection must go where a push goes (HTTPS), not through a second rewrite.
+gitconfig url.git@github.com:.insteadOf https://github.com/
+in_project git remote set-url origin git@github.com:owner/repo.git
+stub_ssh "touch '$tmp/ssh-was-used'"
+doctor --online PATH="$tmp/sshbin:$PATH"
+[ ! -e "$tmp/ssh-was-used" ] &&
+    ok "doctor: the connection check does not rewrite the push URL a second time" ||
+    ng "doctor: the connection check does not rewrite the push URL a second time"
+gitconfig --remove-section url.git@github.com:
 in_project git remote set-url origin https://github.com/owner/repo.git
 
 # Connection checks use the push URL. Use repositories on disk.
@@ -733,7 +1029,67 @@ printf '%s\n' "$doctor_report" | grep -q 'リモートの URL が正しいか' &
     ok "doctor: a missing repository gets the matching advice" ||
     ng "doctor: a missing repository gets the matching advice"
 in_project git config --unset remote.origin.pushurl
+in_project git remote set-url --add --push origin "$tmp/remote.git"
+in_project git remote set-url --add --push origin "$tmp/second-missing.git"
+doctor --online
+expect "every push URL is checked, not only the first" FAIL 'push 先に接続できない'
+in_project git config --unset-all remote.origin.pushurl
+# The user's credential helpers are only ever asked to "get": a server that
+# refuses the credential must not make Git erase it, and none is stored.
+python "$work/scripts/http_401_server.py" 8765 &
+server_pid=$!
+sleep 1
+printf '#!/bin/sh\necho "$1" >>"%s/helper.log"\n[ "$1" = get ] && { echo username=u; echo password=storedtoken1234; }\nexit 0\n' "$tmp" >"$tmp/logging-helper"
+chmod +x "$tmp/logging-helper"
+gitconfig --replace-all credential.helper "$tmp/logging-helper"
+gitconfig --add credential.helper cache
+in_project git remote set-url origin http://127.0.0.1:8765/owner/repo.git
+doctor --online
+expect "a refused credential fails the connection check" FAIL 'push 先に接続できない'
+printf '%s\n' "$doctor_report" | grep -q '認証に失敗しています' &&
+    ok "doctor: a refused credential gets the advice about authentication" ||
+    ng "doctor: a refused credential gets the advice about authentication"
+[ "$(sort -u "$tmp/helper.log" | tr '\n' ' ')" = 'get ' ] &&
+    ok "doctor: the user's credential helper is only asked to get" ||
+    ng "doctor: the user's credential helper is only asked to get ($(tr '\n' ' ' <"$tmp/helper.log"))"
+[ "$(pgrep -fc 'credential-cache--daemon')" = 0 ] && [ ! -e "$tmp/home/.git-credentials" ] &&
+    ok "doctor: no credential is stored and no credential daemon is started" ||
+    ng "doctor: no credential is stored and no credential daemon is started"
+expect_absent "does not print the stored credential" 'storedtoken'
+kill "$server_pid" 2>/dev/null
+wait "$server_pid" 2>/dev/null
+gitconfig --replace-all credential.helper "$helper_ok"
 in_project git remote set-url origin https://github.com/owner/repo.git
+# gh is asked whether it is logged in (a stand-in gh says yes).
+mkdir -p "$tmp/ghbin"
+printf '#!/bin/sh\n[ "$1 $2" = "auth token" ] && { echo ghp_fromghstub123456; exit 0; }\nexit 1\n' >"$tmp/ghbin/gh"
+chmod +x "$tmp/ghbin/gh"
+doctor PATH="$tmp/ghbin:$PATH"
+expect "a logged-in gh is reported" ok 'gh で github.com に認証済みです'
+expect_absent "does not print the token that gh returns" 'fromghstub'
+# VS Code extensions (a stand-in `code`).
+mkdir -p "$tmp/codebin"
+printf '#!/bin/sh\nprintf "%%s\\n" ms-python.python MS-Python.Vscode-Pylance ms-python.debugpy\n' >"$tmp/codebin/code"
+chmod +x "$tmp/codebin/code"
+doctor PATH="$tmp/codebin:$PATH"
+expect "a missing required extension is a warning" warn 'charliermarsh.ruff が入っていません'
+printf '%s\n' "$doctor_report" | grep -q '^ok    ms-python.vscode-pylance' &&
+    ok "doctor: extension names are compared without regard to case" ||
+    ng "doctor: extension names are compared without regard to case"
+printf '#!/bin/sh\nexit 1\n' >"$tmp/codebin/code"
+doctor PATH="$tmp/codebin:$PATH"
+expect "a code command that cannot reach VS Code is not a warning" info 'VS Code に接続できない'
+# Outside the dev container (no image marker): said so, tools are not judged.
+doctor DEVCONTAINER_HOOK_MARKER=/nonexistent PATH=/usr/bin:/bin
+expect "outside the dev container it says so and skips the tools" info 'ツールの版と整形は確認しません'
+expect_absent "outside the dev container, missing tools are not failures" 'が見つかりません'
+# Nothing is left behind in the temporary directory.
+mkdir -p "$tmp/doctor-tmp"
+doctor TMPDIR="$tmp/doctor-tmp"
+[ -z "$(ls -A "$tmp/doctor-tmp")" ] && ok "doctor: leaves nothing in the temporary directory" ||
+    ng "doctor: leaves nothing in the temporary directory"
+doctor TMPDIR="$tmp/no-such-directory"
+expect "an unusable TMPDIR is reported" FAIL '一時ディレクトリを作れません'
 
 # Working tree, tools, options.
 printf 'x=1\n' >"$work/src/needs_format.py"
@@ -758,7 +1114,10 @@ in_project git rm -q -f --cached crlf.txt >/dev/null
 rm -f "$work/crlf.txt" "$work/.git/info/attributes"
 gitconfig core.autocrlf true
 doctor
-expect "core.autocrlf=true is a warning" warn 'core.autocrlf=true'
+expect "core.autocrlf=true is a warning" warn 'core.autocrlf が有効です'
+gitconfig core.autocrlf yes
+doctor
+expect "core.autocrlf=yes is a warning as well" warn 'core.autocrlf が有効です'
 gitconfig --unset core.autocrlf
 quiet_report=$(in_project bash scripts/doctor.sh --offline --quiet 2>&1)
 [ -z "$quiet_report" ] && ok "doctor: --quiet prints nothing when all is well" ||
@@ -766,33 +1125,52 @@ quiet_report=$(in_project bash scripts/doctor.sh --offline --quiet 2>&1)
 in_project make -s unhooks >/dev/null
 quiet_report=$(in_project bash scripts/doctor.sh --offline --quiet 2>&1)
 printf '%s\n' "$quiet_report" | grep -q '^warn ' &&
+    [ "$(printf '%s\n' "$quiet_report" | head -n 1)" = '== コミット前フック' ] &&
     ! printf '%s\n' "$quiet_report" | grep -Eq '^(ok|info) ' &&
     ok "doctor: --quiet prints only the problems" ||
     ng "doctor: --quiet prints only the problems"
 in_project make -s hooks >/dev/null
-# Hosts without `timeout` (macOS) use the doctor's own watchdog. It must stop a
-# command whose child keeps the output open, pass standard input through, and
-# keep the exit status.
+# The doctor's time limit: it must stop a command whose child keeps the output
+# open, leave no process behind, pass standard input through and keep the
+# exit status.
 limited_test=$(
-    have() { [ "$1" != timeout ] && command -v "$1" >/dev/null 2>&1; }
     scratch=$tmp
-    eval "$(sed -n '/^limited() {/,/^}/p' "$work/scripts/doctor.sh")"
+    have() { command -v "$1" >/dev/null 2>&1; }
+    cleanup() { :; }
+    eval "$(sed -n '/^tree_of() {/,/^}/p; /^kill_tree() {/,/^}/p; /^on_signal() {/,/^}/p; /^limited() {/,/^}/p' "$work/scripts/doctor.sh")"
+    limited_pid=''
     started=$(date +%s)
-    out=$(limited 2 sh -c 'echo started; sleep 30; echo finished')
+    out=$(limited 2 sh -c 'echo started; sleep 31.4159; echo finished')
     printf 'stop:%s:%s\n' "$out" "$(($(date +%s) - started))"
+    # Repeatedly, with a grandchild: the caller must wait until the whole
+    # tree is stopped (stopping only starts when the limit is reached).
+    for round in 1 2 3 4 5 6; do
+        limited 1 sh -c 'sh -c "sleep 27.1828; :"; :' >/dev/null
+    done
+    printf 'left:%s\n' "$(pgrep -fc 'sleep 31.4159|sleep 27.1828')"
+    # A child that ignores the request to stop, under a parent that obeys it,
+    # is stopped by force, and the caller waits for that.
+    limited 1 sh -c 'sh -c "trap \"\" TERM; : stubborn-7f3a; while :; do sleep 0.2; done" & wait' >/dev/null
+    printf 'stubborn:%s\n' "$(pgrep -fc 'stubborn-7f3a')"
     printf 'stdin:%s\n' "$(printf 'passed through\n' | limited 5 cat)"
     limited 5 sh -c 'exit 3'
     printf 'status:%s\n' "$?"
 )
 printf '%s\n' "$limited_test" | grep -Eq '^stop:started:[0-5]$' &&
-    ok "doctor: the watchdog stops a command that hangs" ||
-    ng "doctor: the watchdog stops a command that hangs ($limited_test)"
+    ok "doctor: the time limit stops a command that hangs" ||
+    ng "doctor: the time limit stops a command that hangs ($limited_test)"
+printf '%s\n' "$limited_test" | grep -qx 'left:0' &&
+    ok "doctor: the time limit leaves no process behind" ||
+    ng "doctor: the time limit leaves no process behind"
+printf '%s\n' "$limited_test" | grep -qx 'stubborn:0' &&
+    ok "doctor: the time limit stops a command that ignores the request" ||
+    ng "doctor: the time limit stops a command that ignores the request"
 printf '%s\n' "$limited_test" | grep -qx 'stdin:passed through' &&
-    ok "doctor: the watchdog passes standard input through" ||
-    ng "doctor: the watchdog passes standard input through"
+    ok "doctor: the time limit passes standard input through" ||
+    ng "doctor: the time limit passes standard input through"
 printf '%s\n' "$limited_test" | grep -qx 'status:3' &&
-    ok "doctor: the watchdog keeps the exit status" ||
-    ng "doctor: the watchdog keeps the exit status"
+    ok "doctor: the time limit keeps the exit status" ||
+    ng "doctor: the time limit keeps the exit status"
 in_project bash scripts/doctor.sh --no-such-option >/dev/null 2>&1
 [ $? -eq 2 ] && ok "doctor: an unknown option is rejected" ||
     ng "doctor: an unknown option is rejected"
