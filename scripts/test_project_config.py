@@ -1,5 +1,7 @@
 """Keep the entry points (Makefile, VS Code, CI, Dev Container) consistent."""
 
+import base64
+import hashlib
 import json
 import re
 import tomllib
@@ -104,6 +106,42 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertEqual(watcher["runner"], "python")
         for argument in watcher["runner_args"]:
             self.assertTrue((ROOT / argument).is_file())
+
+    def test_github_host_keys_match_the_published_fingerprints(self):
+        # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
+        expected = {
+            "ssh-ed25519": "SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU",
+            "ecdsa-sha2-nistp256": "SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM",
+            "ssh-rsa": "SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s",
+        }
+        text = (ROOT / ".devcontainer/ssh/ssh_known_hosts").read_text(encoding="utf-8")
+        found = {}
+        for line in text.splitlines():
+            if not line or line.startswith("#"):
+                continue
+            host, key_type, key = line.split()
+            self.assertEqual(host, "github.com")
+            digest = hashlib.sha256(base64.b64decode(key, validate=True)).digest()
+            found[key_type] = "SHA256:" + base64.b64encode(digest).decode().rstrip("=")
+        self.assertEqual(found, expected)
+        dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("ssh_known_hosts /etc/ssh/ssh_known_hosts\n", dockerfile)
+
+    def test_github_cli_signing_key_is_the_reviewed_one(self):
+        # Downloaded from https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        # on 2026-11-21. apt trusts packages signed with this key, so a changed
+        # file must be reviewed, not just committed.
+        keyring = ROOT / ".devcontainer/apt/githubcli-archive-keyring.gpg"
+        self.assertEqual(
+            hashlib.sha256(keyring.read_bytes()).hexdigest(),
+            "6084d5d7bd8e288441e0e94fc6275570895da18e6751f70f057485dc2d1a811b",
+        )
+        dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
+        self.assertIn(
+            "signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg", dockerfile
+        )
+        attributes = (ROOT / ".gitattributes").read_text(encoding="utf-8")
+        self.assertIn("*.gpg binary\n", attributes)
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")

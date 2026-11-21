@@ -9,18 +9,29 @@ ARG USER_GID=$USER_UID
 ENV LANG=C.UTF-8 \
     LESSCHARSET=utf-8
 
+# The GitHub CLI comes from GitHub's own apt repository: Debian's gh (2.46.0)
+# is years behind and has unfixed security advisories. apt accepts that
+# repository only when it is signed with this key. The key file is committed
+# (source: https://cli.github.com/packages/githubcli-archive-keyring.gpg) and
+# scripts/test_project_config.py checks its SHA-256.
+COPY --chmod=644 .devcontainer/apt/githubcli-archive-keyring.gpg /usr/share/keyrings/githubcli-archive-keyring.gpg
+
 # Selection criteria and the reason for each package are in the README.
-RUN apt-get update \
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         bash-completion \
         ca-certificates \
         curl \
+        gh \
         git \
         jq \
         less \
         make \
         nano \
+        openssh-client \
         procps \
         tree \
     && apt-get clean \
@@ -28,6 +39,9 @@ RUN apt-get update \
 
 COPY .devcontainer/shell/bashrc /etc/devcontainer/bashrc
 COPY .devcontainer/shell/gitconfig /etc/gitconfig
+# github.com host keys: no trust-on-first-use prompt, and no silent acceptance
+# of another key. Keys of other hosts go to the user's ~/.ssh/known_hosts.
+COPY --chmod=644 .devcontainer/ssh/ssh_known_hosts /etc/ssh/ssh_known_hosts
 
 # /commandhistory is the mount point of the shell-history volume. A new named
 # volume copies this directory's mode. It is world-writable with the sticky bit
@@ -35,12 +49,16 @@ COPY .devcontainer/shell/gitconfig /etc/gitconfig
 # host, and that change only re-owns the home directory.
 # Debian's ~/.profile would put ~/.local/bin in front of PATH in login shells;
 # that block is removed because ENV PATH below adds the directory at the end.
+# gitconfig-ssh is /etc/gitconfig without the rule that turns github.com SSH
+# remotes into HTTPS; GIT_CONFIG_SYSTEM can point to it to keep SSH.
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash -m $USERNAME \
     && printf '\n# Dev Container shell settings (prompt, history, aliases).\n[ -r /etc/devcontainer/bashrc ] && . /etc/devcontainer/bashrc\n' >> /home/$USERNAME/.bashrc \
     && sed -i '/^if \[ -d "\$HOME\/\.local\/bin" \] ; then$/,/^fi$/d' /home/$USERNAME/.profile \
     && ! grep -q '\.local/bin' /home/$USERNAME/.profile \
-    && install -d -m 1777 /commandhistory
+    && install -d -m 1777 /commandhistory \
+    && cp /etc/gitconfig /etc/devcontainer/gitconfig-ssh \
+    && git config --file /etc/devcontainer/gitconfig-ssh --remove-section url.https://github.com/
 
 # `pip install` as the non-root user puts commands in ~/.local/bin. Debian adds
 # that directory to PATH only in login shells (~/.profile), and only when it

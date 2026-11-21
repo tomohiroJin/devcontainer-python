@@ -2,3 +2,5 @@
 # with LF line endings (Git for Windows would otherwise convert them to CRLF
 # and break the shell scripts).
 * text=auto eol=lf
+# The apt signing keyring must stay byte-identical (its SHA-256 is checked).
+*.gpg binary

@@ -20,13 +20,13 @@ check() {
 
 # --- Tools ---------------------------------------------------------------------
 for tool in bash git less make curl jq tree ps nano python pytest ruff mypy \
-    ipython prek coverage ptw; do
+    ipython prek coverage ptw gh ssh ssh-add ssh-keygen; do
     check "command: $tool" command -v "$tool"
 done
 check "pytest-cov plugin is installed" python -c 'import pytest_cov'
 # Deliberately left out (see the README): each of these widens the attack
 # surface without being needed for everyday work.
-for tool in sudo ssh gcc vim; do
+for tool in sudo sshd gcc vim; do
     if command -v "$tool" >/dev/null 2>&1; then
         ng "command must be absent: $tool"
     else
@@ -39,6 +39,83 @@ done
 login_shell=$(getent passwd "$(id -un)" | cut -d: -f7)
 [ "$login_shell" = /bin/bash ] && ok "login shell is bash" ||
     ng "login shell is bash (got '$login_shell')"
+
+# --- GitHub remotes use HTTPS --------------------------------------------------------
+# A repository cloned over SSH on the host must be reachable from the container
+# without an SSH agent: github.com SSH URLs are rewritten to HTTPS.
+effective_url() {
+    # $1: remote URL as stored in .git/config; prints the URL git really uses.
+    git -C "$url_repo" remote set-url origin "$1" &&
+        git -C "$url_repo" remote get-url --push origin
+}
+url_repo=$(mktemp -d)
+git init -q "$url_repo" 2>/dev/null
+git -C "$url_repo" remote add origin https://github.com/owner/repo.git
+for url in git@github.com:owner/repo.git ssh://git@github.com/owner/repo.git \
+    https://github.com/owner/repo.git; do
+    [ "$(GIT_CONFIG_GLOBAL=/dev/null effective_url "$url")" = https://github.com/owner/repo.git ] &&
+        ok "github.com remote uses HTTPS ($url)" ||
+        ng "github.com remote uses HTTPS ($url)"
+done
+for url in git@gitlab.com:owner/repo.git git@github.com.example.org:owner/repo.git; do
+    [ "$(GIT_CONFIG_GLOBAL=/dev/null effective_url "$url")" = "$url" ] &&
+        ok "other hosts keep their URL ($url)" ||
+        ng "other hosts keep their URL ($url)"
+done
+git -C "$url_repo" remote set-url origin git@github.com:owner/repo.git
+[ "$(git -C "$url_repo" config --get remote.origin.url)" = git@github.com:owner/repo.git ] &&
+    ok "the stored remote URL is not rewritten" ||
+    ng "the stored remote URL is not rewritten"
+# The documented way to keep SSH: the same system settings without the rule.
+ssh_config=/etc/devcontainer/gitconfig-ssh
+[ "$(GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=$ssh_config effective_url git@github.com:owner/repo.git)" = git@github.com:owner/repo.git ] &&
+    ok "GIT_CONFIG_SYSTEM=$ssh_config keeps SSH" ||
+    ng "GIT_CONFIG_SYSTEM=$ssh_config keeps SSH"
+[ "$(git config --file /etc/gitconfig --list | grep -v '^url\.')" = "$(git config --file $ssh_config --list)" ] &&
+    ok "gitconfig-ssh differs from /etc/gitconfig only in the URL rule" ||
+    ng "gitconfig-ssh differs from /etc/gitconfig only in the URL rule"
+rm -rf "$url_repo"
+
+# --- Git over SSH and GitHub CLI ---------------------------------------------------
+# The image trusts github.com's published host keys, so the first push over SSH
+# asks no question and a different key is refused.
+known_hosts=/etc/ssh/ssh_known_hosts
+check "github.com host keys are installed" ssh-keygen -F github.com -f "$known_hosts"
+fingerprints=$(ssh-keygen -lf "$known_hosts" 2>/dev/null | cut -d' ' -f2 | sort | tr '\n' ' ')
+expected='SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s '
+[ "$fingerprints" = "$expected" ] &&
+    ok "github.com host keys match GitHub's published fingerprints" ||
+    ng "github.com host keys match GitHub's published fingerprints"
+ssh -G github.com 2>/dev/null | grep -q "^globalknownhostsfile .*$known_hosts" &&
+    ok "ssh reads the image's known hosts file" ||
+    ng "ssh reads the image's known hosts file"
+ssh -G github.com 2>/dev/null | grep -qx 'stricthostkeychecking ask' &&
+    ok "ssh still asks before trusting an unknown host" ||
+    ng "ssh still asks before trusting an unknown host"
+# A server with another key must be refused, not asked about. Use an sshd-free
+# check: look the key up the way ssh does for a host that claims to be github.com.
+other_key="$(mktemp)"
+ssh-keygen -q -t ed25519 -N '' -f "$other_key.key" </dev/null
+if ssh-keygen -F github.com -f "$known_hosts" | grep -q "$(cut -d' ' -f2 "$other_key.key.pub")"; then
+    ng "an unknown key is not listed for github.com"
+else
+    ok "an unknown key is not listed for github.com"
+fi
+rm -f "$other_key" "$other_key.key" "$other_key.key.pub"
+check "gh runs" gh --version
+# Debian's own gh (2.46.0) has unfixed advisories; the image must carry the
+# build from GitHub's apt repository. 2.98.0 fixes the last of them.
+gh_version=$(dpkg-query -W -f '${Version}' gh 2>/dev/null)
+dpkg --compare-versions "${gh_version:-0}" ge 2.98.0 &&
+    ok "gh is a current release from GitHub's repository ($gh_version)" ||
+    ng "gh is a current release from GitHub's repository (got '$gh_version')"
+grep -qs 'signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg' \
+    /etc/apt/sources.list.d/github-cli.list &&
+    ok "the GitHub CLI apt source is tied to its signing key" ||
+    ng "the GitHub CLI apt source is tied to its signing key"
+check "gh can configure git credentials" gh auth setup-git --help
+[ -r /usr/share/bash-completion/completions/gh ] && ok "gh completion is available" ||
+    ng "gh completion is available"
 
 # --- Commands added later with pip ----------------------------------------------
 # `pip install` as this user installs commands into ~/.local/bin. They must be

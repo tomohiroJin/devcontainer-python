@@ -4,6 +4,8 @@
 .vscode
 .devcontainer
 !.devcontainer/shell
+!.devcontainer/ssh
+!.devcontainer/apt
 .idea
 .pytest_cache
 .mypy_cache
