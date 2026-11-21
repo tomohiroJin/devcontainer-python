@@ -95,7 +95,15 @@ class ProjectConfigTests(unittest.TestCase):
 
     def test_user_installed_commands_are_on_path(self):
         dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
-        self.assertIn("ENV PATH=/home/$USERNAME/.local/bin:$PATH\n", dockerfile)
+        # At the end of PATH: the pinned tools of the image must win.
+        self.assertIn("ENV PATH=$PATH:/home/$USERNAME/.local/bin\n", dockerfile)
+
+    def test_watch_uses_the_runner_script(self):
+        with (ROOT / "pyproject.toml").open("rb") as file:
+            watcher = tomllib.load(file)["tool"]["pytest-watcher"]
+        self.assertEqual(watcher["runner"], "python")
+        for argument in watcher["runner_args"]:
+            self.assertTrue((ROOT / argument).is_file())
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")

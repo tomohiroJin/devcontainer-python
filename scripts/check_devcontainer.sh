@@ -42,7 +42,9 @@ login_shell=$(getent passwd "$(id -un)" | cut -d: -f7)
 
 # --- Commands added later with pip ----------------------------------------------
 # `pip install` as this user installs commands into ~/.local/bin. They must be
-# found without editing ~/.bashrc, in every kind of shell.
+# found without editing ~/.bashrc, in every kind of shell. A command there must
+# not replace a tool of the image that has the same name (for example the `ptw`
+# of pytest-watch, which the README used to tell people to install).
 user_bin="$HOME/.local/bin"
 case ":$PATH:" in
     *":$user_bin:"*) ok "~/.local/bin is on PATH" ;;
@@ -63,6 +65,22 @@ if mkdir -p "$user_bin" && printf '#!/bin/sh\n' >"$user_bin/$probe" &&
     check "a command in ~/.local/bin is found (make)" \
         make -s -f /dev/null --eval "probe: ; @command -v $probe" probe
     rm -f "$user_bin/$probe"
+    if [ -e "$user_bin/ptw" ]; then
+        ng "~/.local/bin/ptw already exists; remove it and run this check again"
+    else
+        bundled_ptw=$(command -v ptw)
+        printf '#!/bin/sh\nexit 0\n' >"$user_bin/ptw"
+        chmod +x "$user_bin/ptw"
+        for shell in 'bash -c' 'bash -ic' 'bash -lc'; do
+            [ "$($shell 'command -v ptw' 2>/dev/null)" = "$bundled_ptw" ] &&
+                ok "the image's ptw wins over ~/.local/bin/ptw ($shell)" ||
+                ng "the image's ptw wins over ~/.local/bin/ptw ($shell)"
+        done
+        [ "$(make -s -f /dev/null --eval 'probe: ; @command -v ptw' probe)" = "$bundled_ptw" ] &&
+            ok "the image's ptw wins over ~/.local/bin/ptw (make)" ||
+            ng "the image's ptw wins over ~/.local/bin/ptw (make)"
+        rm -f "$user_bin/ptw"
+    fi
     [ "$created_user_bin" -eq 1 ] && rmdir "$user_bin" "$HOME/.local" 2>/dev/null
 else
     ng "~/.local/bin is writable"
@@ -184,11 +202,13 @@ check "make completion is available" \
     interactive '__load_completion make 2>/dev/null || _comp_load make; complete -p make'
 
 # --- Test watcher ----------------------------------------------------------------
-# `make watch` must re-run the tests when a file in a subdirectory is saved.
-# Use the repository's own [tool.pytest-watcher] settings in a scratch project.
+# `make watch` must re-run the tests when a file in a subdirectory is saved,
+# also when it is saved while the tests are running. Use the repository's own
+# [tool.pytest-watcher] settings and runner script in a scratch project.
 watch="$tmp/watch"
-mkdir -p "$watch/tests/unit"
+mkdir -p "$watch/tests/unit" "$watch/scripts"
 cp "$(dirname "$0")/../pyproject.toml" "$watch/"
+cp "$(dirname "$0")/watch_runner.py" "$watch/scripts/"
 printf 'def test_first():\n    assert True\n' >"$watch/tests/unit/test_sample.py"
 (cd "$watch" && exec ptw . -p no:cacheprovider >"$tmp/watch.log" 2>&1) &
 watch_pid=$!
@@ -208,6 +228,26 @@ printf '\n\ndef test_second():\n    assert True\n' >>"$watch/tests/unit/test_sam
 check "ptw re-runs the tests after a file in a subdirectory changes" wait_for_runs 2
 grep -aq '2 passed in ' "$tmp/watch.log" && ok "the re-run sees the new test" ||
     ng "the re-run sees the new test"
+# Save a file while a (slow) run is in progress: the result on screen must not
+# stay stale.
+sleep 2
+printf '\n\ndef test_slow():\n    import time\n\n    time.sleep(4)\n' >>"$watch/tests/unit/test_sample.py"
+wait_for_sessions() {
+    # $1: number of started pytest sessions to wait for (up to 30 seconds).
+    local tries=0
+    while [ "$(grep -ac 'test session starts' "$tmp/watch.log")" -lt "$1" ]; do
+        tries=$((tries + 1))
+        [ "$tries" -gt 60 ] && return 1
+        sleep 0.5
+    done
+}
+check "ptw starts the slow run" wait_for_sessions 3
+sleep 1
+printf '\n\ndef test_saved_during_the_run():\n    assert True\n' >>"$watch/tests/unit/test_sample.py"
+check "ptw runs the tests again after a save during a run" wait_for_runs 4
+grep -aq '4 passed in ' "$tmp/watch.log" &&
+    ok "the run after a save during a run sees the new test" ||
+    ng "the run after a save during a run sees the new test"
 kill "$watch_pid" 2>/dev/null
 wait "$watch_pid" 2>/dev/null
 

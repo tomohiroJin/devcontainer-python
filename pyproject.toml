@@ -21,6 +21,10 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4"]
 # watchdog 7 (it matches whole paths), so tests would never be re-run.
 now = true
 patterns = ["**/*.py"]
+# ptw ignores the changes that arrive while the tests are running. The runner
+# script runs pytest and repeats the run when a file was saved meanwhile.
+runner = "python"
+runner_args = ["scripts/watch_runner.py"]
 
 [tool.mypy]
 python_version = "3.15"

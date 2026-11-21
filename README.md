@@ -111,7 +111,7 @@
   特別なフォントは必要ありません。フォントはホスト側の VS Code の設定（`terminal.integrated.fontFamily`）で選んでください。
 - **補完**: bash-completion を読み込みます。`git`、`make` のターゲットなどを Tab で補完できます。
 - **履歴**: 1万件まで保持します。直前と同じコマンドは記録せず、同じシェルの中では古い重複を取り除きます。履歴は名前付きボリューム（`/commandhistory`）に置くので、コンテナを作り直しても残ります。ボリュームは Dev Container ごとに分かれます。消したいときは、コンテナを削除したあとに `docker volume ls` で `devcontainer-python-history-` で始まるボリュームを探して `docker volume rm` で削除してください。
-- **後から入れたコマンド**: `pip install <パッケージ>` は、`vscode` ユーザーの `~/.local` に入ります。コマンドの置き場所の `~/.local/bin` は PATH に入れてあるので、入れたコマンドはそのまま使えます（Dockerfile の `ENV PATH`。ターミナル、VS Code のタスク、`make` のどれでも有効です）。ただし、後から入れたものはコンテナを作り直すと消え、ハッシュによる固定と脆弱性監査の対象にもなりません。続けて使うツールは `requirements.in` に追加し、`make lock` を実行してからリビルドしてください。
+- **後から入れたコマンド**: `pip install <パッケージ>` は、`vscode` ユーザーの `~/.local` に入ります。コマンドの置き場所の `~/.local/bin` は PATH の末尾に入れてあるので、入れたコマンドはそのまま使えます（Dockerfile の `ENV PATH`。ターミナル、VS Code のタスク、`make` のどれでも有効です）。末尾に置いているのは、同梱のツールを優先するためです。同梱のツールと同じ名前のコマンド（たとえば `pytest-watch` が入れる `ptw`）を後から入れても、使われるのは同梱のほうです。後から入れたほうを使うときは、`~/.local/bin/ptw` のようにパスを付けて呼んでください。なお、Python のモジュールは扱いが異なります。同梱のパッケージの別の版を `pip install` で入れると、`python -m pytest` などはそちらを読み込みます。同梱のパッケージの版は、`requirements.in` で変えてください。ただし、後から入れたものはコンテナを作り直すと消え、ハッシュによる固定と脆弱性監査の対象にもなりません。続けて使うツールは `requirements.in` に追加し、`make lock` を実行してからリビルドしてください。
 - **エイリアス**: `ll`、`la`、`..`、`gs`（`git status --short --branch`）、`gd`（`git diff`）、`gl`（`git log` の1行グラフ表示）、`py`、`ipy`。
 - **日本語**: ロケールは `C.UTF-8` です。日本語の表示・入力・ファイル名を扱えます。メッセージは英語のままです（日本語メッセージ用の `locales` パッケージは入れていません）。
 - **タイムゾーン**: ホストに環境変数 `TZ` があればその値をそのまま渡し、なければ `Asia/Tokyo` を使います。ホストの `TZ` が空や `:/etc/localtime` のような値の場合は UTC になります。変えるときは `devcontainer.json` の `containerEnv` を編集してください。
@@ -179,6 +179,7 @@ bash scripts/check_devcontainer.sh
   このリポジトリの設定は、prek に内蔵されたフック（`repo: builtin`）を使います。そのため、本家の `pre-commit` コマンドではこの設定ファイルを実行できません。
 - **pytest-watch ではなく pytest-watcher を選んだ理由**: どちらもコマンド名は `ptw` です。`pytest-watch` は 2018-05-20 の 4.2.0 が最後のリリースで、wheel がありません（ソースからのビルドが必要で、`--only-binary :all:` の方針に合いません）。`pytest-watcher` は 2026-01-10 に 0.6.3 が公開されており、依存は watchdog だけで、どちらも wheel で入ります（x86_64 と aarch64）。
   pytest-watcher 0.6.3 の既定の監視パターン `*.py` は、watchdog 7 ではサブディレクトリのファイルに一致しません（watchdog 7 がパス全体で照合するようになったためです）。そのままでは `tests/` のファイルを保存してもテストが再実行されないので、`pyproject.toml` の `[tool.pytest-watcher]` で `patterns = ["**/*.py"]` を指定しています。`scripts/check_devcontainer.sh` が、保存後に再実行されることを実際に確かめます。どちらかの版を上げるときは、この設定がまだ必要かを確認してください。
+  また、pytest-watcher は、テストの実行中に届いた変更を捨てます。そのままでは、実行中に保存しても再実行されず、古い結果が表示されたままになります。そこで、`ptw` が pytest の代わりに [scripts/watch_runner.py](scripts/watch_runner.py) を起動するようにしています（`runner`・`runner_args`）。このスクリプトは pytest を実行し、実行中に `*.py` が保存されていれば、まとめてもう一度実行します。
 
 ### Ruff のルール
 
@@ -264,7 +265,9 @@ pytest に引数を渡したいときは、`ptw` を直接使います。`ptw <�
 ptw . tests/reference/samples -x
 ```
 
-設定は `pyproject.toml` の `[tool.pytest-watcher]` にあります。テストの実行中に保存した変更は、再実行のきっかけになりません。その場合は、もう一度保存してください。
+設定は `pyproject.toml` の `[tool.pytest-watcher]` にあります。テストの実行中に保存した場合は、その実行が終わったあとに、もう一度実行します（実行中の保存は、何回あっても次の1回にまとめます）。そのとき、`[watch] 実行中に変更がありました` と表示します。テスト自身が `*.py` を書き換える場合に備えて、続けて実行するのは5回までです。
+
+`ptw` は、リポジトリのルートで実行してください（`scripts/watch_runner.py` を相対パスで呼ぶためです）。
 
 #### **カバレッジを確認**
 
