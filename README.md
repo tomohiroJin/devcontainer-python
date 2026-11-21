@@ -7,6 +7,7 @@
 - **Python 3.15.2** を使用
 - あらかじめインストールされているツール（版と採用理由は[同梱ツール](#同梱ツール)）:
   - `pytest` と `pytest-cov`（テストとカバレッジ）
+  - `pytest-watcher`（ファイルを保存するたびにテストを再実行。`make watch`）
   - `ruff`（リンタ兼フォーマッタ）
   - `mypy`（型チェック）
   - `prek`（コミット前フック。pre-commit と同じ形式の設定ファイルを使います）
@@ -81,6 +82,7 @@
 | `make help` | ターゲットの一覧を表示 |
 | `make check` | `make lint`、`make typecheck`、`make test` をまとめて実行 |
 | `make test` | pytest（`tests/`）と、`scripts/` の単体テストを実行 |
+| `make watch` | ファイル（`*.py`）を保存するたびに pytest を再実行。Ctrl+C で終了 |
 | `make lint` | `ruff check` と `ruff format --check`（ファイルは変更しません） |
 | `make fmt` | `ruff check --fix` と `ruff format`（ファイルを書き換えます） |
 | `make typecheck` | mypy で `src`・`tests`・`scripts` を型チェック |
@@ -109,6 +111,7 @@
   特別なフォントは必要ありません。フォントはホスト側の VS Code の設定（`terminal.integrated.fontFamily`）で選んでください。
 - **補完**: bash-completion を読み込みます。`git`、`make` のターゲットなどを Tab で補完できます。
 - **履歴**: 1万件まで保持します。直前と同じコマンドは記録せず、同じシェルの中では古い重複を取り除きます。履歴は名前付きボリューム（`/commandhistory`）に置くので、コンテナを作り直しても残ります。ボリュームは Dev Container ごとに分かれます。消したいときは、コンテナを削除したあとに `docker volume ls` で `devcontainer-python-history-` で始まるボリュームを探して `docker volume rm` で削除してください。
+- **後から入れたコマンド**: `pip install <パッケージ>` は、`vscode` ユーザーの `~/.local` に入ります。コマンドの置き場所の `~/.local/bin` は PATH に入れてあるので、入れたコマンドはそのまま使えます（Dockerfile の `ENV PATH`。ターミナル、VS Code のタスク、`make` のどれでも有効です）。ただし、後から入れたものはコンテナを作り直すと消え、ハッシュによる固定と脆弱性監査の対象にもなりません。続けて使うツールは `requirements.in` に追加し、`make lock` を実行してからリビルドしてください。
 - **エイリアス**: `ll`、`la`、`..`、`gs`（`git status --short --branch`）、`gd`（`git diff`）、`gl`（`git log` の1行グラフ表示）、`py`、`ipy`。
 - **日本語**: ロケールは `C.UTF-8` です。日本語の表示・入力・ファイル名を扱えます。メッセージは英語のままです（日本語メッセージ用の `locales` パッケージは入れていません）。
 - **タイムゾーン**: ホストに環境変数 `TZ` があればその値をそのまま渡し、なければ `Asia/Tokyo` を使います。ホストの `TZ` が空や `:/etc/localtime` のような値の場合は UTC になります。変えるときは `devcontainer.json` の `containerEnv` を編集してください。
@@ -159,7 +162,7 @@ bash scripts/check_devcontainer.sh
 
 ### Python のツール
 
-直接依存は [requirements.in](requirements.in) に書き、推移的依存を含む全31件（pip を含む）を `requirements.txt` と `requirements-bootstrap.txt` にハッシュ付きで固定しています。このリポジトリのアプリ側には実行時の依存がないため、開発用の依存を別ファイルには分けていません。
+直接依存は [requirements.in](requirements.in) に書き、推移的依存を含む全33件（pip を含む）を `requirements.txt` と `requirements-bootstrap.txt` にハッシュ付きで固定しています。このリポジトリのアプリ側には実行時の依存がないため、開発用の依存を別ファイルには分けていません。
 
 | ツール | 版 | 採用理由 |
 | --- | --- | --- |
@@ -167,16 +170,33 @@ bash scripts/check_devcontainer.sh
 | Ruff | 0.17.6 | lint と整形（従来から） |
 | mypy | 2.4.1 | 型チェック。PyPI の wheel だけで入り、ハッシュで固定できます |
 | pytest-cov | 7.1.0 | カバレッジ（coverage 7.17.3 を使用） |
+| pytest-watcher | 0.6.3 | ファイルの変更を監視してテストを再実行（`ptw`、`make watch`。watchdog 7.1.0 を使用）。TDD 用 |
 | IPython | 9.18.1 | 対話シェル（`ipython` または `ipy`） |
 | prek | 0.5.11 | コミット前フックの実行 |
 
 - **型チェックに mypy を選んだ理由**: PyPI の `pyright` は、初回の実行時に pyright 本体を npm から取得します。この取得はハッシュで固定できず、ネットワークも必要です（Node.js は `pyright[nodejs]` で wheel から入れられますが、本体の取得は残ります）。mypy は Python 3.15 用の wheel があり、他の依存と同じ方法で固定できます。エディター上の診断は Pylance（`basic`）が担当するため、mypy と判定が食い違うことがあります。CI の合否は mypy です。エディターにも mypy の結果を出したい場合は、任意の拡張 Mypy Type Checker を使うか、タスク `typecheck` を実行してください（結果が「問題」パネルに出ます）。
 - **pre-commit ではなく prek を選んだ理由**: `pre-commit` が依存する PyYAML 6.0.3 には Python 3.15 用の wheel がなく、ソースからのビルドが必要になります（ビルド時の依存はハッシュで固定できません）。prek は pre-commit と同じ形式の設定ファイル（`.pre-commit-config.yaml`）を読む単一バイナリで、PyPI の wheel 1つで入り、追加の依存がありません。配布元は PyPI の `prek`、開発元は [j178/prek](https://github.com/j178/prek) です。2026-11-20 時点で92回のリリースがあり、最新の 0.5.11 は 2026-11-16 の公開です。0.x 系のため、更新時は変更履歴を確認してください。
   このリポジトリの設定は、prek に内蔵されたフック（`repo: builtin`）を使います。そのため、本家の `pre-commit` コマンドではこの設定ファイルを実行できません。
+- **pytest-watch ではなく pytest-watcher を選んだ理由**: どちらもコマンド名は `ptw` です。`pytest-watch` は 2018-05-20 の 4.2.0 が最後のリリースで、wheel がありません（ソースからのビルドが必要で、`--only-binary :all:` の方針に合いません）。`pytest-watcher` は 2026-01-10 に 0.6.3 が公開されており、依存は watchdog だけで、どちらも wheel で入ります（x86_64 と aarch64）。
+  pytest-watcher 0.6.3 の既定の監視パターン `*.py` は、watchdog 7 ではサブディレクトリのファイルに一致しません（watchdog 7 がパス全体で照合するようになったためです）。そのままでは `tests/` のファイルを保存してもテストが再実行されないので、`pyproject.toml` の `[tool.pytest-watcher]` で `patterns = ["**/*.py"]` を指定しています。`scripts/check_devcontainer.sh` が、保存後に再実行されることを実際に確かめます。どちらかの版を上げるときは、この設定がまだ必要かを確認してください。
 
 ### Ruff のルール
 
-`E`・`F`・`W`・`I` に加えて、`UP`（新しい書き方への更新）、`B`（バグになりやすい書き方）、`SIM`（簡潔な書き方）、`N`（命名規則）、`C4`（内包表記）を有効にしています。導入時に既存コードで該当したのは9件で、7件を修正しました。残る2件（`B033`）は、集合が重複を取り除くことを説明するサンプルの1行で、意図的な書き方なので `noqa` を付けました。
+`E`・`F`・`W`・`I` に加えて、`UP`（新しい書き方への更新）、`B`（バグになりやすい書き方）、`SIM`（簡潔な書き方）、`C4`（内包表記）を有効にしています。導入時に既存コードで該当したのは9件で、7件を修正しました。残る2件（`B033`）は、集合が重複を取り除くことを説明するサンプルの1行で、意図的な書き方なので `noqa` を付けました。
+
+**日本語の名前を使えます。** テスト名・関数名・クラス名・引数名・変数名・ファイル名のどれにも、日本語を使ってかまいません。
+
+```python
+def test_1と2を足すと3になる() -> None:
+    assert 計算機().足す(1, 2) == 3
+```
+
+そのために、`N`（pep8-naming、命名規則）は有効にしていません。`N` は「小文字であること」などを調べますが、日本語には大文字と小文字の区別がないため、日本語を含む名前をすべて違反と判定します（`N802` 関数名、`N803` 引数名、`N806` 変数名、`N801` クラス名、`N999` ファイル名）。一時は有効にしていましたが（[Issue #11](https://github.com/tomohiroJin/devcontainer-python/issues/11)）、モブプログラミングで日本語のテスト名がコミットできなくなったため外しました（[Issue #16](https://github.com/tomohiroJin/devcontainer-python/issues/16)）。このコンテナは、起動してその場で色々なことを試せることを目的にしているので、書き方の制限は緩めにしています。英語の名前の命名規則も検査されなくなるため、命名はレビューで揃えてください。
+
+- 日本語の名前を使った回帰テストが [tests/test_日本語の名前.py](tests/test_日本語の名前.py) にあります。日本語の名前を違反にする規則を入れると、`make lint` とコミット前フックがこのファイルで失敗します。
+- 規則を足すときは、日本語への影響を確かめてください。`RUF001`〜`RUF003`（紛らわしい Unicode 文字。全角の括弧やコロンを検出します）と `PLC2401`・`PLC2403`（ASCII 以外の名前）は、日本語のコメントや名前を違反にします。
+- ファイル名は、ホストの Git では `"tests/test_\346\227\245..."` のように表示されることがあります。そのまま表示するには、ホストで `git config --global core.quotepath false` を設定してください（コンテナ内は設定済みです）。
+- lint で失敗したときは、`ruff rule <規則の番号>`（例: `ruff rule B006`）で規則の説明を読めます。
 
 ## 使用方法
 
@@ -216,6 +236,12 @@ pytest -v
 pytest -k "fizzbuzz"
 ```
 
+日本語のテスト名も、同じように選べます。
+
+```bash
+pytest -k "足す"
+```
+
 #### **テスト中の出力を確認**
 
 テスト中の`print`やログの出力を確認したい場合、`-s`オプションを使用します。
@@ -223,6 +249,22 @@ pytest -k "fizzbuzz"
 ```bash
 pytest -s
 ```
+
+#### **保存するたびにテストを再実行（TDD）**
+
+```bash
+make watch
+```
+
+起動時に一度テストを実行し、そのあとは `*.py` のファイルを保存するたびに再実行します。Ctrl+C で終了します。VS Code では、タスク `watch` でも起動できます。
+
+pytest に引数を渡したいときは、`ptw` を直接使います。`ptw <監視するディレクトリ> <pytest の引数>` の形です。
+
+```bash
+ptw . tests/reference/samples -x
+```
+
+設定は `pyproject.toml` の `[tool.pytest-watcher]` にあります。テストの実行中に保存した変更は、再実行のきっかけになりません。その場合は、もう一度保存してください。
 
 #### **カバレッジを確認**
 
@@ -369,7 +411,7 @@ Marketplace にはこの検証環境から接続できないため、下の表�
 | Pytest: all tests | すべてのテストを pytest でデバッグ |
 | Pytest: Test Explorer debug | テストビューの「テストのデバッグ」で使う設定 |
 
-VS Code で開いたら Python インタープリター `/usr/local/bin/python`、テスト一覧の49件、
+VS Code で開いたら Python インタープリター `/usr/local/bin/python`、テスト一覧の55件、
 F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時整形と import 整理、タスクの実行を確認します。
 コンテナ外ではインタープリターを自身の `.venv` に選び直してください。
 
@@ -461,7 +503,7 @@ pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --no-
 ### 監査
 
 CI は最小権限で動き、Actions をコミット SHA に固定しています。
-`pip-audit==2.10.1` はpip bootstrapを含むロック済み全31依存を監査し、Trivy は完成イメージの
+`pip-audit==2.10.1` はpip bootstrapを含むロック済み全33依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
 build-essential は入れていません。追加した OS パッケージと、入れなかったものの理由は[同梱ツール](#同梱ツール)にあります。
 Git が引き込む krb5・expat・curl のライブラリと、curl コマンドには Debian 未修正の High が残ります（[全検出一覧](docs/security-findings.json)）。
