@@ -1,0 +1,54 @@
+#!/bin/sh
+# Pre-commit hook of this repository. `make hooks` registers this directory as
+# core.hooksPath, so Git runs this file on every commit.
+#
+# .git is shared between the Dev Container and the host, so this hook also runs
+# for commits made on the host, where the pinned tools may be missing or have
+# other versions. A commit must never be impossible because of that:
+#
+# - With the same prek, Ruff and mypy as requirements.txt (inside the Dev
+#   Container): run the checks; a failing check stops the commit.
+# - Otherwise: explain why, skip the checks and let the commit through.
+#   CI runs the same checks (`make pre-commit`) on every pull request.
+#
+# POSIX sh only: on the host this may be dash, the macOS sh or Git for Windows.
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+lock="$root/requirements.txt"
+
+# Print the version pinned in requirements.txt for package $1 (empty if none).
+pinned() {
+    sed -n "s/^$1==\([^ ]*\).*/\1/p" "$lock" 2>/dev/null | head -n 1
+}
+
+# Print the version of the installed command $1 (empty if it is not on PATH).
+installed() {
+    command -v "$1" >/dev/null 2>&1 || return 0
+    "$1" --version 2>/dev/null | head -n 1 | sed 's/^[^0-9]*\([0-9][0-9A-Za-z.+-]*\).*/\1/'
+}
+
+problems=''
+for tool in prek ruff mypy; do
+    want=$(pinned "$tool")
+    have=$(installed "$tool")
+    if [ -z "$have" ]; then
+        problems="$problems
+  - $tool が見つかりません"
+    elif [ -n "$want" ] && [ "$have" != "$want" ]; then
+        problems="$problems
+  - $tool の版が違います（必要: $want、実際: $have）"
+    fi
+done
+
+if [ -n "$problems" ]; then
+    cat >&2 <<MESSAGE
+[pre-commit] コミット前の検査を実行できないため、検査なしでコミットします。$problems
+  Dev Container の外（ホスト）でコミットした場合に表示されます。
+  検査は、Dev Container 内の make pre-commit か、プルリクエストの CI で行われます。
+  コミットは、Dev Container 内で行うことをおすすめします。
+MESSAGE
+    exit 0
+fi
+
+cd "$root" || exit 0
+exec prek run

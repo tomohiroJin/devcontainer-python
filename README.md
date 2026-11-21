@@ -42,7 +42,15 @@
 
 3. Devcontainer でプロジェクトを再オープンするように求められたら、指示に従って再オープンします。
 
-4. セットアップを確認するために、lint・型チェック・テストをまとめて実行します:
+4. 開発を始められる状態かを確認します:
+
+   ```bash
+   make doctor
+   ```
+
+   Git の名前とメールアドレス、署名、認証、コミット前フック、リモートへの接続などを確かめ、問題があれば直し方を表示します。`FAIL` がなければ、コミットと、リモートへの接続ができる状態です。モブプログラミングやペアプログラミングの前には、参加者それぞれが実行してください（詳しくは[環境の確認（make doctor）](#環境の確認make-doctor)）。
+
+5. lint・型チェック・テストをまとめて実行します:
 
    ```bash
    make check
@@ -89,7 +97,9 @@
 | `make typecheck` | mypy で `src`・`tests`・`scripts` を型チェック |
 | `make cov` | カバレッジ付きでテスト。端末に未実行の行を表示し、`coverage.xml` と `htmlcov/` を出力 |
 | `make pre-commit` | コミット前フックを全ファイルに実行 |
+| `make doctor` | 開発を始められる状態か（Git の設定、認証、フック、リモートへの接続など）を確認。`make doctor ARGS=--offline` で、リモートへの接続を省略 |
 | `make hooks` | コミット前フックを Git に登録（Dev Container の作成時に自動で実行） |
+| `make unhooks` | コミット前フックの登録を外す |
 | `make audit` | pip-audit で Python 依存を監査（ネットワークが必要） |
 | `make audit-container` | イメージをビルドして Trivy で監査（ホスト側で実行。docker と trivy が必要） |
 | `make lock` | `requirements.in` から `requirements.txt` を再生成（ネットワークが必要） |
@@ -125,6 +135,38 @@
 bash scripts/check_devcontainer.sh
 ```
 
+## 環境の確認（make doctor）
+
+`make doctor` は、「この人の、この起動の状態で、開発を始められるか」を確かめます。モブプログラミングの開始前に、参加者それぞれが実行してください。
+
+```bash
+make doctor
+```
+
+結果は、項目ごとに `ok`・`info`・`warn`・`FAIL` で表示します。`warn` と `FAIL` には、直し方が `→` に続けて表示されます。`FAIL` が1件でもあると、終了コードが 1 になります。
+
+| 確かめること | 問題がある場合 |
+| --- | --- |
+| Dev Container の中で実行しているか | ホストで実行すると `warn`。ツールの確認は省きます |
+| Ruff・mypy・pytest・prek・ptw の版が `requirements.txt` と同じか | 見つからなければ `FAIL`、版が違えば `warn` |
+| `~/.local/bin` が PATH にあるか。後から `pip install` で入れたパッケージ | PATH になければ `warn`。入れたパッケージは一覧を表示 |
+| VS Code の必須の拡張が入っているか | VS Code の統合ターミナルで実行した場合だけ確認します |
+| `user.name` と `user.email` | なければ `FAIL`（コミットできません） |
+| コミットの署名（`commit.gpgsign=true` の場合） | 実際に署名を試し、失敗すれば `FAIL` |
+| コミット前フックが登録されているか | 登録されていなければ `warn` |
+| 認証の手段（HTTPS なら認証ヘルパー、SSH ならエージェントの鍵） | ホストにしかない認証ヘルパーを指していれば `FAIL` |
+| リモートに接続して認証できるか | できなければ `FAIL`。`gh` で認証済みなら、push の権限も確認します |
+| 改行コード（`core.autocrlf`、CRLF で登録されたファイル） | `warn` |
+| 整形されていないファイル | `warn` |
+
+- **リモートに接続しない場合**: `make doctor ARGS=--offline` を実行します。ネットワークがない環境で使います。
+- **問題だけを表示する場合**: `make doctor ARGS=--quiet` を実行します。
+- **出力を共有する場合**: 出力は、そのまま Issue やチャットに貼れるようにしています。メールアドレス、URL に含まれる認証情報、GitHub のトークンは、伏せて表示します。念のため、貼る前に目を通してください。
+- **ホストで実行した場合**: 「ここは Dev Container の外です」と表示します。ホストに `make` がなければ、`bash scripts/doctor.sh` でも実行できます。
+- **push の権限**: リモートへの接続の確認は、読み取りができることまでです。書き込みの権限は、`gh` で認証している場合だけ確認します。確実に確かめるには、実際に push してください。
+
+`scripts/check_devcontainer.sh` は、イメージが正しく作られたかを確かめるもので、CI が実行します。`make doctor` は、人や起動のたびに変わるもの（Git の設定、認証、フック）を確かめます。
+
 ## Git と GitHub への接続
 
 コミットと push は、コンテナ内で行ってください。ホストで clone したときのリモートが SSH 形式（`git@github.com:...`）でも HTTPS 形式（`https://github.com/...`）でも、コンテナ内からそのまま push できます。
@@ -154,7 +196,7 @@ bash scripts/check_devcontainer.sh
 
 ### うまくいかないとき
 
-コンテナ内で、上から順に確かめてください。
+まず、コンテナ内で `make doctor` を実行してください。下の項目をまとめて確かめ、直し方を表示します（[環境の確認（make doctor）](#環境の確認make-doctor)）。手で確かめる場合は、上から順に実行します。
 
 1. **名前とメールアドレスが設定されているか**
 
@@ -507,7 +549,7 @@ make typecheck
 
 ### **5. コミット前フック (prek)**
 
-Dev Container を作成すると、`make hooks` がコミット前フックを Git に登録します。登録に失敗しても（ホストの Git 設定に `core.hooksPath` がある場合など）コンテナの作成は続き、メッセージだけを表示します。`git commit` のたびに、次の検査をステージしたファイルに実行します。CI も `make pre-commit` で同じ検査を全ファイルに実行します。
+Dev Container を作成すると、`make hooks` がコミット前フックを Git に登録します。`git commit` のたびに、次の検査をステージしたファイルに実行します。CI も `make pre-commit` で同じ検査を全ファイルに実行します。
 
 - 行末の空白の削除、ファイル末尾の改行、改行コードの統一（LF）
 - JSON・YAML・TOML の構文、マージ競合の印、大きなファイルの追加
@@ -519,7 +561,12 @@ Dev Container を作成すると、`make hooks` がコミット前フックを G
 make pre-commit
 ```
 
-フックは `.git/hooks/pre-commit` に登録され、`prek` を呼び出します。コンテナの外（ホスト）からコミットすると、`prek` が見つからずに失敗します。ホストからもコミットする場合は、ホストに prek を導入するか、コンテナ内で `prek uninstall` を実行してフックを外してください。
+フックの本体は [scripts/git-hooks/pre-commit](scripts/git-hooks/pre-commit) です。`make hooks` は、このリポジトリの Git の設定（`core.hooksPath`）を `scripts/git-hooks` に向けます。
+
+- **ホスト（Dev Container の外）でコミットした場合**: `.git` はホストとコンテナで共有しているので、フックはホストでのコミットでも動きます。ホストに prek・Ruff・mypy がないか、`requirements.txt` と版が違う場合は、理由を表示して、**検査をせずにコミットを通します**。コミットできなくなることはありません。検査は、Dev Container 内の `make pre-commit` か、プルリクエストの CI で行われます。検査を確実に通すために、コミットは Dev Container 内で行うことをおすすめします。
+- **ホストに自分用のフック（`core.hooksPath` のグローバル設定）がある場合**: `make hooks` は、このリポジトリだけ `scripts/git-hooks` に切り替えます。他のリポジトリには影響しません。このリポジトリでは、自分用のフックは動かなくなります。
+- **フックを外す場合**: `make unhooks` を実行します。もう一度登録するには、`make hooks` を実行します。
+- **以前の版から更新した場合**: 以前は `prek install` が `.git/hooks/pre-commit` を作っていました。`make hooks`（コンテナのリビルドで自動的に実行されます）で新しい方法に切り替わり、古いファイルは使われなくなります。気になる場合は、`.git/hooks/pre-commit` を削除してかまいません。
 
 `.vscode/*.json` と `devcontainer.json` も JSON の構文検査の対象です。コメントは書かないでください。
 

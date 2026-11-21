@@ -12,8 +12,8 @@ PIP_TOOLS_VERSION ?= 7.7.0
 AUDIT_VENV ?= .venv-audit
 LOCK_VENV ?= .venv-lock
 
-.PHONY: help test watch lint fmt typecheck cov check pre-commit hooks audit \
-	audit-container lock clean
+.PHONY: help test watch lint fmt typecheck cov check pre-commit hooks unhooks \
+	doctor audit audit-container lock clean
 
 help: ## このヘルプを表示
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / \
@@ -48,10 +48,19 @@ pre-commit: ## コミット前フックを全ファイルに実行（CI と同�
 
 hooks: ## コミット前フックを Git に登録（Git リポジトリでなければ何もしない）
 	@if [ -e .git ]; then \
-		prek install; \
+		git config --local core.hooksPath scripts/git-hooks \
+			&& echo 'コミット前フックを登録しました（core.hooksPath = scripts/git-hooks）。'; \
 	else \
 		echo 'Git リポジトリではないため、フックの登録を省略しました。'; \
 	fi
+
+unhooks: ## コミット前フックの登録を外す
+	@git config --local --unset core.hooksPath \
+		&& echo 'コミット前フックの登録を外しました。' \
+		|| echo 'コミット前フックは登録されていません。'
+
+doctor: ## 開発を始められる状態かを確認（make doctor ARGS=--offline で通信を省略）
+	@bash scripts/doctor.sh $(ARGS)
 
 $(AUDIT_VENV)/.pip-audit-$(PIP_AUDIT_VERSION):
 	rm -rf $(AUDIT_VENV)

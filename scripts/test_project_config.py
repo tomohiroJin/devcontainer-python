@@ -3,6 +3,7 @@
 import base64
 import hashlib
 import json
+import os
 import re
 import tomllib
 import unittest
@@ -142,6 +143,15 @@ class ProjectConfigTests(unittest.TestCase):
         )
         attributes = (ROOT / ".gitattributes").read_text(encoding="utf-8")
         self.assertIn("*.gpg binary\n", attributes)
+
+    def test_commit_hook_is_registered_from_the_repository(self):
+        # The hook is a tracked file, so it must be executable in the checkout
+        # and `make hooks` must point Git at its directory.
+        hook = ROOT / "scripts/git-hooks/pre-commit"
+        self.assertTrue(os.access(hook, os.X_OK))
+        self.assertTrue(hook.read_text(encoding="utf-8").startswith("#!/bin/sh\n"))
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        self.assertIn("git config --local core.hooksPath scripts/git-hooks", makefile)
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")

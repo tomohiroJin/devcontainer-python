@@ -82,6 +82,13 @@
       "problemMatcher": []
     },
     {
+      "label": "doctor",
+      "detail": "make doctor: 開発を始められる状態か（Git の設定、認証、フックなど）を確認",
+      "type": "shell",
+      "command": "make doctor",
+      "problemMatcher": []
+    },
+    {
       "label": "audit",
       "detail": "make audit: pip-audit で Python 依存を監査",
       "type": "shell",
