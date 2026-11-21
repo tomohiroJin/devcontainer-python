@@ -38,6 +38,11 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && printf '\n# Dev Container shell settings (prompt, history, aliases).\n[ -r /etc/devcontainer/bashrc ] && . /etc/devcontainer/bashrc\n' >> /home/$USERNAME/.bashrc \
     && install -d -m 1777 /commandhistory
 
+# `pip install` as the non-root user puts commands in ~/.local/bin. Debian adds
+# that directory to PATH only in login shells (~/.profile), and only when it
+# already exists, so a VS Code terminal would not find those commands.
+ENV PATH=/home/$USERNAME/.local/bin:$PATH
+
 COPY requirements-bootstrap.txt requirements.txt /tmp/
 RUN --mount=type=secret,id=proxy_ca \
     if [ -f /run/secrets/proxy_ca ]; then export PIP_CERT=/run/secrets/proxy_ca; fi; \

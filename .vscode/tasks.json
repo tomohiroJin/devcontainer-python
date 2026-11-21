@@ -13,6 +13,15 @@
       "problemMatcher": []
     },
     {
+      "label": "watch",
+      "detail": "make watch: ファイルを保存するたびに pytest を再実行",
+      "type": "shell",
+      "command": "make watch",
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
       "label": "cov",
       "detail": "make cov: カバレッジ付きテスト（htmlcov/ と coverage.xml を出力）",
       "type": "shell",
