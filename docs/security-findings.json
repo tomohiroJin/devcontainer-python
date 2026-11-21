@@ -1646,6 +1646,104 @@
       "NewSinceBaseline": true,
       "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-124709",
       "Note": "Added 2026-11-21 from the CI run of pull request #23 (run 44901086769). Debian urgency: not yet assigned. QUIC server memory leak; the container runs no QUIC server."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-48501",
+      "PkgName": "gh",
+      "SourcePackage": "gh",
+      "InstalledVersion": "2.46.0-3",
+      "FixedVersion": null,
+      "Severity": "CRITICAL",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-48501",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with gh (issue #17). Needs gh attestation / gh release verify, which gh 2.46.0 does not have."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-60002",
+      "PkgName": "openssh-client",
+      "SourcePackage": "openssh",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "FixedVersion": null,
+      "Severity": "CRITICAL",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-60002",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with openssh-client (issue #17). Client side; needs a malicious server. github.com host keys are pinned."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-106553",
+      "PkgName": "openssh-client",
+      "SourcePackage": "openssh",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-106553",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with openssh-client (issue #17). sshd only; not installed."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-106555",
+      "PkgName": "openssh-client",
+      "SourcePackage": "openssh",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-106555",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with openssh-client (issue #17). sshd only; not installed."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-106583",
+      "PkgName": "openssh-client",
+      "SourcePackage": "openssh",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-106583",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with openssh-client (issue #17). Client side; untrusted user name on the command line."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-59999",
+      "PkgName": "openssh-client",
+      "SourcePackage": "openssh",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-59999",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with openssh-client (issue #17). sshd only; not installed."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-60000",
+      "PkgName": "openssh-client",
+      "SourcePackage": "openssh",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "FixedVersion": null,
+      "Severity": "HIGH",
+      "Status": "affected",
+      "DebianTrixieStatus": "open",
+      "NewSinceBaseline": true,
+      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-60000",
+      "DebianClassification": "no-dsa (Minor issue)",
+      "Note": "Added 2026-11-21 with openssh-client (issue #17). sshd only; not installed."
     }
   ],
   "audited_tree": "Dockerfile and lock files of the Issue #11 change (branch claude/loving-brown-1sq29a)",
@@ -1656,6 +1754,12 @@
       "source": "CI run 44901086769 (pull request #23), security job log: Raw findings HIGH=126, CRITICAL=0; Reviewed 123; blocking 3",
       "debian_tracker_checked": "2026-11-21",
       "change": "Added CVE-2026-124709 for libssl3t64, openssl and openssl-provider-legacy 3.5.9-1~deb13u1. The other 123 entries are unchanged from the 2026-11-20 audit and were matched by the same run. The three entries were written from the job log, not from the Trivy JSON artifact; the fields other than CVE, package, version and severity follow the Debian tracker."
+    },
+    {
+      "date": "2026-11-21",
+      "source": "Local Trivy 0.76.2 scan of the image built from this change (DB updated 2026-11-21T13:02:47Z): Raw findings HIGH=131, CRITICAL=2; Reviewed 133; blocking 0 with the updated baseline",
+      "debian_tracker_checked": "2026-11-21",
+      "change": "Added openssh-client and gh (issue #17): 6 findings for openssh-client 1:10.0p1-7+deb13u4 (1 CRITICAL, 5 HIGH) and 1 CRITICAL finding for gh 2.46.0-3. The other 126 entries are unchanged. gh also has 4 MEDIUM and 3 LOW open advisories in Debian, which are below the gate's threshold and listed in docs/git-access-validation.md."
     }
   ]
 }

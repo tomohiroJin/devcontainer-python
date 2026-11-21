@@ -16,11 +16,13 @@ RUN apt-get update \
         bash-completion \
         ca-certificates \
         curl \
+        gh \
         git \
         jq \
         less \
         make \
         nano \
+        openssh-client \
         procps \
         tree \
     && apt-get clean \
@@ -28,6 +30,9 @@ RUN apt-get update \
 
 COPY .devcontainer/shell/bashrc /etc/devcontainer/bashrc
 COPY .devcontainer/shell/gitconfig /etc/gitconfig
+# github.com host keys: no trust-on-first-use prompt, and no silent acceptance
+# of another key. Keys of other hosts go to the user's ~/.ssh/known_hosts.
+COPY --chmod=644 .devcontainer/ssh/ssh_known_hosts /etc/ssh/ssh_known_hosts
 
 # /commandhistory is the mount point of the shell-history volume. A new named
 # volume copies this directory's mode. It is world-writable with the sticky bit

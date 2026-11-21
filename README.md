@@ -13,6 +13,7 @@
   - `prek`（コミット前フック。pre-commit と同じ形式の設定ファイルを使います）
   - `ipython`（対話シェル）
   - `make`、`curl`、`jq`、`tree`、`less`、`nano`、`ps`/`top` などの基本コマンド
+  - `ssh`（OpenSSH クライアント）と `gh`（GitHub CLI）。SSH でも HTTPS でも、コンテナ内から push できます（[Git と GitHub への接続](#git-と-github-への接続)）
 - 整えたターミナル（補完、Git の状態を表示するプロンプト、履歴の保持、日本語表示、ページャー）
 - `make` を入口にした共通の操作（テスト、lint、整形、型チェック、カバレッジ、監査）。VS Code のタスクと、CI の Python のチェックも同じ入口を使います
 - Devcontainer による一貫性のある開発環境
@@ -124,6 +125,65 @@
 bash scripts/check_devcontainer.sh
 ```
 
+## Git と GitHub への接続
+
+コミットと push は、コンテナ内で行ってください。リモートが SSH 形式（`git@github.com:...`）でも HTTPS 形式（`https://github.com/...`）でも push できます。どちらの形式かは `git remote -v` で確認できます。
+
+| リモートの形式 | 認証の方法 | 準備 |
+| --- | --- | --- |
+| SSH | ホストの SSH エージェントの鍵を、VS Code がコンテナに受け渡します | ホストで SSH エージェントに鍵を登録する（下の手順） |
+| HTTPS | ホストの Git の認証情報を、VS Code がコンテナに受け渡します | ホストで一度 push できていれば、準備は不要です |
+| HTTPS（上の方法が使えない場合） | コンテナ内で `gh auth login` を実行します | 下の「GitHub CLI で認証する」 |
+
+### SSH で接続する
+
+秘密鍵はコンテナにコピーしません。VS Code（Dev Containers）が、ホストの SSH エージェントをコンテナに受け渡します。ホストのエージェントに鍵が登録されていれば、コンテナ内でもそのまま使えます。
+
+1. ホストで、エージェントに鍵が登録されているかを確認します。
+
+   ```bash
+   ssh-add -l
+   ```
+
+   `The agent has no identities.` や、エージェントに接続できないという表示が出た場合は、ホストで次の準備をしてから `ssh-add` で鍵を登録します。
+
+   | ホスト | エージェントの準備 |
+   | --- | --- |
+   | Windows | 管理者の PowerShell で `Set-Service ssh-agent -StartupType Automatic` と `Start-Service ssh-agent` を実行します |
+   | macOS | エージェントは最初から動いています。`ssh-add --apple-use-keychain ~/.ssh/id_ed25519` で登録します |
+   | Linux | デスクトップ環境のエージェントが動いていない場合は、`eval "$(ssh-agent -s)"` を実行します |
+
+2. Dev Container を開き直し、コンテナ内で確認します。
+
+   ```bash
+   ssh-add -l
+   ssh -T git@github.com
+   ```
+
+   `Hi <ユーザー名>! You've successfully authenticated` と表示されれば、push できます。
+
+- `github.com` のホスト鍵は、イメージに登録してあります（`/etc/ssh/ssh_known_hosts`。元のファイルは [.devcontainer/ssh/ssh_known_hosts](.devcontainer/ssh/ssh_known_hosts)）。そのため、初回の接続で `Are you sure you want to continue connecting` と聞かれません。別の鍵を出すサーバーが `github.com` を名乗った場合は、接続を拒否します。鍵の指紋は、GitHub の公式ドキュメント「[GitHub's SSH key fingerprints](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)」に載っている値です。`make test` とイメージの検査が、指紋が一致することを確かめます。
+- GitHub が鍵を変えた場合は、`Host key verification failed` で接続できなくなります。そのときは、公式ドキュメントの値を確かめたうえで、上のファイルと、`scripts/test_project_config.py`・`scripts/check_devcontainer.sh` にある指紋を更新してください。
+- `github.com` 以外のホストは、初回の接続時にこれまでどおり確認を求められます。
+- コンテナ内でエージェントが見えない場合（`ssh-add -l` が `Could not open a connection to your authentication agent` と表示する場合）は、ホストのエージェントが動いていないか、VS Code の外の端末（`docker exec` など）から入っています。VS Code の統合ターミナルを使うか、下の GitHub CLI を使ってください。
+- SSH の鍵でコミットに署名する設定（`gpg.format=ssh`）も、エージェントの鍵で動きます。ホストにしかないプログラム（`gpg.ssh.program` に 1Password の `op-ssh-sign` を指定している場合など）は、コンテナ内では動きません。
+
+### GitHub CLI で認証する
+
+ホストの設定に頼らずに、コンテナ内だけで認証する方法です。SSH エージェントや VS Code の受け渡しが使えない場合（VS Code の外の端末、Codespaces 以外のリモート環境など）に使います。
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+gh auth setup-git
+```
+
+1つ目のコマンドは、8桁のコードと URL を表示します。ホストのブラウザーで URL を開き、コードを入力して承認してください。2つ目のコマンドは、Git が HTTPS の認証に `gh` を使うように設定します。リモートが SSH 形式の場合は、`git remote set-url origin https://github.com/<所有者>/<リポジトリ>.git` で HTTPS 形式に変えてください。
+
+- 認証情報（トークン）は、コンテナ内の `~/.config/gh/hosts.yml` に平文で保存されます（コンテナには、OS の認証情報の保管庫がないためです）。コンテナを作り直すと消えるので、もう一度 `gh auth login` を実行してください。トークンをボリュームなどに残す設定は、入れていません。
+- 使い終わったら、`gh auth logout` でトークンを消せます。
+- `gh` は、PR の作成（`gh pr create`）や CI の結果の確認（`gh pr checks`）にも使えます。
+- 同梱の `gh` は Debian のパッケージ（2.46.0）で、最新版ではありません。新しいサブコマンド（`gh attestation` など）はありません。選んだ理由と、残っている脆弱性の扱いは[同梱ツール](#同梱ツール)にあります。
+
 ## 同梱ツール
 
 版は 2026-11-20 に確認したものです。OS パッケージは Debian 13（trixie）の版で、ビルド時の `apt-get upgrade` で変わることがあります（一覧は [docs/os-packages.txt](docs/os-packages.txt)）。
@@ -142,16 +202,34 @@ bash scripts/check_devcontainer.sh
 | `tree` | 2.2.1 | ディレクトリ構成の表示 |
 | `procps` | 4.0.4 | `ps`・`top`・`free` などのプロセス確認 |
 | `nano` | 8.4 | コミットメッセージなどを端末で編集する最小のエディター（`EDITOR` の既定） |
+| `openssh-client` | 10.0p2 | SSH 形式のリモートへの push・pull と、SSH の鍵によるコミットの署名。ホストの SSH エージェントを使います |
+| `gh` | 2.46.0 | GitHub CLI。ホストに頼らない認証（`gh auth login`）と、PR の操作 |
 
-`git` と `ca-certificates` 以外の8個のうち、High/Critical の検出があるのは `curl` だけです（`curl` と `libcurl4t64` に各2件、合計4件）。CVE の番号は、Git が使う `libcurl3t64-gnutls` の検出と同じで、Debian に修正版がありません。理由を付けて[ベースライン](security/container-baseline.json)に入れています。
+`git` と `ca-certificates` 以外の10個のうち、High/Critical の検出があるのは `curl`・`openssh-client`・`gh` の3つです。`curl` は、`curl` と `libcurl4t64` に各2件、合計4件です。CVE の番号は、Git が使う `libcurl3t64-gnutls` の検出と同じで、Debian に修正版がありません。理由を付けて[ベースライン](security/container-baseline.json)に入れています。
 このうち CVE-2026-12064 は、curl コマンドに scheme のない URL を渡して SFTP/SCP で接続したときの問題です。curl コマンドを入れたことで該当するようになりました。curl を使うときは、URL に `https://` を必ず書き、SFTP/SCP には使わず、信頼できるホストだけを相手にしてください。
+
+`openssh-client` と `gh` は、モブプログラミングで SSH 形式のリモートに push できなかったことを受けて追加しました（[Issue #17](https://github.com/tomohiroJin/devcontainer-python/issues/17)）。どちらも Debian に修正版のない検出があり、内容を確かめたうえで、理由を付けてベースラインに入れています（2026-11-21 時点。詳しくは[検証記録](docs/git-access-validation.md)）。
+
+| パッケージ | 検出 | このコンテナでの扱い |
+| --- | --- | --- |
+| `openssh-client` | Critical 1件（CVE-2026-60002） | サーバーが鍵の再交換の途中でホスト鍵を変えると、クライアント側でメモリを誤って使う問題です。悪意のあるサーバーに接続した場合に該当します。信頼できるホストにだけ接続してください。`github.com` はホスト鍵をイメージに登録してあるので、別のサーバーが `github.com` になりすますことはできません |
+| `openssh-client` | High 1件（CVE-2026-106583） | `ssh` のコマンドラインに渡したユーザー名に `$` や `\` があると、意図しない文字列として扱われる問題です。Git のリモートは、決まったユーザー名 `git` を使います。信頼できない URL を、そのままリモートに設定しないでください |
+| `openssh-client` | High 4件（CVE-2026-106553、-106555、-59999、-60000） | SSH サーバー（`sshd`）の問題です。このイメージにはクライアントしか入れておらず、`sshd` がないことを `scripts/check_devcontainer.sh` が確かめます |
+| `gh` | Critical 1件（CVE-2026-48501） | `gh attestation`・`gh release verify`・`gh release verify-asset` が、トークンを別のホストに送る問題です。Debian の gh 2.46.0 には、これらのサブコマンドがないため、該当しません |
+
+`gh` には、このほかに Debian で未修正の Medium 4件と Low 3件があります（High 未満のため、ゲートの対象外です）。一覧と、それぞれがこのコンテナで該当するかどうかは、[検証記録](docs/git-access-validation.md)にあります。普段の使い方で気をつける点は、次の2つです。
+
+- 他人が書いた内容（PR、Actions のログなど）を表示するサブコマンドは、内容に端末の制御文字が含まれていると、端末の表示を書き換えられることがあります。信頼できないリポジトリの PR やログを、`gh` で表示しないでください。
+- `gh auth status` は、細かい権限のトークン（`github_pat_` で始まるもの）の一部を表示することがあります。`gh auth login --web` で取得するトークンは該当しません。出力を共有するときは、トークンが含まれていないかを確かめてください。
+
+- **`gh` に Debian のパッケージを選んだ理由**: 他の OS パッケージと同じ方法（apt）で入り、版は Debian が管理します。CI の Trivy の監査の対象にもなります。GitHub の公式の apt リポジトリやリリースのバイナリを使えば最新版（2.98 以降）になりますが、apt の取得先と署名鍵が増えるか、版とハッシュを手で追う必要があります。この PR の検証環境からは `cli.github.com` と GitHub のリリースに接続できず、最新版のハッシュと検出を確かめられなかったため、確かめられた Debian の版を採用しました。最新版に切り替える場合は、Dockerfile の `gh` の行を置き換え、ベースラインの `gh` の項目を見直してください。
 
 ### 入れなかったもの
 
 | 対象 | 理由 |
 | --- | --- |
 | `sudo` | パスワードなしの sudo を入れると、非 root で動かす意味がなくなります。一時的にパッケージを足すときは、ホストから `docker exec -u root -it <コンテナ名> bash` で入って `apt-get update && apt-get install <パッケージ>` を実行してください。恒久的に足すときは Dockerfile に書きます |
-| `openssh-client` | Trivy で Critical 1件（CVE-2026-60002）と High 5件が増え、いずれも Debian に修正版がありません（2026-11-20 時点）。Git の接続は HTTPS を使ってください（VS Code がホストの認証情報を引き継ぎます）。SSH のリモートが必要な場合は、上記の検出を確認したうえで Dockerfile に追加してください。その際は、`ssh` がないことを確認している `scripts/check_devcontainer.sh` の該当行と、ベースラインも更新が必要です |
+| `openssh-server` | SSH サーバーは不要です。`openssh-client` の検出のうち4件は `sshd` だけの問題で、入れなければ該当しません |
 | `vim` | エディターは VS Code が主で、端末用には小さい `nano` で足ります |
 | `wget` | `curl` と用途が重なります |
 | `zsh`・Starship | bash に補完とプロンプトを設定すれば要件を満たせます。シェルや外部バイナリを増やさずに済みます |
@@ -421,7 +499,7 @@ F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時
 ## **カスタマイズ**
 
 - `.devcontainer/devcontainer.json` で VS Code 拡張や `remoteUser` を編集できます。
-- `.devcontainer/Dockerfile` で Python のバージョンや追加する OS パッケージを変更できます。OS パッケージを足したときは、`make audit-container` で Trivy の検出が増えていないか確認してください。`scripts/check_devcontainer.sh` は `sudo`・`ssh`・`gcc`・`vim` が入っていないことも確認しているので、これらを足す場合はその行も直してください。
+- `.devcontainer/Dockerfile` で Python のバージョンや追加する OS パッケージを変更できます。OS パッケージを足したときは、`make audit-container` で Trivy の検出が増えていないか確認してください。`scripts/check_devcontainer.sh` は `sudo`・`sshd`・`gcc`・`vim` が入っていないことも確認しているので、これらを足す場合はその行も直してください。
 - `.devcontainer/shell/bashrc` と `.devcontainer/shell/gitconfig` で、ターミナルと Git の既定の設定を変更できます。
 - `requirements.txt` を変更した場合は Devcontainer をリビルドすることで反映されます（VS Code: `Dev Containers: Rebuild Container`）。
 
@@ -509,13 +587,15 @@ CI は最小権限で動き、Actions をコミット SHA に固定していま�
 `pip-audit==2.10.1` はpip bootstrapを含むロック済み全33依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
 build-essential は入れていません。追加した OS パッケージと、入れなかったものの理由は[同梱ツール](#同梱ツール)にあります。
-Git が引き込む krb5・expat・curl のライブラリと、curl コマンドには Debian 未修正の High が残ります（[全検出一覧](docs/security-findings.json)）。
+Git が引き込む krb5・expat・curl のライブラリと、curl コマンドには Debian 未修正の High が残ります。OpenSSH クライアントと GitHub CLI には、Debian 未修正の Critical が1件ずつ、OpenSSH クライアントには High が5件残ります（[全検出一覧](docs/security-findings.json)）。
 次の運用で緩和してください。
 
 - 信頼できないリポジトリを `--recurse-submodules` 付きで clone しない。
 - 信頼できないブランチや PR を、このコンテナで merge・rebase・cherry-pick・merge-tree しない（CVE-2026-105437）。どうしても行う場合は、上流が示す回避策として、各リポジトリの `.git/info/attributes` に `* conflict-marker-size=7` を書く。
 - 信頼できない `git fast-import` ストリーム、XML、SQLite ファイルを扱わない。
 - curl では URL に `https://` を必ず書き、信頼できるホストだけを相手にする（CVE-2026-12064、CVE-2026-8458）。
+- SSH では、信頼できるホストにだけ接続する（CVE-2026-60002）。信頼できない URL を Git のリモートに設定しない（CVE-2026-106583）。
+- `gh` で、信頼できないリポジトリの PR や Actions のログを表示しない。
 
 HIGH/CRITICALは全件を記録し、新規・修正可能な項目を失敗させます。既知残件に限定した判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
@@ -528,7 +608,7 @@ make audit-container
 
 `make audit` は pip-audit を、`make audit-container` はイメージのビルド・Trivy・ベースラインとの照合を実行します。実行されるコマンドは [Makefile](Makefile) にあります。
 
-既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧は [docs/security-findings.json](docs/security-findings.json) にあります。Debian の修正待ちの118件は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（修正待ちとして一旦閉じています）。curl コマンドの追加で増えた4件は Issue #9 の記載には含まれていないため、一覧とベースラインの理由を参照してください。2026-11-21 に追加した OpenSSL の3件（CVE-2026-124709）も同じです。経緯は[検証記録](docs/mob-feedback-validation.md)にあります。
+既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧は [docs/security-findings.json](docs/security-findings.json) にあります。Debian の修正待ちの118件は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（修正待ちとして一旦閉じています）。curl コマンドの追加で増えた4件は Issue #9 の記載には含まれていないため、一覧とベースラインの理由を参照してください。2026-11-21 に追加した OpenSSL の3件（CVE-2026-124709）も同じです。経緯は[検証記録](docs/mob-feedback-validation.md)にあります。同じ日に `openssh-client` と `gh` の追加で増えた7件（Critical 2件を含む）は、[検証記録](docs/git-access-validation.md)にあります。
 
 pip の HTTPS 通信にプロキシ CA が必要な環境では、Dockerfile の任意 BuildKit secret `proxy_ca` に
 信頼済み CA バンドルを渡します（例: `--secret id=proxy_ca,src=/path/to/ca-bundle.pem`）。

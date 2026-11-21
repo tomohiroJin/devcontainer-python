@@ -20,13 +20,13 @@ check() {
 
 # --- Tools ---------------------------------------------------------------------
 for tool in bash git less make curl jq tree ps nano python pytest ruff mypy \
-    ipython prek coverage ptw; do
+    ipython prek coverage ptw gh ssh ssh-add ssh-keygen; do
     check "command: $tool" command -v "$tool"
 done
 check "pytest-cov plugin is installed" python -c 'import pytest_cov'
 # Deliberately left out (see the README): each of these widens the attack
 # surface without being needed for everyday work.
-for tool in sudo ssh gcc vim; do
+for tool in sudo sshd gcc vim; do
     if command -v "$tool" >/dev/null 2>&1; then
         ng "command must be absent: $tool"
     else
@@ -39,6 +39,37 @@ done
 login_shell=$(getent passwd "$(id -un)" | cut -d: -f7)
 [ "$login_shell" = /bin/bash ] && ok "login shell is bash" ||
     ng "login shell is bash (got '$login_shell')"
+
+# --- Git over SSH and GitHub CLI ---------------------------------------------------
+# The image trusts github.com's published host keys, so the first push over SSH
+# asks no question and a different key is refused.
+known_hosts=/etc/ssh/ssh_known_hosts
+check "github.com host keys are installed" ssh-keygen -F github.com -f "$known_hosts"
+fingerprints=$(ssh-keygen -lf "$known_hosts" 2>/dev/null | cut -d' ' -f2 | sort | tr '\n' ' ')
+expected='SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s '
+[ "$fingerprints" = "$expected" ] &&
+    ok "github.com host keys match GitHub's published fingerprints" ||
+    ng "github.com host keys match GitHub's published fingerprints"
+ssh -G github.com 2>/dev/null | grep -q "^globalknownhostsfile .*$known_hosts" &&
+    ok "ssh reads the image's known hosts file" ||
+    ng "ssh reads the image's known hosts file"
+ssh -G github.com 2>/dev/null | grep -qx 'stricthostkeychecking ask' &&
+    ok "ssh still asks before trusting an unknown host" ||
+    ng "ssh still asks before trusting an unknown host"
+# A server with another key must be refused, not asked about. Use an sshd-free
+# check: look the key up the way ssh does for a host that claims to be github.com.
+other_key="$(mktemp)"
+ssh-keygen -q -t ed25519 -N '' -f "$other_key.key" </dev/null
+if ssh-keygen -F github.com -f "$known_hosts" | grep -q "$(cut -d' ' -f2 "$other_key.key.pub")"; then
+    ng "an unknown key is not listed for github.com"
+else
+    ok "an unknown key is not listed for github.com"
+fi
+rm -f "$other_key" "$other_key.key" "$other_key.key.pub"
+check "gh runs" gh --version
+check "gh can configure git credentials" gh auth setup-git --help
+[ -r /usr/share/bash-completion/completions/gh ] && ok "gh completion is available" ||
+    ng "gh completion is available"
 
 # --- Commands added later with pip ----------------------------------------------
 # `pip install` as this user installs commands into ~/.local/bin. They must be

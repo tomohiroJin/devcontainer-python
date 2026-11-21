@@ -1262,6 +1262,76 @@
       "Type": "debian",
       "kind": "unfixed",
       "reason": "Debian security tracker (checked 2026-11-21): openssl is 'open' for trixie with no fixed version; urgency not yet assigned (no DSA or no-dsa decision yet). Memory leak in the OpenSSL QUIC server (denial of service by a remote QUIC client). The container runs no QUIC server; OpenSSL is used only as a TLS client (Python ssl, curl). First reported after the trixie update to openssl 3.5.9. Approved by the repository owner on 2026-11-21 (pull request #23). Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-48501",
+      "PkgName": "gh",
+      "InstalledVersion": "2.46.0-3",
+      "Severity": "CRITICAL",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): gh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with the GitHub CLI for authentication that does not depend on the host (issue #17). The token is sent to other hosts by `gh attestation`, `gh release verify` and `gh release verify-asset` (fixed upstream in 2.93.0). Debian's gh 2.46.0 has none of these commands (checked: `gh attestation` is an unknown command, `gh release` has no verify subcommand), so the vulnerable code path cannot be reached. Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-60002",
+      "PkgName": "openssh-client",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "Severity": "CRITICAL",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with openssh-client for Git over SSH (issue #17). Client-side use-after-free when a server changes its host key during a key re-exchange (fixed upstream in 10.4); it needs a malicious or compromised SSH server. Mitigation: connect only to trusted hosts; the image pins github.com's host keys in /etc/ssh/ssh_known_hosts, so another server cannot pose as github.com. Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-106553",
+      "PkgName": "openssh-client",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with openssh-client for Git over SSH (issue #17). Affects sshd (GSSAPI authentication) only; the image installs the client package, not openssh-server, and scripts/check_devcontainer.sh checks that sshd is absent. Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-106555",
+      "PkgName": "openssh-client",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with openssh-client for Git over SSH (issue #17). Affects sshd (GSSAPI authentication state) only; the image installs the client package, not openssh-server, and scripts/check_devcontainer.sh checks that sshd is absent. Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-106583",
+      "PkgName": "openssh-client",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with openssh-client for Git over SSH (issue #17). Injection through a $ or \\ character in a user name given on the ssh command line (fixed upstream in 10.6). Git remotes use the fixed user 'git'. Mitigation: do not pass untrusted text as the SSH user name (for example a remote URL copied from an untrusted source). Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-59999",
+      "PkgName": "openssh-client",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with openssh-client for Git over SSH (issue #17). Affects sshd (DisableForwarding and PermitTunnel) only; the image installs the client package, not openssh-server, and scripts/check_devcontainer.sh checks that sshd is absent. Retained in the full artifact."
+    },
+    {
+      "VulnerabilityID": "CVE-2026-60000",
+      "PkgName": "openssh-client",
+      "InstalledVersion": "1:10.0p1-7+deb13u4",
+      "Severity": "HIGH",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "kind": "unfixed",
+      "reason": "Debian security tracker (checked 2026-11-21): openssh is 'open' for trixie with no fixed version; no-dsa (Minor issue). Added with openssh-client for Git over SSH (issue #17). Affects sshd (MaxAuthTries with GSSAPI) only; the image installs the client package, not openssh-server, and scripts/check_devcontainer.sh checks that sshd is absent. Retained in the full artifact."
     }
   ]
 }

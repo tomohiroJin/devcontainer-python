@@ -1,5 +1,7 @@
 """Keep the entry points (Makefile, VS Code, CI, Dev Container) consistent."""
 
+import base64
+import hashlib
 import json
 import re
 import tomllib
@@ -104,6 +106,26 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertEqual(watcher["runner"], "python")
         for argument in watcher["runner_args"]:
             self.assertTrue((ROOT / argument).is_file())
+
+    def test_github_host_keys_match_the_published_fingerprints(self):
+        # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
+        expected = {
+            "ssh-ed25519": "SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU",
+            "ecdsa-sha2-nistp256": "SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM",
+            "ssh-rsa": "SHA256:uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s",
+        }
+        text = (ROOT / ".devcontainer/ssh/ssh_known_hosts").read_text(encoding="utf-8")
+        found = {}
+        for line in text.splitlines():
+            if not line or line.startswith("#"):
+                continue
+            host, key_type, key = line.split()
+            self.assertEqual(host, "github.com")
+            digest = hashlib.sha256(base64.b64decode(key, validate=True)).digest()
+            found[key_type] = "SHA256:" + base64.b64encode(digest).decode().rstrip("=")
+        self.assertEqual(found, expected)
+        dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("ssh_known_hosts /etc/ssh/ssh_known_hosts\n", dockerfile)
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")
