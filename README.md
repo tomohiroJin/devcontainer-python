@@ -143,27 +143,30 @@ bash scripts/check_devcontainer.sh
 make doctor
 ```
 
-結果は、項目ごとに `ok`・`info`・`warn`・`FAIL` で表示します。`warn` と `FAIL` には、直し方が `→` に続けて表示されます。`FAIL` が1件でもあると、終了コードが 1 になります。
+結果は、項目ごとに `ok`・`info`・`warn`・`FAIL` で表示します。`warn` と `FAIL` には、直し方が `→` に続けて表示されます。`FAIL` が1件でもあると、失敗で終わります（`bash scripts/doctor.sh` の終了コードは 1 です。`make doctor` は、`make` のエラーとして表示されます）。
 
 | 確かめること | 問題がある場合 |
 | --- | --- |
-| Dev Container の中で実行しているか | ホストで実行すると `warn`。ツールの確認は省きます |
+| Dev Container の中で実行しているか | 外で実行すると `warn`。ツールの版と整形の確認は省きます |
+| Git がこのリポジトリを操作できるか（所有者の信頼） | できなければ `FAIL`（`dubious ownership`） |
 | Ruff・mypy・pytest・prek・ptw の版が `requirements.txt` と同じか | 見つからなければ `FAIL`、版が違えば `warn` |
 | `~/.local/bin` が PATH にあるか。後から `pip install` で入れたパッケージ | PATH になければ `warn`。入れたパッケージは一覧を表示 |
 | VS Code の必須の拡張が入っているか | VS Code の統合ターミナルで実行した場合だけ確認します |
-| `user.name` と `user.email` | なければ `FAIL`（コミットできません） |
-| コミットの署名（`commit.gpgsign=true` の場合） | 実際に署名を試し、失敗すれば `FAIL` |
-| コミット前フックが登録されているか | 登録されていなければ `warn` |
-| 認証の手段（HTTPS なら認証ヘルパー、SSH ならエージェントの鍵） | ホストにしかない認証ヘルパーを指していれば `FAIL` |
-| リモートに接続して認証できるか | できなければ `FAIL`。`gh` で認証済みなら、push の権限も確認します |
+| コミットの名前とメールアドレス | Git が決められなければ `FAIL`（コミットできません） |
+| コミットやタグの署名（有効にしている場合） | このリポジトリの設定で実際に署名を試し、失敗すれば `FAIL`。パスフレーズの入力が必要な鍵は `warn` |
+| コミット前フックが登録されているか | 未登録、古い版、`prek install` のフック、別の `core.hooksPath` は `warn` |
+| push 先の認証情報（HTTPS の場合） | Git に認証情報を問い合わせ、取得できなければ、`github.com` は `FAIL`、他のホストは `warn` |
+| SSH の鍵（push 先が SSH 形式の場合） | エージェントにも鍵のファイルにもなければ `FAIL` |
+| push 先に接続して読み取れるか | できなければ `FAIL`。`gh` で認証済みなら、push の権限も確認します |
 | 改行コード（`core.autocrlf`、CRLF で登録されたファイル） | `warn` |
 | 整形されていないファイル | `warn` |
 
 - **リモートに接続しない場合**: `make doctor ARGS=--offline` を実行します。ネットワークがない環境で使います。
-- **問題だけを表示する場合**: `make doctor ARGS=--quiet` を実行します。
-- **出力を共有する場合**: 出力は、そのまま Issue やチャットに貼れるようにしています。メールアドレス、URL に含まれる認証情報、GitHub のトークンは、伏せて表示します。念のため、貼る前に目を通してください。
-- **ホストで実行した場合**: 「ここは Dev Container の外です」と表示します。ホストに `make` がなければ、`bash scripts/doctor.sh` でも実行できます。
-- **push の権限**: リモートへの接続の確認は、読み取りができることまでです。書き込みの権限は、`gh` で認証している場合だけ確認します。確実に確かめるには、実際に push してください。
+- **問題だけを表示する場合**: `make doctor ARGS=--quiet` を実行します。問題がなければ、何も表示しません。
+- **出力を共有する場合**: 出力は、Issue やチャットに貼ることを想定しています。設定の値は表示せず、表示する文字列（リモートの URL、ファイルのパス、エラーの文言）からは、次のものを伏せます: ホームディレクトリ（`~` に置き換えます）、URL に含まれる認証情報とクエリ文字列、メールアドレス、代表的なトークン（GitHub、GitLab、Slack、AWS のアクセスキー、`Bearer`）。リモートのホスト名やリポジトリ名は表示されます。伏せる処理は形で判断しているため、貼る前に目を通してください。
+- **入力待ちで止まりません**: パスフレーズや認証情報の入力を求める処理は、入力を受け付けずに次へ進みます。外部のコマンドには、制限時間を付けています。
+- **Dev Container の外で実行した場合**: 「ここは Dev Container の外（ホスト）です」と表示します。ホストに `make` がなければ、`bash scripts/doctor.sh` でも実行できます。
+- **確認の範囲**: 認証情報は「取得できるか」までを確かめます。その認証情報で実際に push できるかは、リモートへの接続（読み取り）と、`gh` で認証している場合の権限の確認で補います。確実に確かめるには、実際に push してください。
 
 `scripts/check_devcontainer.sh` は、イメージが正しく作られたかを確かめるもので、CI が実行します。`make doctor` は、人や起動のたびに変わるもの（Git の設定、認証、フック）を確かめます。
 
@@ -561,12 +564,16 @@ Dev Container を作成すると、`make hooks` がコミット前フックを G
 make pre-commit
 ```
 
-フックの本体は [scripts/git-hooks/pre-commit](scripts/git-hooks/pre-commit) です。`make hooks` は、このリポジトリの Git の設定（`core.hooksPath`）を `scripts/git-hooks` に向けます。
+フックの本体は [scripts/git-hooks/pre-commit](scripts/git-hooks/pre-commit) です。`make hooks` が、これを `.git/hooks/pre-commit` にコピーして登録します。フックを直したあとは、もう一度 `make hooks` を実行すると反映されます（コンテナのリビルドでも実行されます）。
 
-- **ホスト（Dev Container の外）でコミットした場合**: `.git` はホストとコンテナで共有しているので、フックはホストでのコミットでも動きます。ホストに prek・Ruff・mypy がないか、`requirements.txt` と版が違う場合は、理由を表示して、**検査をせずにコミットを通します**。コミットできなくなることはありません。検査は、Dev Container 内の `make pre-commit` か、プルリクエストの CI で行われます。検査を確実に通すために、コミットは Dev Container 内で行うことをおすすめします。
-- **ホストに自分用のフック（`core.hooksPath` のグローバル設定）がある場合**: `make hooks` は、このリポジトリだけ `scripts/git-hooks` に切り替えます。他のリポジトリには影響しません。このリポジトリでは、自分用のフックは動かなくなります。
+- **Dev Container の中でコミットした場合**: 検査を実行し、失敗したらコミットを止めます。`requirements.txt` の版がイメージと違う場合（依存の更新を取り込んだあと、リビルドしていない場合など）も、検査は入っている版で実行し、その旨を表示します。
+- **ホスト（Dev Container の外）でコミットした場合**: `.git` はホストとコンテナで共有しているので、フックはホストでのコミットでも動きます。ホストでは、**検査を省いてコミットを通します**（その旨を表示します）。ホストに道具があるかどうかでは判断しません。フックが原因で、コミットできなくなることはありません。検査は、Dev Container 内の `make pre-commit` か、プルリクエストの CI で行われます。検査を確実に通すために、コミットは Dev Container 内で行うことをおすすめします。
+- **ホストでも検査を実行したい場合**: 自分で同じ版の prek・Ruff・mypy を用意したうえで、`git config hooks.devcontainerRunOnHost true` を実行します。この設定をすると、ホストでも検査の失敗でコミットが止まります。
+- **`prek install` は使わないでください。** prek が作るフックは、ホストでのコミットを失敗させます（以前の不具合の原因です）。実行してしまった場合は、`make hooks` で元に戻せます。`make doctor` も、この状態を検出します。
+- **既存のフックがある場合**: `.git/hooks/pre-commit` に自分のフックがある場合は、`pre-commit.before-devcontainer` という名前で退避してから登録します。`make unhooks` で元に戻ります。`pre-commit` 以外のフック（`commit-msg` や `pre-push` など）には、触れません。
+- **ホストに自分用のフック（`core.hooksPath` のグローバル設定）がある場合**: その設定のままだと、Git は `.git/hooks` を見ないため、このリポジトリのフックが動きません。`make hooks` は、このリポジトリだけ `.git/hooks` を使う設定（`core.hooksPath = .git/hooks`）にします。他のリポジトリには影響しませんが、このリポジトリでは、自分用のフックは動かなくなります。
 - **フックを外す場合**: `make unhooks` を実行します。もう一度登録するには、`make hooks` を実行します。
-- **以前の版から更新した場合**: 以前は `prek install` が `.git/hooks/pre-commit` を作っていました。`make hooks`（コンテナのリビルドで自動的に実行されます）で新しい方法に切り替わり、古いファイルは使われなくなります。気になる場合は、`.git/hooks/pre-commit` を削除してかまいません。
+- **一度だけ検査を省く場合**: `git commit --no-verify` を使います。
 
 `.vscode/*.json` と `devcontainer.json` も JSON の構文検査の対象です。コメントは書かないでください。
 

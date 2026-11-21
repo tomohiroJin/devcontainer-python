@@ -1,54 +1,72 @@
 #!/bin/sh
-# Pre-commit hook of this repository. `make hooks` registers this directory as
-# core.hooksPath, so Git runs this file on every commit.
+# devcontainer-python pre-commit hook (managed by `make hooks`; do not edit the
+# installed copy in .git/hooks, edit scripts/git-hooks/pre-commit and run
+# `make hooks` again).
 #
 # .git is shared between the Dev Container and the host, so this hook also runs
-# for commits made on the host, where the pinned tools may be missing or have
-# other versions. A commit must never be impossible because of that:
+# for commits made on the host. The pinned tools only exist in the container,
+# and a commit must never become impossible because of the hook:
 #
-# - With the same prek, Ruff and mypy as requirements.txt (inside the Dev
-#   Container): run the checks; a failing check stops the commit.
-# - Otherwise: explain why, skip the checks and let the commit through.
-#   CI runs the same checks (`make pre-commit`) on every pull request.
+# - Inside the Dev Container: run the checks (`prek run`); a failing check
+#   stops the commit.
+# - Anywhere else: say that the checks are skipped and let the commit through.
+#   The same checks run in CI (`make pre-commit`) for every pull request.
+#   To run them on the host as well, with tools you installed yourself:
+#       git config hooks.devcontainerRunOnHost true
 #
 # POSIX sh only: on the host this may be dash, the macOS sh or Git for Windows.
 
+# The file that only the image of this repository contains. The variable exists
+# for the tests, which cannot remove the file.
+marker=${DEVCONTAINER_HOOK_MARKER:-/etc/devcontainer/bashrc}
+
 root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-lock="$root/requirements.txt"
+# A branch from before the checks were added has nothing to run.
+[ -f "$root/.pre-commit-config.yaml" ] || exit 0
 
-# Print the version pinned in requirements.txt for package $1 (empty if none).
-pinned() {
-    sed -n "s/^$1==\([^ ]*\).*/\1/p" "$lock" 2>/dev/null | head -n 1
-}
-
-# Print the version of the installed command $1 (empty if it is not on PATH).
-installed() {
-    command -v "$1" >/dev/null 2>&1 || return 0
-    "$1" --version 2>/dev/null | head -n 1 | sed 's/^[^0-9]*\([0-9][0-9A-Za-z.+-]*\).*/\1/'
-}
-
-problems=''
-for tool in prek ruff mypy; do
-    want=$(pinned "$tool")
-    have=$(installed "$tool")
-    if [ -z "$have" ]; then
-        problems="$problems
-  - $tool が見つかりません"
-    elif [ -n "$want" ] && [ "$have" != "$want" ]; then
-        problems="$problems
-  - $tool の版が違います（必要: $want、実際: $have）"
-    fi
-done
-
-if [ -n "$problems" ]; then
-    cat >&2 <<MESSAGE
-[pre-commit] コミット前の検査を実行できないため、検査なしでコミットします。$problems
-  Dev Container の外（ホスト）でコミットした場合に表示されます。
+if [ -r "$marker" ]; then
+    where=container
+elif [ "$(git config --type=bool --get hooks.devcontainerRunOnHost 2>/dev/null)" = true ]; then
+    where=host-opted-in
+else
+    cat >&2 <<'MESSAGE'
+[pre-commit] Dev Container の外（ホスト）なので、コミット前の検査を省いてコミットします。
   検査は、Dev Container 内の make pre-commit か、プルリクエストの CI で行われます。
   コミットは、Dev Container 内で行うことをおすすめします。
 MESSAGE
     exit 0
 fi
+
+if ! command -v prek >/dev/null 2>&1; then
+    if [ "$where" = container ]; then
+        cat >&2 <<'MESSAGE'
+[pre-commit] prek が見つからないため、コミット前の検査を実行できません。
+  Dev Container をリビルドしてください（VS Code: Dev Containers: Rebuild Container）。
+  今回だけ検査を省く場合は、git commit --no-verify を使ってください。
+MESSAGE
+        exit 1
+    fi
+    cat >&2 <<'MESSAGE'
+[pre-commit] hooks.devcontainerRunOnHost が有効ですが、prek が見つかりません。検査を省いてコミットします。
+MESSAGE
+    exit 0
+fi
+
+# The image is rebuilt less often than requirements.txt changes. Run the checks
+# with what is installed, as before, but say so: results can differ from CI.
+lock="$root/requirements.txt"
+for tool in prek ruff mypy; do
+    want=$(sed -n "s/^$tool==\([^ ]*\).*/\1/p" "$lock" 2>/dev/null | head -n 1)
+    command -v "$tool" >/dev/null 2>&1 || continue
+    have=$("$tool" --version 2>/dev/null | head -n 1 |
+        sed 's/^[^0-9]*\([0-9][0-9A-Za-z.+-]*\).*/\1/')
+    if [ -n "$want" ] && [ -n "$have" ] && [ "$have" != "$want" ]; then
+        printf '[pre-commit] %s の版が requirements.txt と違います（必要: %s、実際: %s）。検査の結果が CI と変わることがあります。\n' \
+            "$tool" "$want" "$have" >&2
+        [ "$where" = container ] &&
+            printf '  Dev Container をリビルドすると、版が揃います。\n' >&2
+    fi
+done
 
 cd "$root" || exit 0
 exec prek run

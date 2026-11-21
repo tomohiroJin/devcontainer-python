@@ -47,17 +47,10 @@ pre-commit: ## コミット前フックを全ファイルに実行（CI と同�
 	prek run --all-files
 
 hooks: ## コミット前フックを Git に登録（Git リポジトリでなければ何もしない）
-	@if [ -e .git ]; then \
-		git config --local core.hooksPath scripts/git-hooks \
-			&& echo 'コミット前フックを登録しました（core.hooksPath = scripts/git-hooks）。'; \
-	else \
-		echo 'Git リポジトリではないため、フックの登録を省略しました。'; \
-	fi
+	@sh scripts/git-hooks/install.sh install
 
 unhooks: ## コミット前フックの登録を外す
-	@git config --local --unset core.hooksPath \
-		&& echo 'コミット前フックの登録を外しました。' \
-		|| echo 'コミット前フックは登録されていません。'
+	@sh scripts/git-hooks/install.sh uninstall
 
 doctor: ## 開発を始められる状態かを確認（make doctor ARGS=--offline で通信を省略）
 	@bash scripts/doctor.sh $(ARGS)

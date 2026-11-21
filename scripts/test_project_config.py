@@ -150,8 +150,11 @@ class ProjectConfigTests(unittest.TestCase):
         hook = ROOT / "scripts/git-hooks/pre-commit"
         self.assertTrue(os.access(hook, os.X_OK))
         self.assertTrue(hook.read_text(encoding="utf-8").startswith("#!/bin/sh\n"))
+        # The installer and the doctor recognise the installed copy by this text.
+        self.assertIn("devcontainer-python pre-commit hook", hook.read_text("utf-8"))
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
-        self.assertIn("git config --local core.hooksPath scripts/git-hooks", makefile)
+        self.assertIn("sh scripts/git-hooks/install.sh install", makefile)
+        self.assertIn("sh scripts/git-hooks/install.sh uninstall", makefile)
 
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")
