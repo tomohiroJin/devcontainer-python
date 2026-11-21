@@ -14,3 +14,12 @@
 	date = iso
 [init]
 	defaultBranch = main
+# Use HTTPS for github.com even when the repository was cloned over SSH
+# (git@github.com:owner/repo.git). HTTPS works with the credentials that
+# VS Code passes in from the host and with `gh auth login`; SSH needs a running
+# SSH agent on the host, which is often missing. The remote URL stored in
+# .git/config is not changed, so the host keeps using SSH.
+# To keep SSH inside the container, see "Git と GitHub への接続" in the README.
+[url "https://github.com/"]
+	insteadOf = git@github.com:
+	insteadOf = ssh://git@github.com/

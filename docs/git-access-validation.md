@@ -8,6 +8,37 @@
 
 モブプログラミングで、SSH 形式のリモート（`git@github.com:...`）のリポジトリを Dev Container で開いた参加者が、コンテナ内から push できませんでした。イメージに `ssh` がなく、`error: cannot run ssh: No such file or directory` になるためです。[Issue #11](https://github.com/tomohiroJin/devcontainer-python/issues/11) では、脆弱性の検出が増えることを理由に `openssh-client` を入れませんでした。リポジトリの所有者の判断で、入れる方針に改めました（2026-11-21）。
 
+## 接続の方針（2026-11-21 に変更）
+
+最初は、「SSH 形式のリモートには、ホストの SSH エージェントの鍵で接続する」方針で実装しました。リポジトリの所有者がこの実装を試したところ、コンテナ内から接続できませんでした。SSH エージェントの受け渡しは、ホストでエージェントが動き、鍵が登録されていることが前提で、参加者ごとに準備が必要になります。
+
+そこで、**`github.com` には常に HTTPS で接続する**方針に改めました（リポジトリの所有者の決定）。
+
+- `/etc/gitconfig` の `url."https://github.com/".insteadOf` で、`git@github.com:` と `ssh://git@github.com/` で始まるリモートを HTTPS に読み替えます。
+- 認証は、VS Code が受け渡すホストの認証情報か、コンテナ内の `gh auth login` と `gh auth setup-git` を使います。どちらも、ホストの SSH エージェントを必要としません。
+- SSH（`openssh-client`）は、`github.com` 以外のホストへの接続、SSH の鍵による署名、読み替えを外して使う場合のために残しています。
+
+### 読み替えについて確かめたこと
+
+| 確かめたこと | 結果 |
+| --- | --- |
+| `git@github.com:owner/repo.git` と `ssh://git@github.com/owner/repo.git` | fetch と push のどちらも `https://github.com/owner/repo.git` になりました |
+| 実際の通信 | `GIT_TRACE` で、`git remote-https` が HTTPS の URL で起動されることを確かめました（`ssh` は起動されません） |
+| `git@gitlab.com:...` と、紛らわしいホスト名（`git@github.com.example.org:...`） | 読み替えません |
+| `.git/config` に保存されている URL | 書き換わりません（`git config --get remote.origin.url` は SSH 形式のまま） |
+| 読み替えを外す方法 | `GIT_CONFIG_SYSTEM=/etc/devcontainer/gitconfig-ssh` で、SSH 形式のまま接続します。このファイルは、ビルド時に `/etc/gitconfig` から読み替えの設定だけを除いて作ります |
+| `~/.gitconfig` に同じ長さの読み替え（`git@github.com:` を `git@github.com:` に）を書いて打ち消す方法 | 効きませんでした（先に読まれたイメージの設定が優先されます）。所有者名まで含めた、より長い読み替えなら効きますが、README には環境変数の方法だけを書きました |
+
+### ホストの `~/.ssh` をマウントする方法について確かめたこと
+
+README に、各自が選んで使う方法として書きました（既定にはしていません）。手元の SSH サーバーのコンテナに対して、`docker run -v <鍵のディレクトリ>:/home/vscode/.ssh:ro` で確かめました。
+
+| 確かめたこと | 結果 |
+| --- | --- |
+| 権限が `600` の秘密鍵 | 接続できました。読み取り専用のため、`known_hosts` への追記は失敗します（警告だけで、接続はできます） |
+| 権限が `644` の秘密鍵（Windows のファイルをマウントした場合に近い状態） | `bad permissions` で、鍵が使われませんでした |
+| `~/.ssh/config` に `UseKeychain yes`（macOS だけの設定）がある場合 | `Bad configuration option: usekeychain` で、接続できませんでした |
+
 ## 採否を決めるために確かめたこと
 
 Trivy 0.76.2（DB 2026-11-21 13:02:47 UTC）と、Debian Security Tracker（`security-tracker.debian.org/tracker/data/json`、2026-11-21 取得）で確かめました。
@@ -115,6 +146,7 @@ Dockerfile と同じ手順でビルドしたイメージで確かめました。
   - `gh`・`ssh`・`ssh-add`・`ssh-keygen` があること。`sshd` がないこと（これまでは `ssh` がないことを確かめていました）
   - `github.com` のホスト鍵が登録されていて、指紋が上の3つと一致すること
   - `ssh` がイメージのホスト鍵のファイルを読むこと。知らないホストを確認なしに信頼しない設定のままであること
+  - `github.com` の SSH 形式のリモートが HTTPS に読み替えられること。他のホストは読み替えないこと。保存されている URL が書き換わらないこと。`GIT_CONFIG_SYSTEM` で読み替えを外せること
   - `gh` が動き、`gh auth setup-git` があること。`gh` の補完があること
   - `gh` の版が 2.98.0 以上であること（Debian の版に戻っていないこと）と、apt の取得元が署名鍵に結び付けられていること
 - **`scripts/test_project_config.py`**: ホスト鍵のファイルから指紋を計算し、上の3つと一致することを確かめるテストを追加しました（`ssh` のない CI の `python` ジョブでも動きます）。`gh` の署名鍵のファイルの SHA-256 を確かめるテストも追加しました。
@@ -135,6 +167,8 @@ Dockerfile と同じ手順でビルドしたイメージで確かめました。
 ## 確かめていないこと
 
 - **実際の `github.com` への SSH 接続**と、`gh auth login` による認証（どちらも、この検証環境から接続できないため）。
-- **VS Code による SSH エージェントの受け渡し**（検証環境に VS Code がないため）。README の手順は、Windows・macOS・Linux のどのホストでも確かめていません。
+- **VS Code による認証情報と SSH エージェントの受け渡し、`~/.gitconfig` のコピー**（検証環境に VS Code がないため）。README の「仕組み」と「うまくいかないとき」のうち、VS Code の動きに関する記述は、VS Code の仕様に基づくもので、この検証環境で確かめたものではありません。ホスト OS ごとの SSH エージェントの手順も、どのホストでも確かめていません。
+- **`devcontainer.json` に足す設定**（`~/.ssh` のマウントと、`remoteEnv` の `GIT_CONFIG_SYSTEM`）。同じ内容を `docker run` のオプションと環境変数で確かめましたが、VS Code から起動した場合は確かめていません。
+- **HTTPS に読み替えたあとの、実際の `github.com` への push**。読み替えと、HTTPS で通信しようとすることまでを確かめました。
 - **`gh` のトークンの保存先**。README には、平文で `~/.config/gh/hosts.yml` に保存されると書きました。これは gh の仕様（OS の保管庫がなければ平文で保存する）に基づく記述で、ログインして確かめたものではありません。
 - **arm64**: `gh` は、公式のリポジトリの索引に arm64 版があることだけを確かめました。`openssh-client` の arm64 版と、arm64 でのビルドは確かめていません（Issue #19）。

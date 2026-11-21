@@ -49,12 +49,16 @@ COPY --chmod=644 .devcontainer/ssh/ssh_known_hosts /etc/ssh/ssh_known_hosts
 # host, and that change only re-owns the home directory.
 # Debian's ~/.profile would put ~/.local/bin in front of PATH in login shells;
 # that block is removed because ENV PATH below adds the directory at the end.
+# gitconfig-ssh is /etc/gitconfig without the rule that turns github.com SSH
+# remotes into HTTPS; GIT_CONFIG_SYSTEM can point to it to keep SSH.
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash -m $USERNAME \
     && printf '\n# Dev Container shell settings (prompt, history, aliases).\n[ -r /etc/devcontainer/bashrc ] && . /etc/devcontainer/bashrc\n' >> /home/$USERNAME/.bashrc \
     && sed -i '/^if \[ -d "\$HOME\/\.local\/bin" \] ; then$/,/^fi$/d' /home/$USERNAME/.profile \
     && ! grep -q '\.local/bin' /home/$USERNAME/.profile \
-    && install -d -m 1777 /commandhistory
+    && install -d -m 1777 /commandhistory \
+    && cp /etc/gitconfig /etc/devcontainer/gitconfig-ssh \
+    && git config --file /etc/devcontainer/gitconfig-ssh --remove-section url.https://github.com/
 
 # `pip install` as the non-root user puts commands in ~/.local/bin. Debian adds
 # that directory to PATH only in login shells (~/.profile), and only when it

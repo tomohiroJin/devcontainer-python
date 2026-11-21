@@ -40,6 +40,42 @@ login_shell=$(getent passwd "$(id -un)" | cut -d: -f7)
 [ "$login_shell" = /bin/bash ] && ok "login shell is bash" ||
     ng "login shell is bash (got '$login_shell')"
 
+# --- GitHub remotes use HTTPS --------------------------------------------------------
+# A repository cloned over SSH on the host must be reachable from the container
+# without an SSH agent: github.com SSH URLs are rewritten to HTTPS.
+effective_url() {
+    # $1: remote URL as stored in .git/config; prints the URL git really uses.
+    git -C "$url_repo" remote set-url origin "$1" &&
+        git -C "$url_repo" remote get-url --push origin
+}
+url_repo=$(mktemp -d)
+git init -q "$url_repo" 2>/dev/null
+git -C "$url_repo" remote add origin https://github.com/owner/repo.git
+for url in git@github.com:owner/repo.git ssh://git@github.com/owner/repo.git \
+    https://github.com/owner/repo.git; do
+    [ "$(GIT_CONFIG_GLOBAL=/dev/null effective_url "$url")" = https://github.com/owner/repo.git ] &&
+        ok "github.com remote uses HTTPS ($url)" ||
+        ng "github.com remote uses HTTPS ($url)"
+done
+for url in git@gitlab.com:owner/repo.git git@github.com.example.org:owner/repo.git; do
+    [ "$(GIT_CONFIG_GLOBAL=/dev/null effective_url "$url")" = "$url" ] &&
+        ok "other hosts keep their URL ($url)" ||
+        ng "other hosts keep their URL ($url)"
+done
+git -C "$url_repo" remote set-url origin git@github.com:owner/repo.git
+[ "$(git -C "$url_repo" config --get remote.origin.url)" = git@github.com:owner/repo.git ] &&
+    ok "the stored remote URL is not rewritten" ||
+    ng "the stored remote URL is not rewritten"
+# The documented way to keep SSH: the same system settings without the rule.
+ssh_config=/etc/devcontainer/gitconfig-ssh
+[ "$(GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=$ssh_config effective_url git@github.com:owner/repo.git)" = git@github.com:owner/repo.git ] &&
+    ok "GIT_CONFIG_SYSTEM=$ssh_config keeps SSH" ||
+    ng "GIT_CONFIG_SYSTEM=$ssh_config keeps SSH"
+[ "$(git config --file /etc/gitconfig --list | grep -v '^url\.')" = "$(git config --file $ssh_config --list)" ] &&
+    ok "gitconfig-ssh differs from /etc/gitconfig only in the URL rule" ||
+    ng "gitconfig-ssh differs from /etc/gitconfig only in the URL rule"
+rm -rf "$url_repo"
+
 # --- Git over SSH and GitHub CLI ---------------------------------------------------
 # The image trusts github.com's published host keys, so the first push over SSH
 # asks no question and a different key is refused.
