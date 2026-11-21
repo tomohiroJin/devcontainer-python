@@ -182,7 +182,7 @@ gh auth setup-git
 - 認証情報（トークン）は、コンテナ内の `~/.config/gh/hosts.yml` に平文で保存されます（コンテナには、OS の認証情報の保管庫がないためです）。コンテナを作り直すと消えるので、もう一度 `gh auth login` を実行してください。トークンをボリュームなどに残す設定は、入れていません。
 - 使い終わったら、`gh auth logout` でトークンを消せます。
 - `gh` は、PR の作成（`gh pr create`）や CI の結果の確認（`gh pr checks`）にも使えます。
-- 同梱の `gh` は Debian のパッケージ（2.46.0）で、最新版ではありません。新しいサブコマンド（`gh attestation` など）はありません。選んだ理由と、残っている脆弱性の扱いは[同梱ツール](#同梱ツール)にあります。
+- 同梱の `gh` は、GitHub の公式の apt リポジトリから入れた、ビルド時点の最新版です。Debian のパッケージではありません。理由は[同梱ツール](#同梱ツール)にあります。
 
 ## 同梱ツール
 
@@ -203,26 +203,27 @@ gh auth setup-git
 | `procps` | 4.0.4 | `ps`・`top`・`free` などのプロセス確認 |
 | `nano` | 8.4 | コミットメッセージなどを端末で編集する最小のエディター（`EDITOR` の既定） |
 | `openssh-client` | 10.0p2 | SSH 形式のリモートへの push・pull と、SSH の鍵によるコミットの署名。ホストの SSH エージェントを使います |
-| `gh` | 2.46.0 | GitHub CLI。ホストに頼らない認証（`gh auth login`）と、PR の操作 |
+| `gh` | 2.105.0 | GitHub CLI。ホストに頼らない認証（`gh auth login`）と、PR の操作。GitHub の公式の apt リポジトリから入れます。版は固定せず、ビルドした時点の最新版が入ります |
 
-`git` と `ca-certificates` 以外の10個のうち、High/Critical の検出があるのは `curl`・`openssh-client`・`gh` の3つです。`curl` は、`curl` と `libcurl4t64` に各2件、合計4件です。CVE の番号は、Git が使う `libcurl3t64-gnutls` の検出と同じで、Debian に修正版がありません。理由を付けて[ベースライン](security/container-baseline.json)に入れています。
+`git` と `ca-certificates` 以外の10個のうち、High/Critical の検出があるのは `curl` と `openssh-client` の2つです。`curl` は、`curl` と `libcurl4t64` に各2件、合計4件です。CVE の番号は、Git が使う `libcurl3t64-gnutls` の検出と同じで、Debian に修正版がありません。理由を付けて[ベースライン](security/container-baseline.json)に入れています。
 このうち CVE-2026-12064 は、curl コマンドに scheme のない URL を渡して SFTP/SCP で接続したときの問題です。curl コマンドを入れたことで該当するようになりました。curl を使うときは、URL に `https://` を必ず書き、SFTP/SCP には使わず、信頼できるホストだけを相手にしてください。
 
-`openssh-client` と `gh` は、モブプログラミングで SSH 形式のリモートに push できなかったことを受けて追加しました（[Issue #17](https://github.com/tomohiroJin/devcontainer-python/issues/17)）。どちらも Debian に修正版のない検出があり、内容を確かめたうえで、理由を付けてベースラインに入れています（2026-11-21 時点。詳しくは[検証記録](docs/git-access-validation.md)）。
+`openssh-client` と `gh` は、モブプログラミングで SSH 形式のリモートに push できなかったことを受けて追加しました（[Issue #17](https://github.com/tomohiroJin/devcontainer-python/issues/17)）。詳しくは[検証記録](docs/git-access-validation.md)にあります。
 
-| パッケージ | 検出 | このコンテナでの扱い |
-| --- | --- | --- |
-| `openssh-client` | Critical 1件（CVE-2026-60002） | サーバーが鍵の再交換の途中でホスト鍵を変えると、クライアント側でメモリを誤って使う問題です。悪意のあるサーバーに接続した場合に該当します。信頼できるホストにだけ接続してください。`github.com` はホスト鍵をイメージに登録してあるので、別のサーバーが `github.com` になりすますことはできません |
-| `openssh-client` | High 1件（CVE-2026-106583） | `ssh` のコマンドラインに渡したユーザー名に `$` や `\` があると、意図しない文字列として扱われる問題です。Git のリモートは、決まったユーザー名 `git` を使います。信頼できない URL を、そのままリモートに設定しないでください |
-| `openssh-client` | High 4件（CVE-2026-106553、-106555、-59999、-60000） | SSH サーバー（`sshd`）の問題です。このイメージにはクライアントしか入れておらず、`sshd` がないことを `scripts/check_devcontainer.sh` が確かめます |
-| `gh` | Critical 1件（CVE-2026-48501） | `gh attestation`・`gh release verify`・`gh release verify-asset` が、トークンを別のホストに送る問題です。Debian の gh 2.46.0 には、これらのサブコマンドがないため、該当しません |
+`openssh-client` には、Debian に修正版のない検出が6件あります（2026-11-21 時点）。内容を確かめたうえで、理由を付けてベースラインに入れています。
 
-`gh` には、このほかに Debian で未修正の Medium 4件と Low 3件があります（High 未満のため、ゲートの対象外です）。一覧と、それぞれがこのコンテナで該当するかどうかは、[検証記録](docs/git-access-validation.md)にあります。普段の使い方で気をつける点は、次の2つです。
+| 検出 | このコンテナでの扱い |
+| --- | --- |
+| Critical 1件（CVE-2026-60002） | サーバーが鍵の再交換の途中でホスト鍵を変えると、クライアント側でメモリを誤って使う問題です。悪意のあるサーバーに接続した場合に該当します。信頼できるホストにだけ接続してください。`github.com` はホスト鍵をイメージに登録してあるので、別のサーバーが `github.com` になりすますことはできません |
+| High 1件（CVE-2026-106583） | `ssh` のコマンドラインに渡したユーザー名に `$` や `\` があると、意図しない文字列として扱われる問題です。Git のリモートは、決まったユーザー名 `git` を使います。信頼できない URL を、そのままリモートに設定しないでください |
+| High 4件（CVE-2026-106553、-106555、-59999、-60000） | SSH サーバー（`sshd`）の問題です。このイメージにはクライアントしか入れておらず、`sshd` がないことを `scripts/check_devcontainer.sh` が確かめます |
 
-- 他人が書いた内容（PR、Actions のログなど）を表示するサブコマンドは、内容に端末の制御文字が含まれていると、端末の表示を書き換えられることがあります。信頼できないリポジトリの PR やログを、`gh` で表示しないでください。
-- `gh auth status` は、細かい権限のトークン（`github_pat_` で始まるもの）の一部を表示することがあります。`gh auth login --web` で取得するトークンは該当しません。出力を共有するときは、トークンが含まれていないかを確かめてください。
+`gh` には、検出がありません（Trivy で、すべての深刻度を確かめました）。
 
-- **`gh` に Debian のパッケージを選んだ理由**: 他の OS パッケージと同じ方法（apt）で入り、版は Debian が管理します。CI の Trivy の監査の対象にもなります。GitHub の公式の apt リポジトリやリリースのバイナリを使えば最新版（2.98 以降）になりますが、apt の取得先と署名鍵が増えるか、版とハッシュを手で追う必要があります。この PR の検証環境からは `cli.github.com` と GitHub のリリースに接続できず、最新版のハッシュと検出を確かめられなかったため、確かめられた Debian の版を採用しました。最新版に切り替える場合は、Dockerfile の `gh` の行を置き換え、ベースラインの `gh` の項目を見直してください。
+- **`gh` を GitHub の公式の apt リポジトリから入れる理由**: Debian trixie の `gh` は 2.46.0（上流では 2024 年の版）で、Debian に修正版のない脆弱性が8件あります（Trivy の判定で Critical 1件、Medium 4件、Low 3件）。公式のリポジトリ（`cli.github.com`）の 2.105.0 では、どれも修正済みです。
+  - apt は、リポジトリの署名を確かめます。署名鍵は [.devcontainer/apt/githubcli-archive-keyring.gpg](.devcontainer/apt/githubcli-archive-keyring.gpg) に置き、この鍵で署名されたものだけを `gh` の取得元として受け入れます（`signed-by`）。鍵のファイルは、`cli.github.com/packages/githubcli-archive-keyring.gpg` から取得したものです。`make test` が、ファイルの SHA-256 を確かめます。
+  - 版は固定していません。公式のリポジトリの索引には最新版しか載らないため、apt では古い版を指定できません。ビルド時の `apt-get upgrade` と同じく、ビルドした時点の最新版が入ります。そのため、`gh` の版はビルドした日によって変わります。`scripts/check_devcontainer.sh` は、版が 2.98.0 以上であること（Debian の版に戻っていないこと）を確かめます。
+  - GitHub が署名鍵を入れ替えた場合は、イメージのビルドが署名の検証で失敗します。そのときは、上の URL から鍵を取得し直し、`scripts/test_project_config.py` の SHA-256 を更新してください。現在のファイルには、2022 年の鍵（2026-09-05 に期限切れ）と、2026 年の鍵（指紋 `7F38 BBB5 9D06 4DBC B3D8 4D72 5612 B364 6231 3325`）が入っています。
 
 ### 入れなかったもの
 
@@ -587,7 +588,7 @@ CI は最小権限で動き、Actions をコミット SHA に固定していま�
 `pip-audit==2.10.1` はpip bootstrapを含むロック済み全33依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
 build-essential は入れていません。追加した OS パッケージと、入れなかったものの理由は[同梱ツール](#同梱ツール)にあります。
-Git が引き込む krb5・expat・curl のライブラリと、curl コマンドには Debian 未修正の High が残ります。OpenSSH クライアントと GitHub CLI には、Debian 未修正の Critical が1件ずつ、OpenSSH クライアントには High が5件残ります（[全検出一覧](docs/security-findings.json)）。
+Git が引き込む krb5・expat・curl のライブラリと、curl コマンドには Debian 未修正の High が残ります。OpenSSH クライアントには、Debian 未修正の Critical が1件と High が5件残ります（[全検出一覧](docs/security-findings.json)）。
 次の運用で緩和してください。
 
 - 信頼できないリポジトリを `--recurse-submodules` 付きで clone しない。
@@ -595,7 +596,6 @@ Git が引き込む krb5・expat・curl のライブラリと、curl コマン�
 - 信頼できない `git fast-import` ストリーム、XML、SQLite ファイルを扱わない。
 - curl では URL に `https://` を必ず書き、信頼できるホストだけを相手にする（CVE-2026-12064、CVE-2026-8458）。
 - SSH では、信頼できるホストにだけ接続する（CVE-2026-60002）。信頼できない URL を Git のリモートに設定しない（CVE-2026-106583）。
-- `gh` で、信頼できないリポジトリの PR や Actions のログを表示しない。
 
 HIGH/CRITICALは全件を記録し、新規・修正可能な項目を失敗させます。既知残件に限定した判定は[CI監査方針](docs/ci-security-policy.md)を参照してください。
 結果 JSON は CI artifact に保存されます。監査失敗を無視せず、CVE/GHSA、影響、
@@ -608,7 +608,7 @@ make audit-container
 
 `make audit` は pip-audit を、`make audit-container` はイメージのビルド・Trivy・ベースラインとの照合を実行します。実行されるコマンドは [Makefile](Makefile) にあります。
 
-既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧は [docs/security-findings.json](docs/security-findings.json) にあります。Debian の修正待ちの118件は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（修正待ちとして一旦閉じています）。curl コマンドの追加で増えた4件は Issue #9 の記載には含まれていないため、一覧とベースラインの理由を参照してください。2026-11-21 に追加した OpenSSL の3件（CVE-2026-124709）も同じです。経緯は[検証記録](docs/mob-feedback-validation.md)にあります。同じ日に `openssh-client` と `gh` の追加で増えた7件（Critical 2件を含む）は、[検証記録](docs/git-access-validation.md)にあります。
+既知の未修正 High が残っているため、Trivy に `--exit-code 1` を付けると常に失敗します。合否はベースラインと照合する `check_container_audit.py` で判定してください（既知の残件だけなら `blocking: 0` で成功します）。残件の一覧は [docs/security-findings.json](docs/security-findings.json) にあります。Debian の修正待ちの118件は [Issue #9](https://github.com/tomohiroJin/devcontainer-python/issues/9) に記録しています（修正待ちとして一旦閉じています）。curl コマンドの追加で増えた4件は Issue #9 の記載には含まれていないため、一覧とベースラインの理由を参照してください。2026-11-21 に追加した OpenSSL の3件（CVE-2026-124709）も同じです。経緯は[検証記録](docs/mob-feedback-validation.md)にあります。同じ日に `openssh-client` の追加で増えた6件（Critical 1件を含む）は、[検証記録](docs/git-access-validation.md)にあります。
 
 pip の HTTPS 通信にプロキシ CA が必要な環境では、Dockerfile の任意 BuildKit secret `proxy_ca` に
 信頼済み CA バンドルを渡します（例: `--secret id=proxy_ca,src=/path/to/ca-bundle.pem`）。

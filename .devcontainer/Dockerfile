@@ -9,8 +9,17 @@ ARG USER_GID=$USER_UID
 ENV LANG=C.UTF-8 \
     LESSCHARSET=utf-8
 
+# The GitHub CLI comes from GitHub's own apt repository: Debian's gh (2.46.0)
+# is years behind and has unfixed security advisories. apt accepts that
+# repository only when it is signed with this key. The key file is committed
+# (source: https://cli.github.com/packages/githubcli-archive-keyring.gpg) and
+# scripts/test_project_config.py checks its SHA-256.
+COPY --chmod=644 .devcontainer/apt/githubcli-archive-keyring.gpg /usr/share/keyrings/githubcli-archive-keyring.gpg
+
 # Selection criteria and the reason for each package are in the README.
-RUN apt-get update \
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         bash-completion \

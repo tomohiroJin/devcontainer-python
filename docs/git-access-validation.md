@@ -19,7 +19,8 @@ main のイメージ（High 126件、Critical 0件。すべてベースライン
 | 追加したパッケージ | 版 | 増えた High/Critical |
 | --- | --- | --- |
 | `openssh-client` | 1:10.0p1-7+deb13u4 | Critical 1件、High 5件 |
-| `gh` | 2.46.0-3 | Critical 1件 |
+| `gh`（Debian の版） | 2.46.0-3 | Critical 1件（不採用） |
+| `gh`（GitHub の公式リポジトリの版） | 2.105.0 | 0件 |
 
 あわせて入る依存は、`libedit2`・`libcbor0.10`・`libfido2-1` です（検出なし）。
 
@@ -40,28 +41,43 @@ main のイメージ（High 126件、Critical 0件。すべてベースライン
 
 | 配布元 | 版 | 確かめた結果 |
 | --- | --- | --- |
-| Debian trixie の `gh` | 2.46.0-3（上流の 2.46.0 は 2024 年の公開） | 採用。apt で入り、依存は `libc6` だけです。Go 1.23.4 で静的にビルドされています。Trivy は Debian のパッケージとして扱います |
-| GitHub の公式 apt リポジトリ（`cli.github.com`） | 最新 | 確かめられませんでした。この検証環境からは `cli.github.com` に接続できません |
-| GitHub のリリースのバイナリ | 最新 | 確かめられませんでした。この検証環境からは GitHub のリリースに接続できません |
+| Debian trixie の `gh` | 2.46.0-3（上流の 2.46.0 は 2024 年の公開） | 不採用。Debian に修正版のない脆弱性が8件あります（下の表） |
+| GitHub の公式 apt リポジトリ（`cli.github.com`） | 2.105.0（2026-11-17 公開） | **採用**。Trivy の検出は、すべての深刻度で0件でした |
+| GitHub のリリースのバイナリ | — | 確かめていません（この検証環境からは、GitHub のリリースに接続できません）。公式の apt リポジトリで足りるため、必要ありません |
 
-最新版は、下の表の脆弱性がすべて修正されている見込みです（修正版は 2.92.0〜2.98.0）。ただし、ハッシュと Trivy の検出をこの環境で確かめられないため、確かめられた Debian の版を採用しました。
+最初は、この検証環境から `cli.github.com` に接続できなかったため、確かめられた Debian の版で実装しました。その後、リポジトリの所有者の許可を得て、検証環境の許可ホストに `cli.github.com` を追加し、公式のリポジトリの版に切り替えました。
 
-### `gh` 2.46.0 に残っている脆弱性
+#### 公式のリポジトリについて確かめたこと
 
-Debian のトラッカーでは、8件が trixie で `open`、no-dsa（Minor issue）です。過去の4件（CVE-2024-52308、-53858、-54132、CVE-2025-25204）は、修正済みか、この版には該当しません。
+- **署名鍵**: `https://cli.github.com/packages/githubcli-archive-keyring.gpg` から取得しました（2026-11-21、4528 バイト、SHA-256 `6084d5d7bd8e288441e0e94fc6275570895da18e6751f70f057485dc2d1a811b`）。鍵は2つ入っています。
 
-| CVE | Trivy の深刻度 | 内容 | このコンテナでの扱い |
+  | 作成日 | 指紋 | 状態 |
+  | --- | --- | --- |
+  | 2022-09-06 | `2C61 0620 1985 B60E 6C7A C873 23F3 D4EA 7571 6059` | 2026-09-05 に期限切れ |
+  | 2026-04-07 | `7F38 BBB5 9D06 4DBC B3D8 4D72 5612 B364 6231 3325` | 有効（期限なし） |
+
+  指紋を、GitHub の別の経路（公式ドキュメントなど）の値と照合することは、この検証環境ではできていません（`cli.github.com` 以外の GitHub のホストに接続できないため）。鍵は、TLS で `cli.github.com` から取得したものです。
+- **署名の検証**: `signed-by` を付けた apt の取得元で、`apt-get update` と `apt-get install gh` が成功しました。
+- **版の固定**: リポジトリの索引（`Packages`）には、最新版の1件しか載っていません。そのため、apt で古い版を指定することはできません。古い版の `.deb` は、`pool/` に残っています（2.104.0 と 2.100.0 があることを確かめました）。版を固定する場合は、`.deb` を直接取得して SHA-256 を照合する方法になりますが、更新を手で追う必要があります。この変更では、OS パッケージと同じく、ビルド時点の最新版を入れる方法にしました。
+- **arm64**: 索引に arm64 版（2.105.0）があることを確かめました。ビルドはしていません。
+- **依存**: `git` だけです（導入済み）。
+
+### Debian の `gh` 2.46.0 に残っている脆弱性（不採用の理由）
+
+Debian のトラッカーでは、8件が trixie で `open`、no-dsa（Minor issue）です。
+
+| CVE | Trivy の深刻度 | 内容 | 上流の修正版 |
 | --- | --- | --- | --- |
-| CVE-2026-48501 | Critical | `gh attestation`・`gh release verify`・`gh release verify-asset` が、トークンを別のホストに送る | 該当しません。2.46.0 には、これらのサブコマンドがありません（`gh attestation` は `unknown command`、`gh release` に `verify` はないことを、イメージで確かめました）。ベースラインに入れました |
-| CVE-2026-59831 | Medium | `gh codespace jupyter` が、悪意のある Codespace から渡された URL を検証せずに開く | Codespace に接続するサブコマンドを使った場合だけ該当します |
-| CVE-2026-72924 | Medium | `gh codespace ports forward` が、すべてのネットワークインターフェースで待ち受ける | 同上 |
-| CVE-2026-64653 | Medium | API の URL に、リポジトリ名などを符号化せずに埋め込む | 攻撃者が用意したリポジトリ名などを `gh` に渡した場合に該当します |
-| CVE-2026-64654 | Medium | PR・gist・リリースなどの内容を、端末の制御文字を取り除かずに表示する | 該当します。信頼できないリポジトリの内容を `gh` で表示しない運用で緩和します |
-| CVE-2026-45803 | Low | `gh run view --log` が、Actions のログの制御文字を取り除かずに表示する | 該当します。同上 |
-| CVE-2026-64652 | Low | `gh auth status` が、細かい権限のトークンなどの一部を表示する | `gh auth login --web` で取得するトークン（`gho_`）は該当しません |
-| CVE-2026-64655 | Low | `gh attestation verify` が、署名者の名前を正規表現として扱う | 該当しません（サブコマンドがありません） |
+| CVE-2026-48501 | Critical | `gh attestation`・`gh release verify`・`gh release verify-asset` が、トークンを別のホストに送る（2.46.0 には、これらのサブコマンドがありません） | 2.93.0 |
+| CVE-2026-59831 | Medium | `gh codespace jupyter` が、悪意のある Codespace から渡された URL を検証せずに開く | 2.96.0 |
+| CVE-2026-72924 | Medium | `gh codespace ports forward` が、すべてのネットワークインターフェースで待ち受ける | 2.98.0 |
+| CVE-2026-64653 | Medium | API の URL に、リポジトリ名などを符号化せずに埋め込む | 2.97.0 |
+| CVE-2026-64654 | Medium | PR・gist・リリースなどの内容を、端末の制御文字を取り除かずに表示する | 2.97.0 |
+| CVE-2026-45803 | Low | `gh run view --log` が、Actions のログの制御文字を取り除かずに表示する | 2.92.0 |
+| CVE-2026-64652 | Low | `gh auth status` が、細かい権限のトークンなどの一部を表示する | 2.97.0 |
+| CVE-2026-64655 | Low | `gh attestation verify` が、署名者の名前を正規表現として扱う | 2.97.0 |
 
-Medium と Low は、ゲート（High/Critical）の対象外です。Debian が修正版を出した場合は、ビルド時の `apt-get upgrade` が取り込みます。
+2.105.0 は、これらの修正版より新しい版です。`scripts/check_devcontainer.sh` は、入っている `gh` が 2.98.0 以上であることを確かめます。
 
 ### `github.com` のホスト鍵
 
@@ -94,30 +110,31 @@ Dockerfile と同じ手順でビルドしたイメージで確かめました。
 
 ### その他
 
-- **`make check`**: lint、型チェック、テスト55件、`scripts/` の単体テスト27件が成功しました。
+- **`make check`**: lint、型チェック、テスト55件、`scripts/` の単体テスト28件が成功しました。
 - **`scripts/check_devcontainer.sh`**: すべて成功しました。追加・変更した検査は次のとおりです。
   - `gh`・`ssh`・`ssh-add`・`ssh-keygen` があること。`sshd` がないこと（これまでは `ssh` がないことを確かめていました）
   - `github.com` のホスト鍵が登録されていて、指紋が上の3つと一致すること
   - `ssh` がイメージのホスト鍵のファイルを読むこと。知らないホストを確認なしに信頼しない設定のままであること
   - `gh` が動き、`gh auth setup-git` があること。`gh` の補完があること
-- **`scripts/test_project_config.py`**: ホスト鍵のファイルから指紋を計算し、上の3つと一致することを確かめるテストを追加しました（`ssh` のない CI の `python` ジョブでも動きます）。
-- **Trivy**: 新しい[ベースライン](../security/container-baseline.json)で `Raw findings: HIGH=131; CRITICAL=2`、`Reviewed: 133; blocking: 0`。[全検出一覧](security-findings.json)と [OS パッケージ一覧](os-packages.txt)を更新しました。
-- **`gh`**: `gh --version` が 2.46.0 を表示しました。`gh auth login` の `--hostname`・`--git-protocol`・`--web` と、`gh auth setup-git`・`gh auth logout`・`gh pr checks` があることを確かめました。
+  - `gh` の版が 2.98.0 以上であること（Debian の版に戻っていないこと）と、apt の取得元が署名鍵に結び付けられていること
+- **`scripts/test_project_config.py`**: ホスト鍵のファイルから指紋を計算し、上の3つと一致することを確かめるテストを追加しました（`ssh` のない CI の `python` ジョブでも動きます）。`gh` の署名鍵のファイルの SHA-256 を確かめるテストも追加しました。
+- **Trivy**: 新しい[ベースライン](../security/container-baseline.json)で `Raw findings: HIGH=131; CRITICAL=1`、`Reviewed: 132; blocking: 0`。[全検出一覧](security-findings.json)と [OS パッケージ一覧](os-packages.txt)を更新しました。
+- **`gh`**: `gh --version` が 2.105.0 を表示しました。`gh auth login` の `--hostname`・`--git-protocol`・`--web` と、`gh auth setup-git`・`gh auth logout`・`gh pr checks` があることを確かめました。
 
 ## イメージの大きさ
 
 | 項目 | 変更前（main） | 変更後 |
 | --- | --- | --- |
-| `docker image inspect` の Size | 635 MB | 689 MB |
-| `docker save` の出力を gzip で圧縮した大きさ | 147 MB | 160 MB |
+| `docker image inspect` の Size | 635 MB | 700 MB |
+| `docker save` の出力を gzip で圧縮した大きさ | 147 MB | 165 MB |
 | OS パッケージ数 | 131 | 136 |
-| Trivy の High / Critical | 126 / 0 | 131 / 2 |
+| Trivy の High / Critical | 126 / 0 | 131 / 1 |
 
-増えた分の多くは `gh` です（静的にビルドされたバイナリが 35 MB）。
+増えた分の多くは `gh` です（インストール後の大きさが約 40 MB）。
 
 ## 確かめていないこと
 
 - **実際の `github.com` への SSH 接続**と、`gh auth login` による認証（どちらも、この検証環境から接続できないため）。
 - **VS Code による SSH エージェントの受け渡し**（検証環境に VS Code がないため）。README の手順は、Windows・macOS・Linux のどのホストでも確かめていません。
 - **`gh` のトークンの保存先**。README には、平文で `~/.config/gh/hosts.yml` に保存されると書きました。これは gh の仕様（OS の保管庫がなければ平文で保存する）に基づく記述で、ログインして確かめたものではありません。
-- **arm64**: Debian に `gh` と `openssh-client` の arm64 版があることは確かめていません（Issue #19）。
+- **arm64**: `gh` は、公式のリポジトリの索引に arm64 版があることだけを確かめました。`openssh-client` の arm64 版と、arm64 でのビルドは確かめていません（Issue #19）。

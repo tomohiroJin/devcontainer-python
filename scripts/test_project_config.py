@@ -127,6 +127,22 @@ class ProjectConfigTests(unittest.TestCase):
         dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
         self.assertIn("ssh_known_hosts /etc/ssh/ssh_known_hosts\n", dockerfile)
 
+    def test_github_cli_signing_key_is_the_reviewed_one(self):
+        # Downloaded from https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        # on 2026-11-21. apt trusts packages signed with this key, so a changed
+        # file must be reviewed, not just committed.
+        keyring = ROOT / ".devcontainer/apt/githubcli-archive-keyring.gpg"
+        self.assertEqual(
+            hashlib.sha256(keyring.read_bytes()).hexdigest(),
+            "6084d5d7bd8e288441e0e94fc6275570895da18e6751f70f057485dc2d1a811b",
+        )
+        dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")
+        self.assertIn(
+            "signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg", dockerfile
+        )
+        attributes = (ROOT / ".gitattributes").read_text(encoding="utf-8")
+        self.assertIn("*.gpg binary\n", attributes)
+
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")
         dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")

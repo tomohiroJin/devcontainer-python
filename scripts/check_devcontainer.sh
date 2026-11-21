@@ -67,6 +67,16 @@ else
 fi
 rm -f "$other_key" "$other_key.key" "$other_key.key.pub"
 check "gh runs" gh --version
+# Debian's own gh (2.46.0) has unfixed advisories; the image must carry the
+# build from GitHub's apt repository. 2.98.0 fixes the last of them.
+gh_version=$(dpkg-query -W -f '${Version}' gh 2>/dev/null)
+dpkg --compare-versions "${gh_version:-0}" ge 2.98.0 &&
+    ok "gh is a current release from GitHub's repository ($gh_version)" ||
+    ng "gh is a current release from GitHub's repository (got '$gh_version')"
+grep -qs 'signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg' \
+    /etc/apt/sources.list.d/github-cli.list &&
+    ok "the GitHub CLI apt source is tied to its signing key" ||
+    ng "the GitHub CLI apt source is tied to its signing key"
 check "gh can configure git credentials" gh auth setup-git --help
 [ -r /usr/share/bash-completion/completions/gh ] && ok "gh completion is available" ||
     ng "gh completion is available"

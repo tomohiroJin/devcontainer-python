@@ -1648,20 +1648,6 @@
       "Note": "Added 2026-11-21 from the CI run of pull request #23 (run 44901086769). Debian urgency: not yet assigned. QUIC server memory leak; the container runs no QUIC server."
     },
     {
-      "VulnerabilityID": "CVE-2026-48501",
-      "PkgName": "gh",
-      "SourcePackage": "gh",
-      "InstalledVersion": "2.46.0-3",
-      "FixedVersion": null,
-      "Severity": "CRITICAL",
-      "Status": "affected",
-      "DebianTrixieStatus": "open",
-      "NewSinceBaseline": true,
-      "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-48501",
-      "DebianClassification": "no-dsa (Minor issue)",
-      "Note": "Added 2026-11-21 with gh (issue #17). Needs gh attestation / gh release verify, which gh 2.46.0 does not have."
-    },
-    {
       "VulnerabilityID": "CVE-2026-60002",
       "PkgName": "openssh-client",
       "SourcePackage": "openssh",
@@ -1757,9 +1743,9 @@
     },
     {
       "date": "2026-11-21",
-      "source": "Local Trivy 0.76.2 scan of the image built from this change (DB updated 2026-11-21T13:02:47Z): Raw findings HIGH=131, CRITICAL=2; Reviewed 133; blocking 0 with the updated baseline",
+      "source": "Local Trivy 0.76.2 scan of the image built from this change (DB updated 2026-11-21T13:02:47Z): Raw findings HIGH=131, CRITICAL=1; Reviewed 132; blocking 0 with the updated baseline",
       "debian_tracker_checked": "2026-11-21",
-      "change": "Added openssh-client and gh (issue #17): 6 findings for openssh-client 1:10.0p1-7+deb13u4 (1 CRITICAL, 5 HIGH) and 1 CRITICAL finding for gh 2.46.0-3. The other 126 entries are unchanged. gh also has 4 MEDIUM and 3 LOW open advisories in Debian, which are below the gate's threshold and listed in docs/git-access-validation.md."
+      "change": "Added openssh-client and gh (issue #17): 6 findings for openssh-client 1:10.0p1-7+deb13u4 (1 CRITICAL, 5 HIGH). The other 126 entries are unchanged. gh 2.105.0 comes from GitHub's apt repository and has no finding at any severity; Debian's gh 2.46.0-3 was tried first and rejected (1 CRITICAL, 4 MEDIUM and 3 LOW open advisories), see docs/git-access-validation.md."
     }
   ]
 }
