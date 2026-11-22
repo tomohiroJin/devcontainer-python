@@ -615,6 +615,7 @@ ipython
 ## VS Code
 
 必須の拡張は Microsoft Python / Pylance / Python Debugger と Astral Ruff の4件です。
+このほかに、モブプログラミング・ペアプログラミングで画面を共有するための Live Share（`ms-vsliveshare.vsliveshare`）も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。Marketplace にはこの検証環境から接続できないため、公開状態は確認していません）。`make doctor` が確かめるのは、必須の4件だけです。
 各 ID は提供元の現行公式拡張であることと Marketplace の公開状態を確認済みです
 （Python 2026-10-29、Pylance 2026-10-16、Debugger 2026-11-02、Ruff 2026-10-27 更新）。
 [Python 公式ガイド](https://code.visualstudio.com/docs/python/python-tutorial)、
