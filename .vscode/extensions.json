@@ -4,8 +4,6 @@
     "ms-python.vscode-pylance",
     "ms-python.debugpy",
     "charliermarsh.ruff",
-    "ms-vsliveshare.vsliveshare",
-    "ms-python.mypy-type-checker",
-    "usernamehw.errorlens"
+    "ms-vsliveshare.vsliveshare"
   ]
 }
