@@ -48,7 +48,9 @@
    make doctor
    ```
 
-   Git の名前とメールアドレス、署名、コミット前フック、push に使う認証情報などを確かめ、問題があれば直し方を表示します。リモートには接続しません。`FAIL` がなければ、コミットの準備ができています。push できるかは、最初の push で確かめてください。モブプログラミングやペアプログラミングの前には、参加者それぞれが実行してください（詳しくは[環境の確認（make doctor）](#環境の確認make-doctor)）。
+   Git の名前とメールアドレス、署名、コミット前フック、push に使う認証情報などを確かめ、問題があれば直し方を表示します。リモートには接続しません。`FAIL` がなければ、コミットの準備ができています。push できるかは、最初の push で確かめてください。詳しくは[環境の確認（make doctor）](#環境の確認make-doctor)にあります。
+
+   モブプログラミングやペアプログラミングで使う場合の手順（参加の方式、始める前の確認、TDD の進め方、共同作業者の記録）は、[docs/mob-programming.md](docs/mob-programming.md) にあります。
 
 5. lint・型チェック・テストをまとめて実行します:
 
@@ -137,7 +139,7 @@ bash scripts/check_devcontainer.sh
 
 ## 環境の確認（make doctor）
 
-`make doctor` は、「この人の、この起動の状態で、開発を始められるか」を確かめます。モブプログラミングの開始前に、参加者それぞれが実行してください。
+`make doctor` は、「この人の、この起動の状態で、開発を始められるか」を確かめます。モブプログラミングの開始前に、コミットと push を行う人（Live Share で共有する場合はホスト）が実行してください（[モブプログラミングの手順](docs/mob-programming.md)）。
 
 ```bash
 make doctor
@@ -623,6 +625,7 @@ Marketplace にはこの検証環境から接続できないため、下の表�
 | Even Better TOML | `tamasfe.even-better-toml` | `pyproject.toml` の補完と検証 |
 | Code Spell Checker | `streetsidesoftware.code-spell-checker` | 英単語のつづりの確認 |
 | Jupyter | `ms-toolsai.jupyter` | Notebook を使う場合（このリポジトリには含みません） |
+| Live Share | `ms-vsliveshare.vsliveshare` | モブプログラミング・ペアプログラミングで、ホストの Dev Container を共有する場合（[手順](docs/mob-programming.md)）。ホストとゲストの両方に必要です。必須の拡張にしていないのは、1人で使う場合には要らないためです |
 
 **エディターの設定**（[.vscode/settings.json](.vscode/settings.json)）: 88桁のルーラー、保存時の行末空白の削除（Markdown を除く）、ファイル末尾の改行、改行コード LF、ターミナルのスクロール量1万行。ターミナルの既定プロファイル（bash）は `devcontainer.json` で指定しています。
 
