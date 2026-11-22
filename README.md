@@ -623,6 +623,8 @@ ipython
 | Mypy Type Checker | `ms-python.mypy-type-checker` | CI とコミット前の検査が使う mypy の結果を、エディターに表示する。コンテナに固定した版の mypy を使います（`settings.json` の `mypy-type-checker.importStrategy`）。Pylance の型診断と、同じ箇所に2つ表示されることがあります。CI が失敗するのは、mypy のほうです |
 | Error Lens | `usernamehw.errorlens` | lint と型のエラーを、行の横に表示する。画面を共有しているときに、全員がエラーに気づけます |
 
+**作成の直後に、Ruff の拡張が「No Python environment extension is available.」と警告することがあります。** Dev Container や Codespaces を作った直後は、拡張が順に入ります。Python の拡張が入る前に Ruff の拡張が起動すると、この警告が1度だけ出ます。害はありません。Ruff の拡張は、`settings.json` の `ruff.path` で指定した、コンテナの Ruff（`/usr/local/bin/ruff`。`requirements.txt` で固定した版）を使います。気になる場合は、コマンドパレットの「Developer: Reload Window」で読み込み直してください。
+
 この3件は、Marketplace にこの検証環境から接続できないため、公開状態を確認していません。`make doctor` が確かめるのは、必須の4件だけです。
 
 各 ID は提供元の現行公式拡張であることと Marketplace の公開状態を確認済みです
