@@ -29,5 +29,8 @@
   ],
   "python.analysis.typeCheckingMode": "basic",
   "mypy-type-checker.importStrategy": "fromEnvironment",
-  "ruff.importStrategy": "fromEnvironment"
+  "ruff.importStrategy": "fromEnvironment",
+  "ruff.path": [
+    "/usr/local/bin/ruff"
+  ]
 }

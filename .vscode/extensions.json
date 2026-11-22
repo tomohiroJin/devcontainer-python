@@ -4,6 +4,8 @@
     "ms-python.vscode-pylance",
     "ms-python.debugpy",
     "charliermarsh.ruff",
-    "ms-vsliveshare.vsliveshare"
+    "ms-vsliveshare.vsliveshare",
+    "tamasfe.even-better-toml",
+    "PKief.material-icon-theme"
   ]
 }

@@ -615,7 +615,20 @@ ipython
 ## VS Code
 
 必須の拡張は Microsoft Python / Pylance / Python Debugger と Astral Ruff の4件です。
-このほかに、モブプログラミング・ペアプログラミングで画面を共有するための Live Share（`ms-vsliveshare.vsliveshare`）も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。Marketplace にはこの検証環境から接続できないため、公開状態は確認していません）。`make doctor` が確かめるのは、必須の4件だけです。
+このほかに、次の3件も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。[Issue #30](https://github.com/tomohiroJin/devcontainer-python/issues/30)）。Codespaces（特にブラウザー）では、`devcontainer.json` にない拡張は入らないためです。
+
+| 拡張 | ID | 入れた理由 |
+| --- | --- | --- |
+| Live Share | `ms-vsliveshare.vsliveshare` | モブプログラミング・ペアプログラミングで、画面と編集を共有する |
+| Even Better TOML | `tamasfe.even-better-toml` | `pyproject.toml` などの TOML ファイルを、色分けして表示する（VS Code には、TOML の色分けが入っていません）。補完と検証も行います |
+| Material Icon Theme | `PKief.material-icon-theme` | エクスプローラーのファイルとフォルダーに、種類ごとのアイコンを表示する。`devcontainer.json` の設定（`workbench.iconTheme`）で、Dev Container と Codespaces の中でだけ有効にしています。別のアイコンにしたい場合は、「基本設定: ファイル アイコンのテーマ」で変えられます |
+
+この3件は、Marketplace にこの検証環境から接続できないため、公開状態を確認していません。`make doctor` が確かめるのは、必須の4件だけです。
+
+Mypy Type Checker と Error Lens は、最初から入れることを試しましたが、やめました（[Issue #30](https://github.com/tomohiroJin/devcontainer-python/issues/30)）。同じ箇所に、Ruff・Pylance・mypy の診断が重なって表示され、うるさくなります。また、Error Lens の行の横の表示は、Live Share のゲストの画面には出ません（ゲストは、マウスを当てて診断を見ます）。必要な人は、下の「任意の拡張」から入れてください。
+
+**作成の直後に、Ruff の拡張が「No Python environment extension is available.」と警告することがあります。** Dev Container や Codespaces を作った直後は、拡張が順に入ります。Python の拡張が入る前に Ruff の拡張が起動すると、この警告が1度だけ出ます。害はありません。Ruff の拡張は、`settings.json` の `ruff.path` で指定した、コンテナの Ruff（`/usr/local/bin/ruff`。`requirements.txt` で固定した版）を使います。気になる場合は、コマンドパレットの「Developer: Reload Window」で読み込み直してください。
+
 各 ID は提供元の現行公式拡張であることと Marketplace の公開状態を確認済みです
 （Python 2026-10-29、Pylance 2026-10-16、Debugger 2026-11-02、Ruff 2026-10-27 更新）。
 [Python 公式ガイド](https://code.visualstudio.com/docs/python/python-tutorial)、
@@ -625,16 +638,22 @@ ipython
 Pylance が型診断、pytest がテスト検出、debugpy がデバッグを担当します。
 Python の整形は Ruff に統一します。
 
+**Live Share のゲストでは、保存時の整形が動きません**（2026-11-22 に、リポジトリの所有者が確認）。ホスト（Dev Container や Codespaces を開いている人）が保存すると、Ruff で整形されます。ゲストが保存しても、整形されません。保存時の整形は、このリポジトリの設定（`.vscode/settings.json`）と、コンテナに入っている Ruff の拡張で動いていて、ゲストの VS Code には、そのどちらも届かないためと考えられます。
+
+- **コミットされる内容は、そろいます。** ホストのコンテナでコミットすると、コミット前の検査が Ruff で整形するか、コミットを止めます。CI も、整形されていないコードを通しません。
+- 途中で見た目をそろえたい場合は、ホストが、そのファイルを保存し直す（Ctrl+S）か、ターミナルで `make fmt` を実行します。
+- ゲストの VS Code に Ruff の拡張を入れても、ゲストの保存では整形されませんでした（2026-11-22 に確認）。ゲストの側で整形する方法は、今のところ見つかっていません。
+- ゲストとして参加する人が、自分の画面でも保存時に整形したい場合は、Live Share のゲストではなく、自分で Codespaces を開く方法があります（[GitHub Codespaces で使う](#github-codespaces-で使う)）。ブラウザーだけで、ホストと同じ環境になります。
+
 **任意の拡張**は `devcontainer.json` と `extensions.json` には入れていません。必要な人だけ導入してください。
 Marketplace にはこの検証環境から接続できないため、下の表の公開状態と更新日は確認していません。導入前に提供元を確認してください。
 
 | 拡張 | ID | 用途 |
 | --- | --- | --- |
-| Mypy Type Checker | `ms-python.mypy-type-checker` | CI と同じ mypy の結果をエディターに表示。`settings.json` でコンテナ内の mypy を使う設定にしてあります |
+| Mypy Type Checker | `ms-python.mypy-type-checker` | CI と同じ mypy の結果をエディターに表示。`settings.json` でコンテナ内の mypy を使う設定にしてあります。Pylance や Ruff と、同じ箇所に診断が重なることがあります |
+| Error Lens | `usernamehw.errorlens` | 診断を行の横に表示。診断の数が多いと、画面がうるさくなります。Live Share のゲストの画面には、ホストの Error Lens の表示は出ません |
 | GitLens | `eamodio.gitlens` | 行ごとの変更履歴（blame）や履歴の比較。機能が多く、一部は有料です。履歴を詳しく調べたい場合に向きます |
-| Git Graph | `mhutchie.git-graph` | コミットグラフの表示だけを行う軽い拡張です。グラフだけ見たい場合は GitLens よりこちらで足ります。端末では `gl` でも見られます |
-| Error Lens | `usernamehw.errorlens` | 診断を行の横に表示 |
-| Even Better TOML | `tamasfe.even-better-toml` | `pyproject.toml` の補完と検証 |
+| Git Graph | `mhutchie.git-graph` | コミットグラフを表示する軽い拡張です。VS Code の「ソース管理」ビューにもグラフの表示があり、端末では `gl` でも見られるため、最初からは入れていません |
 | Code Spell Checker | `streetsidesoftware.code-spell-checker` | 英単語のつづりの確認 |
 | Jupyter | `ms-toolsai.jupyter` | Notebook を使う場合（このリポジトリには含みません） |
 
