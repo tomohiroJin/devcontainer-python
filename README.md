@@ -615,7 +615,15 @@ ipython
 ## VS Code
 
 必須の拡張は Microsoft Python / Pylance / Python Debugger と Astral Ruff の4件です。
-このほかに、モブプログラミング・ペアプログラミングで画面と編集を共有するための Live Share（`ms-vsliveshare.vsliveshare`）も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。Marketplace にはこの検証環境から接続できないため、公開状態は確認していません）。Codespaces（特にブラウザー）では、`devcontainer.json` にない拡張は入らないためです。`make doctor` が確かめるのは、必須の4件だけです。
+このほかに、次の3件も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。[Issue #30](https://github.com/tomohiroJin/devcontainer-python/issues/30)）。Codespaces（特にブラウザー）では、`devcontainer.json` にない拡張は入らないためです。
+
+| 拡張 | ID | 入れた理由 |
+| --- | --- | --- |
+| Live Share | `ms-vsliveshare.vsliveshare` | モブプログラミング・ペアプログラミングで、画面と編集を共有する |
+| Even Better TOML | `tamasfe.even-better-toml` | `pyproject.toml` などの TOML ファイルを、色分けして表示する（VS Code には、TOML の色分けが入っていません）。補完と検証も行います |
+| Material Icon Theme | `PKief.material-icon-theme` | エクスプローラーのファイルとフォルダーに、種類ごとのアイコンを表示する。`devcontainer.json` の設定（`workbench.iconTheme`）で、Dev Container と Codespaces の中でだけ有効にしています。別のアイコンにしたい場合は、「基本設定: ファイル アイコンのテーマ」で変えられます |
+
+この3件は、Marketplace にこの検証環境から接続できないため、公開状態を確認していません。`make doctor` が確かめるのは、必須の4件だけです。
 
 Mypy Type Checker と Error Lens は、最初から入れることを試しましたが、やめました（[Issue #30](https://github.com/tomohiroJin/devcontainer-python/issues/30)）。同じ箇所に、Ruff・Pylance・mypy の診断が重なって表示され、うるさくなります。また、Error Lens の行の横の表示は、Live Share のゲストの画面には出ません（ゲストは、マウスを当てて診断を見ます）。必要な人は、下の「任意の拡張」から入れてください。
 
@@ -639,7 +647,6 @@ Marketplace にはこの検証環境から接続できないため、下の表�
 | Error Lens | `usernamehw.errorlens` | 診断を行の横に表示。診断の数が多いと、画面がうるさくなります。Live Share のゲストの画面には、ホストの Error Lens の表示は出ません |
 | GitLens | `eamodio.gitlens` | 行ごとの変更履歴（blame）や履歴の比較。機能が多く、一部は有料です。履歴を詳しく調べたい場合に向きます |
 | Git Graph | `mhutchie.git-graph` | コミットグラフを表示する軽い拡張です。VS Code の「ソース管理」ビューにもグラフの表示があり、端末では `gl` でも見られるため、最初からは入れていません |
-| Even Better TOML | `tamasfe.even-better-toml` | `pyproject.toml` の補完と検証 |
 | Code Spell Checker | `streetsidesoftware.code-spell-checker` | 英単語のつづりの確認 |
 | Jupyter | `ms-toolsai.jupyter` | Notebook を使う場合（このリポジトリには含みません） |
 
