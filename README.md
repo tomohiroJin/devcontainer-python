@@ -682,7 +682,7 @@ GitHub Actions（コミット SHA で固定。タグはピン留めした SHA �
 
 **OS 層の再現性**: ベースイメージは digest で固定していますが、ビルド時の `apt-get upgrade` が、その時点で Debian が公開しているセキュリティ修正を取り込みます。
 そのため OS パッケージの版はビルドした日によって変わります（Python と pip の依存はハッシュで固定しているので変わりません）。
-監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit` artifact の `os-packages.txt` に残しています。
+監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit-amd64` artifact（arm64 は `container-audit-arm64`） の `os-packages.txt` に残しています。
 監査ゲートは、ベースラインにない High/Critical の検出をすべて止めます（[CI監査方針](docs/ci-security-policy.md)）。具体的には、検出のあるパッケージの版が変わった場合、修正版が出た場合、新しい検出が出た場合です。検出が修正で消えただけの場合や、検出のないパッケージの版が変わっただけの場合は止めません。その場合、CI は `docs/os-packages.txt` との差分を警告として表示するだけです。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
 
 公式情報: [Python イメージ](https://hub.docker.com/_/python)、
