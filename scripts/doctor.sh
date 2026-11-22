@@ -222,6 +222,9 @@ in_container=0
 if [ -r "$marker" ]; then
     in_container=1
     ok 'この Dev Container のイメージの中で実行しています'
+    if [ "${CODESPACES:-}" = true ]; then
+        info 'GitHub Codespaces で実行しています（停止するまで、利用時間に数えられます）'
+    fi
 elif [ -e /.dockerenv ] || [ -n "${REMOTE_CONTAINERS:-}${CODESPACES:-}" ]; then
     warn '別のイメージのコンテナの中で実行しています。以下の結果は参考です'
     hint 'このリポジトリの .devcontainer で作ったコンテナで開き直してください。'

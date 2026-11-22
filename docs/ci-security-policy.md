@@ -51,8 +51,8 @@ python3 scripts/check_container_audit.py REPORT.json security/container-baseline
 | ジョブ | 内容 |
 | --- | --- |
 | `python` | テスト、lint、型チェック、カバレッジ、コミット前フック、Python 依存の監査 |
-| `container` | イメージのビルド、イメージ内での `make check` とターミナル環境の確認、**Dev Container としての起動の確認**、Trivy の収集、pip の実コードの検証 |
-| `security` | Trivy の結果と、ベースラインの照合 |
+| `container` | amd64 と arm64 のそれぞれで、イメージのビルド、イメージ内での `make check` とターミナル環境の確認、**Dev Container としての起動の確認**、Trivy の収集、pip の実コードの検証 |
+| `security` | amd64 と arm64 のそれぞれで、Trivy の結果と、ベースラインの照合 |
 | `static` | ワークフロー（actionlint、zizmor）、Dockerfile（hadolint）、シェルスクリプト（shellcheck）の静的解析 |
 | `host` | Windows と macOS のランナーで、改行コード、ホストでのコミット、`make doctor` のスクリプトを確認 |
 | `ci-ok` | 上のすべてが成功した場合にだけ成功する、合否の集約 |
@@ -85,4 +85,5 @@ python3 scripts/check_container_audit.py REPORT.json security/container-baseline
 - **`CODEOWNERS` は置きません。** 所有者が1人で、レビューの割り当てが要らないためです。
 - **コミットメッセージと PR のタイトルの検査は、入れません。** 規約がまだ決まっていないためです（Issue #17）。
 - **定期実行は、引き続き行いません**（上の「コンテナ監査のCI判定」）。
-- **arm64 でのビルドは、まだ行っていません**（Issue #19 で、公開イメージと合わせて扱います）。
+- **arm64 のイメージも、amd64 と同じ検査を行います**（2026-11-22 追加）。Apple silicon の Mac では、arm64 のイメージが使われるためです。`ubuntu-24.04-arm` のランナーで、ビルド、イメージの検査、Dev Container としての起動の確認、Trivy の収集と照合を行います。初回の実行では、検出は amd64 と同じベースラインに収まりました。
+- **イメージは、公開しません**（GHCR などへの push は行いません）。各自が、`.devcontainer/` からビルドします。GitHub Codespaces でも、同じ `.devcontainer/` からビルドされます（README「GitHub Codespaces で使う」）。

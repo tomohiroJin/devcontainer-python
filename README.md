@@ -58,6 +58,19 @@
 
    使えるコマンドの一覧は `make help` で確認できます。
 
+### GitHub Codespaces で使う
+
+手元に Docker がなくても、GitHub Codespaces で同じ環境を使えます。Codespaces は、このリポジトリの `.devcontainer/` から、同じイメージをビルドして起動します。
+
+1. GitHub のリポジトリのページで、「Code」→「Codespaces」→「Create codespace on main」を選びます（ブランチで作業する場合は、そのブランチを選んでから作ります）。
+2. ブラウザーの VS Code（または、手元の VS Code）が開いたら、ターミナルで `make doctor` と `make check` を実行します。
+
+- **認証**: Codespaces が、GitHub の認証情報を用意します。このリポジトリへの push の権限があれば、`gh auth login` をしなくても push できます。
+- **利用時間**: Codespaces は、起動している時間と、保存している容量が、アカウントの無料枠から引かれます。使い終わったら停止し（何もしなくても、既定では30分で止まります）、要らなくなったら削除してください。`make doctor` は、Codespaces で実行していることを表示します。
+- **時刻**: タイムゾーンは、既定の `Asia/Tokyo` になります。
+- **プリビルド**（あらかじめイメージを作っておく機能）は、設定していません。初回の起動では、イメージのビルドに数分かかります。
+- **確認の状況**: Codespaces は、`devcontainer.json` を、CI の `container` ジョブ（Dev Container CLI による起動の確認）と同じ仕様で読みます。ただし、実際の Codespaces での起動は、まだ確かめていません。
+
 ## リファレンス
 
 このプロジェクトには、基本的な Python の文法と主要なデザインパターンを学習・参照できるサンプルが含まれています。
