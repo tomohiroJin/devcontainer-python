@@ -82,6 +82,8 @@ class ProjectConfigTests(unittest.TestCase):
         match = re.match(r"make ([a-z-]+) \|\| echo ", command)
         assert match is not None
         self.assertIn(match.group(1), make_targets())
+        # The Dev Container registers the commit hook when it is created.
+        self.assertEqual(match.group(1), "hooks")
 
     def test_files_are_checked_out_with_lf(self):
         # CRLF in the bashrc or the shell scripts breaks them inside the image.
@@ -150,7 +152,10 @@ class ProjectConfigTests(unittest.TestCase):
         # the installer and the doctor recognise the installed copy.
         hook = ROOT / "scripts/git-hooks/pre-commit"
         self.assertTrue(os.access(hook, os.X_OK))
-        self.assertTrue(hook.read_text(encoding="utf-8").startswith("#!/bin/sh\n"))
+        lines = hook.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(lines[0], "#!/bin/sh")
+        # The installer and the doctor recognise the hook by its second line.
+        self.assertTrue(lines[1].startswith("# devcontainer-python pre-commit hook"))
         # The installer and the doctor recognise the installed copy by this text.
         self.assertIn("devcontainer-python pre-commit hook", hook.read_text("utf-8"))
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")

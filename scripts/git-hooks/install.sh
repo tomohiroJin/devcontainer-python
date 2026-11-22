@@ -12,25 +12,42 @@
 # What belongs to the user is left alone: a hook that is not ours is moved
 # aside and put back by `uninstall`, and core.hooksPath is never changed (when
 # it points elsewhere, Git does not use .git/hooks; that is reported instead).
+# Every check that can refuse comes before the first change.
 set -u
 
 action=${1:-install}
-source_hook=$(dirname "$0")/pre-commit
 
-if ! common=$(git rev-parse --git-common-dir 2>/dev/null); then
-    echo 'Git リポジトリではないため、何もしませんでした。'
+if ! root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    if git rev-parse --show-toplevel 2>&1 | grep -q 'dubious ownership'; then
+        echo 'Git が、このリポジトリの所有者を信頼していないため、フックを登録できません（dubious ownership）。' >&2
+        echo 'make doctor を実行すると、直し方が表示されます。' >&2
+        exit 1
+    fi
+    echo 'Git の作業ツリーではないため、何もしませんでした。'
     exit 0
 fi
-if [ "$(git rev-parse --is-bare-repository 2>/dev/null)" = true ]; then
-    echo '作業ツリーのないリポジトリ（bare）のため、何もしませんでした。'
+source_hook="$root/scripts/git-hooks/pre-commit"
+if [ ! -f "$source_hook" ]; then
+    # This project is a subdirectory of a larger repository: the hooks
+    # directory belongs to that repository, and our hook would find nothing to
+    # check from its top level.
+    echo 'このプロジェクトは、別の Git リポジトリの一部として置かれているため、コミット前フックは登録しません。'
+    echo '検査は、このディレクトリで make pre-commit を実行してください。'
     exit 0
 fi
+common=$(git rev-parse --git-common-dir)
 hooks="$common/hooks"
+if [ -L "$hooks" ]; then
+    echo "フックのディレクトリ（$hooks）がシンボリックリンクで、他のリポジトリと共有されている可能性があるため、何もしませんでした。"
+    echo '検査は、make pre-commit を実行してください。'
+    exit 0
+fi
 target="$hooks/pre-commit"
 backup="$hooks/pre-commit.before-devcontainer"
 # `prek install` and `pre-commit install` keep a previous hook under this name.
 legacy="$hooks/pre-commit.legacy"
 
+exists() { [ -e "$1" ] || [ -L "$1" ]; }
 # Recognise a hook by its second line only: a hook of the user's own that
 # merely mentions these words elsewhere is not ours to replace or delete.
 second_line() { sed -n '2p' "$1" 2>/dev/null; }
@@ -48,13 +65,19 @@ is_generated() {
 }
 keep_aside() {
     # $1: the user's hook (a file, a symbolic link or a directory).
-    if [ -e "$backup" ] || [ -L "$backup" ]; then
-        echo "既存のフック $1 を退避できません（退避先 $backup が既にあります）。" >&2
-        echo '中身を確認して、不要なほうを削除してから、もう一度実行してください。' >&2
-        exit 1
-    fi
     mv "$1" "$backup" || exit 1
     echo "既存のフックを $backup に退避しました。このフックは、make unhooks で元に戻すまで動きません。"
+}
+refuse_backup_exists() {
+    echo "既存のフック $1 を退避できません（退避先 $backup が既にあります）。" >&2
+    echo '中身を確認して、不要なほうを削除してから、もう一度実行してください。' >&2
+    exit 1
+}
+remove_old_registration() {
+    # The first version of this script registered the tracked directory.
+    if [ "$(git config --local --get-all core.hooksPath 2>/dev/null)" = scripts/git-hooks ]; then
+        git config --local --unset-all core.hooksPath
+    fi
 }
 # The directory Git really uses for hooks, to compare with .git/hooks.
 resolved() { (cd "$1" 2>/dev/null && pwd -P); }
@@ -71,43 +94,55 @@ MESSAGE
 
 case $action in
     install)
-        mkdir -p "$hooks" || exit 1
+        # Decide what to do with what is there, and refuse, before changing
+        # anything. "generated" also covers what `prek install` left behind:
+        # its hook, plus the previous hook as pre-commit.legacy.
+        aside=''
+        drop=''
         if [ -L "$target" ]; then
-            # Never write through a link: its target may be shared.
-            keep_aside "$target"
-        elif [ -e "$target" ] && is_generated "$target"; then
-            rm -f "$target" || exit 1
+            aside=$target # never write through a link: its target may be shared
+        elif is_generated "$target"; then
+            drop=$target
             if is_ours "$legacy"; then
-                # `prek install` was run on top of our hook and kept it.
-                rm -f "$legacy" || exit 1
-            elif [ -e "$legacy" ] || [ -L "$legacy" ]; then
-                # The user's own hook, which the generated hook used to call.
-                keep_aside "$legacy"
+                drop="$drop $legacy"
+            elif exists "$legacy"; then
+                aside=$legacy # the user's own hook, which the generated one called
             fi
-        elif [ -e "$target" ] && ! is_ours "$target"; then
-            keep_aside "$target"
+        elif exists "$target" && ! is_ours "$target"; then
+            aside=$target
         fi
+        [ -n "$aside" ] && exists "$backup" && refuse_backup_exists "$aside"
+        mkdir -p "$hooks" || exit 1
+        # shellcheck disable=SC2086 # two paths without spaces of their own
+        [ -z "$drop" ] || rm -f $drop || exit 1
+        [ -z "$aside" ] || keep_aside "$aside"
         cp "$source_hook" "$target" && chmod +x "$target" || exit 1
-        # The first version of this script registered the tracked directory.
-        if [ "$(git config --local --get-all core.hooksPath 2>/dev/null)" = scripts/git-hooks ]; then
-            git config --local --unset-all core.hooksPath
-        fi
+        remove_old_registration
         echo "コミット前フックを登録しました（$target）。"
         report_hooks_path
         ;;
     uninstall)
+        removed=0
         if is_ours "$target"; then
             rm -f "$target" || exit 1
-            if [ -e "$backup" ] || [ -L "$backup" ]; then
+            removed=1
+        elif is_generated "$target" && is_ours "$legacy"; then
+            # `prek install` was run on top of our hook: both go.
+            rm -f "$target" "$legacy" || exit 1
+            removed=1
+        fi
+        if [ "$removed" -eq 1 ]; then
+            if exists "$backup"; then
                 mv "$backup" "$target" && echo "退避していた既存のフックを $target に戻しました。"
             fi
             echo 'コミット前フックの登録を外しました。'
+        elif exists "$backup" && ! exists "$target"; then
+            # Our hook was deleted by hand; the user's hook is still aside.
+            mv "$backup" "$target" && echo "退避していた既存のフックを $target に戻しました。"
         else
             echo 'このリポジトリのコミット前フックは登録されていません（何も変更していません）。'
         fi
-        if [ "$(git config --local --get-all core.hooksPath 2>/dev/null)" = scripts/git-hooks ]; then
-            git config --local --unset-all core.hooksPath
-        fi
+        remove_old_registration
         ;;
     *)
         echo "使い方: $0 install|uninstall" >&2

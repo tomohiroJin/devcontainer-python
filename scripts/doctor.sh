@@ -39,6 +39,11 @@ for argument in "$@"; do
     esac
 done
 
+# The user's tracing settings would fill the error text shown below with
+# command lines; this run does not need them.
+unset GIT_TRACE GIT_TRACE_SETUP GIT_TRACE_PACKET GIT_TRACE_CURL GIT_TRACE2 \
+    GIT_TRACE2_EVENT GIT_TRACE2_PERF GIT_CURL_VERBOSE GIT_TRACE_REDACT 2>/dev/null
+
 home=${HOME:-}
 # The home directory of the account, even when HOME points elsewhere (ssh and
 # the image's PATH use this one).
@@ -57,11 +62,15 @@ have() { command -v "$1" >/dev/null 2>&1; }
 # UTF-8 neither hides an address nor stops sed.
 home_pattern=''
 case $home in
-    '' | /) ;; # nothing sensible to replace
-    *) home_pattern=$(printf '%s' "$home" | LC_ALL=C sed 's/[][\\.*^$#]/\\&/g') ;;
+    '' | / | *'
+'*) ;; # nothing sensible to replace
+    *) home_pattern=$(printf '%s' "${home%/}" | LC_ALL=C sed 's/[][\\.*^$#]/\\&/g') ;;
 esac
 mask() {
-    LC_ALL=C sed -e "s#${home_pattern:-^/nonexistent-home-directory\$}#~#g" \
+    # The home directory only as a whole path component (/home/al is not a
+    # prefix of /home/alice).
+    LC_ALL=C sed -e "s#${home_pattern:-^/nonexistent-home-directory\$}\([^A-Za-z0-9._-]\)#~\1#g" \
+        -e "s#${home_pattern:-^/nonexistent-home-directory\$}\$#~#" \
         -e 's#\(://\)[^/@[:space:]]*@#\1***@#g' \
         -e 's#\(://\)[^@[:space:]]*:[^@[:space:]]*@#\1***@#g' \
         -e 's#\(://[^[:space:]?]*\)?[^[:space:]]*#\1?***#g' \
@@ -75,7 +84,7 @@ mask() {
         -e 's/\(xox[abprs]-\)[A-Za-z0-9-]\{1,\}/\1***/g' \
         -e 's/\(AKIA\)[A-Z0-9]\{12,\}/\1***/g' \
         -e 's/\([Bb]earer \)[^[:space:]]\{1,\}/\1***/g' \
-        -e 's/\([Bb]asic \)[A-Za-z0-9+\/=]\{8,\}/\1***/g'
+        -e 's/\([Bb]asic \)[A-Za-z0-9+\/=]\{4,\}/\1***/g'
 }
 
 warnings=0
@@ -96,12 +105,19 @@ print_section() {
     section_printed=1
 }
 # Every line of the report goes through these, and through mask().
-line() { printf '%s%s\n' "$1" "$2" | mask; }
+# A value with a line break or an escape sequence (a branch or remote name, a
+# URL from .git/config) must not be able to add lines to the report or to
+# control the terminal.
+plain() { LC_ALL=C tr -d '\000-\010\013-\037\177'; }
+line() {
+    printf '%s%s' "$1" "$2" | LC_ALL=C tr '\n\r' '  ' | plain | mask
+    printf '\n'
+}
 ok() { [ "$quiet" -eq 1 ] || line 'ok    ' "$1"; }
 info() { [ "$quiet" -eq 1 ] || line 'info  ' "$1"; }
 note() { [ "$quiet" -eq 1 ] || line '      → ' "$1"; } # advice under an info line
 hint() { line '      → ' "$1"; }
-detail() { mask | sed 's/^/      /'; } # error text from a command, on stdin
+detail() { LC_ALL=C tr -d '\r' | plain | mask | sed 's/^/      /'; } # error text from a command, on stdin
 warn() {
     print_section
     line 'warn  ' "$1"
@@ -117,11 +133,17 @@ scratch=$(mktemp -d 2>/dev/null) || scratch=''
 limited_pid=''
 # Print the process ids of $1 and all its descendants (a snapshot: once a
 # parent is gone, its children can no longer be found through it).
+children_of() {
+    # POSIX ps first (also where pgrep is missing), pgrep as a fallback.
+    local list
+    list=$(ps -A -o pid= -o ppid= 2>/dev/null | awk -v parent="$1" '$2 == parent { print $1 }')
+    if [ -z "$list" ] && have pgrep; then list=$(pgrep -P "$1" 2>/dev/null); fi
+    printf '%s\n' "$list"
+}
 tree_of() {
     local child
     printf '%s\n' "$1"
-    have pgrep || return 0
-    for child in $(pgrep -P "$1" 2>/dev/null); do tree_of "$child"; done
+    for child in $(children_of "$1"); do tree_of "$child"; done
 }
 kill_tree() {
     # $1: process id, $2: signal name.
@@ -220,7 +242,7 @@ if ! root=$(git rev-parse --show-toplevel 2>"$scratch/rev-parse.err"); then
         fail 'Git が、このリポジトリの所有者を信頼していません（dubious ownership）。Git の操作がすべて失敗します'
         hint "git config --global --add safe.directory \"${refused:-<リポジトリのディレクトリ>}\" を実行してください。"
     else
-        fail 'Git リポジトリの中で実行してください'
+        fail 'Git の作業ツリーの中で実行してください（.git の中や、作業ツリーのないリポジトリでは実行できません）'
     fi
     finish
 fi
@@ -307,7 +329,7 @@ if can_name -c user.useConfigOnly=true; then
     ok 'コミットの名前とメールアドレスが設定されています'
 elif can_name; then
     identity_ok=1
-    warn 'コミットの名前かメールアドレスが設定されていません。Git が、ユーザー名とホスト名から自動で決めた値でコミットします'
+    warn 'コミットの名前かメールアドレスが、Git の設定にありません。Git が、環境（ユーザー名、ホスト名、環境変数 EMAIL など）から決めた値でコミットします'
     hint 'git config --global user.name "..." と git config --global user.email "..." で設定してください。'
 else
     fail 'コミットの名前とメールアドレスが決まりません（コミットできません）'
@@ -354,15 +376,18 @@ if [ "$sign_commits" = true ] || [ "$sign_tags" = true ]; then
             limited 20 git commit-tree -S "$tree" -m 'doctor signing probe' </dev/null
         ) >/dev/null 2>"$scratch/sign.err"; then
             ok "${what}に署名できます（形式: ${format:-openpgp}）"
-        elif grep -Eiq 'passphrase|pinentry|inappropriate ioctl' "$scratch/sign.err"; then
-            # Only what a missing terminal or an unanswered prompt produces; a
-            # missing key or smartcard is a failure, below.
-            warn "${what}の署名に、パスフレーズの入力が必要です（署名のたびに入力を求められます。VS Code の画面からのコミットは失敗することがあります）"
+        elif sed -e 's/"[^"]*"//g' -e "s/'[^']*'//g" "$scratch/sign.err" |
+            grep -Eiq 'passphrase|no pinentry|inappropriate ioctl'; then
+            # The signing program wanted to ask something (names in quotes are
+            # ignored). Without a terminal that cannot be told apart from
+            # "would work after typing the passphrase", so it is a warning.
+            warn "${what}の署名で、入力を求められました（パスフレーズ付きの鍵や、スマートカードの場合です）。入力なしでは署名できないため、ここでは確かめられません"
+            hint '実際にコミットして、署名できるかを確かめてください。VS Code の画面からのコミットは、入力できずに失敗することがあります。'
             hint 'SSH の鍵は、ホストで ssh-add を実行してエージェントに登録すると、入力が不要になります。'
         else
             fail "${what}の署名に失敗します（形式: ${format:-openpgp}）"
             # Key descriptions in the error text carry names: drop quoted parts.
-            head -n 2 "$scratch/sign.err" | sed 's/"[^"]*"/"***"/g' | detail
+            head -n 2 "$scratch/sign.err" | sed -e 's/"[^"]*"/"***"/g' -e "s/'[^']*'/'***'/g" | detail
             hint 'ホストにしかない署名のプログラムや鍵は、コンテナでは使えません。SSH 署名なら SSH エージェントに鍵を登録してください。'
             hint "このリポジトリだけ署名を外すには、git config $setting false を実行してください。"
         fi
@@ -381,7 +406,10 @@ used_dir=$(cd "$(git rev-parse --git-path hooks 2>/dev/null)" 2>/dev/null && pwd
 second_line=$(sed -n '2p' "$installed_hook" 2>/dev/null)
 case $second_line in
     '# devcontainer-python pre-commit hook'*)
-        if [ "$used_dir" != "$(cd "$hooks_dir" 2>/dev/null && pwd -P)" ]; then
+        if [ "$used_dir" != "$(cd "$hooks_dir" 2>/dev/null && pwd -P)" ] &&
+            grep -q 'hooks/pre-commit' "$used_dir/pre-commit" 2>/dev/null; then
+            info 'core.hooksPath のフックが、登録したコミット前フックを呼び出しているようです（README の方法）。コミットして、検査が動くかを確かめてください'
+        elif [ "$used_dir" != "$(cd "$hooks_dir" 2>/dev/null && pwd -P)" ]; then
             warn 'core.hooksPath が別の場所を指しているため、Git は .git/hooks を使いません。コミット前フックは動きません'
             hint '検査は、make pre-commit と、プルリクエストの CI で行われます。'
             hint 'コミットのときにも検査したい場合は、README「コミット前フック」の手順を見てください（make hooks では直りません）。'
@@ -419,6 +447,7 @@ if [ -n "$branch" ]; then
     [ -n "$configured" ] || configured=$(git config --get "branch.$branch.remote" 2>/dev/null)
 fi
 [ -n "$configured" ] || configured=$(git config --get remote.pushDefault 2>/dev/null)
+[ "$configured" = . ] && configured='' # a branch that tracks a local branch
 if [ -n "$configured" ] && is_remote "$configured"; then
     remote=$configured
 elif is_remote origin; then
@@ -444,19 +473,20 @@ kind_of() {
             ;;
     esac
 }
-# The host of a URL, lower-cased, without user name and port.
+# The host of a URL as written (ssh matches its Host patterns by case),
+# without user name and port.
 host_of() {
     if printf '%s' "$1" | grep -q '://'; then
         printf '%s' "$1" | sed -e 's#^[A-Za-z+]*://##' -e 's#/.*$##' -e 's#^.*@##' -e 's#:[0-9]*$##'
     else
         printf '%s' "$1" | sed -e 's#:.*$##' -e 's#^.*@##'
-    fi | tr 'A-Z' 'a-z'
+    fi
 }
 
 # An askpass program is a legitimate way to authenticate (VS Code sets one),
 # but it asks a person. Remember that there is one; it is not run here.
 askpass=0
-[ -n "${GIT_ASKPASS:-}" ] || [ -n "$(git config --get core.askPass 2>/dev/null)" ] && askpass=1
+[ -n "${GIT_ASKPASS:-}${SSH_ASKPASS:-}" ] || [ -n "$(git config --get core.askPass 2>/dev/null)" ] && askpass=1
 # A custom ssh command (a wrapper, another client) is used as it is.
 custom_ssh=0
 [ -n "${GIT_SSH_COMMAND:-}${GIT_SSH:-}" ] || [ -n "$(git config --get core.sshCommand 2>/dev/null)" ] && custom_ssh=1
@@ -469,9 +499,10 @@ fi
 # Check one push URL: the means of authentication, then (unless --offline) the
 # connection. $1: the URL exactly as `git push` would use it.
 check_push_url() {
-    local url=$1 kind host credentials=0
+    local url=$1 kind host ssh_host credentials=0
     kind=$(kind_of "$url")
-    host=$(host_of "$url")
+    ssh_host=$(host_of "$url")
+    host=$(printf '%s' "$ssh_host" | tr 'A-Z' 'a-z') # host names ignore case
     rm -f "$scratch/credential"
     case $kind in
         https)
@@ -491,6 +522,10 @@ check_push_url() {
                 if grep -q 'is not a git command' "$scratch/credential.err"; then
                     info 'ホストからコピーされた認証ヘルパーの一部は、コンテナにありません（Git は無視して、次のヘルパーを使います）'
                 fi
+            elif [ -n "$(git config --get-urlmatch http.extraHeader "$url" 2>/dev/null)" ]; then
+                info "$host には、http.extraHeader の設定で認証します（認証ヘルパーは使いません）"
+            elif grep -Eiqs "machine[[:space:]]+$host([[:space:]]|\$)" "${NETRC:-$home/.netrc}" "$home/_netrc"; then
+                info "$host には、~/.netrc の設定で認証します（認証ヘルパーは使いません）"
             elif [ "$askpass" -eq 1 ]; then
                 warn "$host の認証情報は保存されていません。push のたびに、ユーザー名とトークンの入力を求められます"
                 hint '入力を省くには、gh auth login --hostname github.com --git-protocol https --web と gh auth setup-git を実行してください（README「GitHub CLI で認証する」）。'
@@ -515,7 +550,7 @@ check_push_url() {
             else
                 # ssh itself says which agent and which key files it would use
                 # for this host (defaults and ~/.ssh/config).
-                limited 10 ssh -G "$host" >"$scratch/ssh.config" 2>/dev/null </dev/null
+                limited 10 ssh -G "$ssh_host" >"$scratch/ssh.config" 2>/dev/null </dev/null
                 agent=$(sed -n 's/^identityagent //p' "$scratch/ssh.config" | head -n 1)
                 case $agent in
                     '' | SSH_AUTH_SOCK) agent=${SSH_AUTH_SOCK:-} ;;
@@ -655,7 +690,7 @@ fi
 # --- Working tree ----------------------------------------------------------------------------
 if [ "$in_container" -eq 1 ] && have ruff; then
     section '作業ツリー'
-    report=$(cd "$root" && limited 120 ruff format --check . 2>&1 </dev/null)
+    report=$(cd "$root" && limited 120 ruff format --check --no-cache . 2>&1 </dev/null)
     case $? in
         0) ok 'すべてのファイルが整形済みです' ;;
         1)
