@@ -1360,6 +1360,11 @@ printf '%s\n' "$doctor_report" | grep -q '^ok    ms-python.vscode-pylance' &&
 printf '#!/bin/sh\nexit 1\n' >"$tmp/codebin/code"
 doctor PATH="$tmp/codebin:$PATH"
 expect "a code command that cannot reach VS Code is not a warning" info 'VS Code に接続できない'
+# In GitHub Codespaces (the image is the same; only the environment says so).
+doctor CODESPACES=true
+expect "in Codespaces it says so" info 'GitHub Codespaces で実行しています'
+doctor
+expect_absent "outside Codespaces it does not mention them" 'Codespaces'
 # Outside the dev container (no image marker): said so, tools are not judged.
 doctor DEVCONTAINER_HOOK_MARKER=/nonexistent PATH=/usr/bin:/bin
 expect "outside the dev container it says so and skips the tools" info 'ツールの版と整形は確認しません'

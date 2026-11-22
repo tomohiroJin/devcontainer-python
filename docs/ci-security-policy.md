@@ -4,7 +4,7 @@ Trivy 0.76.2でHigh/Criticalを除外せずJSONに保存し、`scripts/check_con
 
 OS パッケージは Dockerfile の `apt-get upgrade` で Debian の公開済みセキュリティ修正を取り込みます。修正版が出た検出は、CI で導入版の変更（新しい組み合わせとしてブロック）か `FixedVersion` 付きの検出（ブロック）として現れるため、ベースラインの見直しが必要になります。
 
-`python` はテスト・lint・型チェック・カバレッジ・コミット前フック・Python依存監査、`container` は1回だけのイメージビルド・イメージ内での `make check`・ターミナル環境の確認（`scripts/check_devcontainer.sh`）・Trivy収集・pip実コード検証を行います。どちらも `Makefile` のターゲットを呼びます。全レポートを `container-audit` artifactに保存した後、別の `security` ジョブが同じartifactを取得して判定します。イメージの再ビルドはしません。`security` が新規検出で失敗しても、成功したテスト・lintのチェック結果は独立して残ります。スキャンやpipコード検証が失敗した場合は `container` も失敗し、セキュリティ判定を成功扱いにはしません。
+`python` はテスト・lint・型チェック・カバレッジ・コミット前フック・Python依存監査、`container` は1回だけのイメージビルド・イメージ内での `make check`・ターミナル環境の確認（`scripts/check_devcontainer.sh`）・Trivy収集・pip実コード検証を行います。どちらも `Makefile` のターゲットを呼びます。全レポートを `container-audit-amd64`・`container-audit-arm64` の artifactに保存した後、別の `security` ジョブが同じartifactを取得して判定します。イメージの再ビルドはしません。`security` が新規検出で失敗しても、成功したテスト・lintのチェック結果は独立して残ります。スキャンやpipコード検証が失敗した場合は `container` も失敗し、セキュリティ判定を成功扱いにはしません。
 
 [既知残件](../security/container-baseline.json)は、CVE・パッケージ・導入版・深刻度・エコシステムの完全一致で限定します。パッケージの再ビルドや深刻度の再評価も影響確認が必要なため、照合キーから外しません。新規検出や修正版の提供はブロックします。
 
@@ -20,7 +20,7 @@ OS パッケージは Dockerfile の `apt-get upgrade` で Debian の公開済�
 
 1. 最新の成功した収集ジョブのartifactを取得します。例:
    ```sh
-   gh run download RUN_ID --name container-audit --dir /tmp/python-audit-review
+   gh run download RUN_ID --name container-audit-amd64 --dir /tmp/python-audit-review
    python3 scripts/check_container_audit.py /tmp/python-audit-review/trivy.json security/container-baseline.json
    cp security/container-baseline.json /tmp/python-container-baseline.candidate.json
    ```
@@ -51,8 +51,8 @@ python3 scripts/check_container_audit.py REPORT.json security/container-baseline
 | ジョブ | 内容 |
 | --- | --- |
 | `python` | テスト、lint、型チェック、カバレッジ、コミット前フック、Python 依存の監査 |
-| `container` | イメージのビルド、イメージ内での `make check` とターミナル環境の確認、**Dev Container としての起動の確認**、Trivy の収集、pip の実コードの検証 |
-| `security` | Trivy の結果と、ベースラインの照合 |
+| `container` | amd64 と arm64 のそれぞれで、イメージのビルド、イメージ内での `make check` とターミナル環境の確認、**Dev Container としての起動の確認**、Trivy の収集、pip の実コードの検証 |
+| `security` | amd64 と arm64 のそれぞれで、Trivy の結果と、ベースラインの照合 |
 | `static` | ワークフロー（actionlint、zizmor）、Dockerfile（hadolint）、シェルスクリプト（shellcheck）の静的解析 |
 | `host` | Windows と macOS のランナーで、改行コード、ホストでのコミット、`make doctor` のスクリプトを確認 |
 | `ci-ok` | 上のすべてが成功した場合にだけ成功する、合否の集約 |
@@ -85,4 +85,5 @@ python3 scripts/check_container_audit.py REPORT.json security/container-baseline
 - **`CODEOWNERS` は置きません。** 所有者が1人で、レビューの割り当てが要らないためです。
 - **コミットメッセージと PR のタイトルの検査は、入れません。** 規約がまだ決まっていないためです（Issue #17）。
 - **定期実行は、引き続き行いません**（上の「コンテナ監査のCI判定」）。
-- **arm64 でのビルドは、まだ行っていません**（Issue #19 で、公開イメージと合わせて扱います）。
+- **arm64 のイメージも、amd64 と同じ検査を行います**（2026-11-22 追加）。Apple silicon の Mac では、arm64 のイメージが使われるためです。`ubuntu-24.04-arm` のランナーで、ビルド、イメージの検査、Dev Container としての起動の確認、Trivy の収集と照合を行います。初回の実行では、検出は amd64 と同じベースラインに収まりました。
+- **イメージは、公開しません**（GHCR などへの push は行いません）。各自が、`.devcontainer/` からビルドします。GitHub Codespaces でも、同じ `.devcontainer/` からビルドされます（README「GitHub Codespaces で使う」）。

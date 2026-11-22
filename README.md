@@ -58,6 +58,19 @@
 
    使えるコマンドの一覧は `make help` で確認できます。
 
+### GitHub Codespaces で使う
+
+手元に Docker がなくても、GitHub Codespaces で同じ環境を使えます。Codespaces は、このリポジトリの `.devcontainer/` から、同じイメージをビルドして起動します。
+
+1. GitHub のリポジトリのページで、「Code」→「Codespaces」→「Create codespace on main」を選びます（ブランチで作業する場合は、そのブランチを選んでから作ります）。
+2. ブラウザーの VS Code（または、手元の VS Code）が開いたら、ターミナルで `make doctor` と `make check` を実行します。
+
+- **認証**: Codespaces が、GitHub の認証情報を用意します。このリポジトリへの push の権限があれば、`gh auth login` をしなくても push できます。
+- **利用時間**: Codespaces は、起動している時間と、保存している容量が、アカウントの無料枠から引かれます。使い終わったら停止し（何もしなくても、既定では30分で止まります）、要らなくなったら削除してください。`make doctor` は、Codespaces で実行していることを表示します。
+- **時刻**: タイムゾーンは、既定の `Asia/Tokyo` になります。
+- **プリビルド**（あらかじめイメージを作っておく機能）は、設定していません。初回の起動では、イメージのビルドに数分かかります。
+- **確認の状況**: Codespaces は、`devcontainer.json` を、CI の `container` ジョブ（Dev Container CLI による起動の確認）と同じ仕様で読みます。実際の Codespaces でも、次のことを、リポジトリの所有者が確かめました（2026-11-22）: イメージがビルドされて起動する、`make doctor` が `FAIL` も `warn` もなく通る（フックの登録、必須の拡張、Codespaces が用意する認証情報の取得を含みます）、`make check` が成功する、コミットと push ができる。
+
 ## リファレンス
 
 このプロジェクトには、基本的な Python の文法と主要なデザインパターンを学習・参照できるサンプルが含まれています。
@@ -602,6 +615,7 @@ ipython
 ## VS Code
 
 必須の拡張は Microsoft Python / Pylance / Python Debugger と Astral Ruff の4件です。
+このほかに、モブプログラミング・ペアプログラミングで画面を共有するための Live Share（`ms-vsliveshare.vsliveshare`）も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。Marketplace にはこの検証環境から接続できないため、公開状態は確認していません）。`make doctor` が確かめるのは、必須の4件だけです。
 各 ID は提供元の現行公式拡張であることと Marketplace の公開状態を確認済みです
 （Python 2026-10-29、Pylance 2026-10-16、Debugger 2026-11-02、Ruff 2026-10-27 更新）。
 [Python 公式ガイド](https://code.visualstudio.com/docs/python/python-tutorial)、
@@ -682,7 +696,7 @@ GitHub Actions（コミット SHA で固定。タグはピン留めした SHA �
 
 **OS 層の再現性**: ベースイメージは digest で固定していますが、ビルド時の `apt-get upgrade` が、その時点で Debian が公開しているセキュリティ修正を取り込みます。
 そのため OS パッケージの版はビルドした日によって変わります（Python と pip の依存はハッシュで固定しているので変わりません）。
-監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit` artifact の `os-packages.txt` に残しています。
+監査した時点の一覧は [docs/os-packages.txt](docs/os-packages.txt) と、CI の `container-audit-amd64` artifact（arm64 は `container-audit-arm64`） の `os-packages.txt` に残しています。
 監査ゲートは、ベースラインにない High/Critical の検出をすべて止めます（[CI監査方針](docs/ci-security-policy.md)）。具体的には、検出のあるパッケージの版が変わった場合、修正版が出た場合、新しい検出が出た場合です。検出が修正で消えただけの場合や、検出のないパッケージの版が変わっただけの場合は止めません。その場合、CI は `docs/os-packages.txt` との差分を警告として表示するだけです。完全に固定したい場合は snapshot.debian.org を使う方法がありますが、修正の取り込みが遅れるため採用していません。
 
 公式情報: [Python イメージ](https://hub.docker.com/_/python)、

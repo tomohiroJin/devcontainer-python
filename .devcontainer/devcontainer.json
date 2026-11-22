@@ -17,7 +17,8 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.debugpy",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "ms-vsliveshare.vsliveshare"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
