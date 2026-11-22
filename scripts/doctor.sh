@@ -2,34 +2,36 @@
 # Check that this checkout, in this container, is ready for development:
 #   make doctor            (or: bash scripts/doctor.sh)
 # Options:
-#   --offline   skip the checks that contact the Git remote
 #   --quiet     print only warnings and failures
 #
 # scripts/check_devcontainer.sh checks the image (run by CI). This script checks
 # what differs per person and per start: Git identity, signing, credentials,
 # hooks, the remote. Each warning or failure comes with what to do about it.
 #
-# Two rules shape the code:
+# Rules that shape the code:
 # - Ask Git instead of re-implementing it. Whether credentials or a signature
 #   can be produced is decided by running Git, in this repository, not by
 #   reading configuration values.
+# - Stay local. Nothing is sent anywhere: no connection to the remote, no
+#   credential leaves this machine. Whether a push really works is for the
+#   first push to show. (An earlier version read the remote with the obtained
+#   credential; three reviews each found a way for that to go wrong.)
+# - Change nothing. The user's credential helpers are only asked to "get", and
+#   what they answer is looked at in a pipe, never written to a file.
+# - Never wait: prompts are disabled and every external command runs through
+#   limited().
 # - The output is meant to be pasted into an issue. Every line is printed by
 #   ok/info/warn/fail/hint/detail, and those mask what they print.
-# - Nothing here may wait for input or change anything: prompts are disabled,
-#   every external command runs through limited(), and the user's credential
-#   helpers are only ever asked to "get" (see the connection check).
 #
 # Bash 3.2 (macOS) compatible: no arrays, no ${var,,}, POSIX sed/grep only.
 set -u
 
-offline=0
 quiet=0
 for argument in "$@"; do
     case $argument in
-        --offline) offline=1 ;;
         --quiet) quiet=1 ;;
         -h | --help)
-            sed -n '2,7s/^# \{0,1\}//p' "$0"
+            sed -n '2,5s/^# \{0,1\}//p' "$0"
             exit 0
             ;;
         *)
@@ -492,32 +494,30 @@ custom_ssh=0
 [ -n "${GIT_SSH_COMMAND:-}${GIT_SSH:-}" ] || [ -n "$(git config --get core.sshCommand 2>/dev/null)" ] && custom_ssh=1
 
 gh_logged_in=0
-if have gh && limited 10 gh auth token --hostname github.com >/dev/null 2>&1 </dev/null; then
+# `gh auth token` prints the token: it is discarded inside the limited command,
+# so it is never written anywhere.
+if have gh && limited 10 sh -c 'gh auth token --hostname github.com >/dev/null 2>&1' </dev/null; then
     gh_logged_in=1
 fi
 
-# Check one push URL: the means of authentication, then (unless --offline) the
-# connection. $1: the URL exactly as `git push` would use it.
+# Check the means of authentication for one push URL.
+# $1: the URL exactly as `git push` would use it.
 check_push_url() {
-    local url=$1 kind host ssh_host credentials=0
+    local url=$1 kind host ssh_host
     kind=$(kind_of "$url")
     ssh_host=$(host_of "$url")
     host=$(printf '%s' "$ssh_host" | tr 'A-Z' 'a-z') # host names ignore case
-    rm -f "$scratch/credential"
     case $kind in
         https)
             # Let Git run the credential helpers exactly as a push would (same
             # URL, so per-path and per-user settings apply), asking only "get",
-            # with every prompt disabled. The answer stays in a private file
-            # for the connection check and is removed afterwards.
-            (
-                umask 077
+            # with every prompt disabled. Whether a password came back is
+            # decided inside the pipe: the answer is not stored anywhere.
+            if (
                 export GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=true SSH_ASKPASS=true
                 printf 'url=%s\n\n' "$url" |
-                    limited 20 git credential fill >"$scratch/credential" 2>"$scratch/credential.err"
-            )
-            if grep -q '^password=.' "$scratch/credential" 2>/dev/null; then
-                credentials=1
+                    limited 20 sh -c 'git credential fill | grep -q "^password=."' 2>"$scratch/credential.err"
+            ); then
                 ok "$host の認証情報を取得できます"
                 if grep -q 'is not a git command' "$scratch/credential.err"; then
                     info 'ホストからコピーされた認証ヘルパーの一部は、コンテナにありません（Git は無視して、次のヘルパーを使います）'
@@ -584,66 +584,6 @@ FILES
         local) info 'push 先は、このマシンの中のリポジトリです（認証は不要です）' ;;
         *) info 'push 先の URL の形式を判別できないため、認証の手段は確認していません' ;;
     esac
-
-    if [ "$offline" -eq 1 ]; then
-        rm -f "$scratch/credential"
-        return
-    fi
-    if [ "$kind" = other ]; then
-        info 'この形式の URL には、接続を確認していません'
-        return
-    fi
-    # Read the remote once, without changing anything:
-    # - The user's credential helpers are not used here. Git tells the helpers
-    #   to store a credential that worked and to erase one that was refused;
-    #   a diagnosis must do neither. The credential obtained above is handed
-    #   over by a helper that only answers "get".
-    # - The URL is already what a push uses; the identity rule (the longest
-    #   possible match) keeps insteadOf from rewriting it a second time.
-    probe_helper=''
-    [ "$credentials" -eq 1 ] &&
-        probe_helper="!f() { test \"\$1\" = get && cat '$scratch/credential'; }; f"
-    (
-        export GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=true SSH_ASKPASS=true
-        [ "$custom_ssh" -eq 1 ] ||
-            export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o ConnectTimeout=10'
-        limited 30 git -c credential.helper= ${probe_helper:+-c "credential.helper=$probe_helper"} \
-            -c "url.$url.insteadOf=$url" ls-remote "$url" HEAD </dev/null
-    ) >/dev/null 2>"$scratch/remote.err"
-    status=$?
-    rm -f "$scratch/credential"
-    if [ "$status" -eq 0 ]; then
-        ok 'push 先に接続して、読み取りができました'
-        slug=''
-        [ "$host" = github.com ] && [ "$kind" = https ] &&
-            slug=$(printf '%s' "$url" | sed -e 's#^[A-Za-z]*://[^/]*/##' -e 's#/*$##' -e 's#\.git$##')
-        if [ -z "$slug" ]; then
-            info 'push（書き込み）の権限は確認していません（GitHub に HTTPS で接続する場合だけ確認できます）'
-        elif [ "$gh_logged_in" -eq 0 ]; then
-            info 'push（書き込み）の権限は確認していません（gh で認証すると確認できます）'
-        else
-            case $(limited 20 gh api "repos/$slug" --jq .permissions.push 2>/dev/null </dev/null) in
-                true) ok 'このリポジトリに push する権限があります' ;;
-                false)
-                    warn 'このリポジトリに push する権限がありません'
-                    hint 'フォークして、フォーク先に push してください。または、権限を付けてもらってください。'
-                    ;;
-                *) info 'push（書き込み）の権限は確認できませんでした（gh がリポジトリの情報を取得できません）' ;;
-            esac
-        fi
-    else
-        fail 'push 先に接続できないか、認証に失敗しました'
-        head -n 3 "$scratch/remote.err" | detail
-        if [ "$status" -eq 137 ] || [ "$status" -eq 143 ]; then
-            hint '応答がないため、30 秒で打ち切りました。ネットワークに接続できているかを確かめてください。'
-        elif grep -Eq 'does not appear to be a git repository|Repository not found|No such file or directory' "$scratch/remote.err"; then
-            hint 'リモートの URL が正しいか、そのリポジトリを読む権限があるかを確かめてください。'
-        elif grep -Eq 'Authentication failed|could not read Username|returned error: 40[13]|Permission denied \(|terminal prompts disabled' "$scratch/remote.err"; then
-            hint '認証に失敗しています。上の「認証情報」の項目の直し方を試してください。'
-        else
-            hint 'ネットワークに接続できているかを確かめてください。接続できない環境では、make doctor ARGS=--offline でこの確認を省けます。'
-        fi
-    fi
 }
 
 if [ -z "$remote" ]; then
@@ -685,6 +625,7 @@ else
         fi
         check_push_url "$push_url"
     done <"$scratch/push-urls"
+    info 'リモートには接続していません。実際に push できるかは、最初の push で確かめてください（git push --dry-run でも、認証までを確かめられます）'
 fi
 
 # --- Working tree ----------------------------------------------------------------------------

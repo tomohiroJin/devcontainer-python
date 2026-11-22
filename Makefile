@@ -52,7 +52,7 @@ hooks: ## コミット前フックを Git に登録（Git リポジトリでな�
 unhooks: ## コミット前フックの登録を外す
 	@sh scripts/git-hooks/install.sh uninstall
 
-doctor: ## 開発を始められる状態かを確認（make doctor ARGS=--offline で通信を省略）
+doctor: ## 開発を始められる状態かを確認（make doctor ARGS=--quiet で問題だけを表示）
 	@bash scripts/doctor.sh $(ARGS)
 
 $(AUDIT_VENV)/.pip-audit-$(PIP_AUDIT_VERSION):

@@ -855,14 +855,9 @@ fi
 doctor_report=''
 doctor_status=0
 doctor() {
-    # Runs the doctor (offline unless --online is the first argument) with the
-    # given environment settings; fills $doctor_report and $doctor_status.
-    local mode=--offline
-    if [ "${1:-}" = --online ]; then
-        mode=''
-        shift
-    fi
-    doctor_report=$(in_project env "$@" bash scripts/doctor.sh $mode 2>&1)
+    # Runs the doctor with the given environment settings; fills
+    # $doctor_report and $doctor_status.
+    doctor_report=$(in_project env "$@" bash scripts/doctor.sh 2>&1)
     doctor_status=$?
 }
 expect() {
@@ -942,11 +937,13 @@ masked=$(
     printf '%s\n' 'file:/home/someone/.gitconfig' 'https://alice@github.com/o/r' \
         'https://alice:pa/ss@github.com/o/r' 'https://h/o/r?token=querysecret' \
         'ghp_aaaa1111 gho_bbbb2222 github_pat_cccc3333 glpat-dddd4444' \
+        'ghs_hhhh8888 ghu_iiii9999 ghr_jjjj0000' \
         'xoxb-eeee5555 AKIAABCDEFGHIJKLMNOP Bearer ffff6666 Basic Z2dnZzc3Nzc=' \
         "$(printf 'ren\351@example.com')" '太郎@example.jp x@localhost' | mask
 )
 leaks=''
 for secret in /home/someone alice 'pa/ss' querysecret aaaa1111 bbbb2222 cccc3333 dddd4444 \
+    hhhh8888 iiii9999 jjjj0000 \
     eeee5555 ABCDEFGHIJKLMNOP ffff6666 Z2dnZzc3Nzc 'ren' '太郎' 'x@'; do
     printf '%s\n' "$masked" | grep -qF -- "$secret" && leaks="$leaks $secret"
 done
@@ -1187,11 +1184,23 @@ gitconfig core.sshCommand "$tmp/sshbin/ssh"
 doctor env -u SSH_AUTH_SOCK
 expect "with a custom ssh command the keys are not judged" info '独自の ssh コマンド'
 gitconfig --unset core.sshCommand
+doctor env -u SSH_AUTH_SOCK GIT_SSH="$tmp/sshbin/ssh"
+expect "GIT_SSH counts as a custom ssh command too" info '独自の ssh コマンド'
+for local_url in file:///srv/git/repo.git C:/repos/repo.git ../repo.git; do
+    in_project git remote set-url origin "$local_url"
+    doctor
+    expect "a push URL like $local_url is a repository on this machine" info 'このマシンの中のリポジトリ'
+done
+in_project git remote set-url origin https://GitHub.com:8443/owner/repo.git
+gitconfig --unset-all credential.helper
+doctor
+expect "the port is not part of the host name" FAIL 'github.com の認証情報を取得できません'
+gitconfig credential.helper "$helper_ok"
 in_project git remote set-url origin git://git.example.org/owner/repo.git
 doctor
 expect "a git:// push URL is a warning" warn 'git:// 形式'
 in_project git remote set-url origin 'ext::sh -c "touch '"$tmp"'/ext-ran"'
-doctor --online
+doctor
 [ ! -e "$tmp/ext-ran" ] && ok "doctor: a remote-helper URL is not executed" ||
     ng "doctor: a remote-helper URL is not executed"
 in_project git remote set-url origin git@github.com:owner/repo.git
@@ -1238,51 +1247,49 @@ doctor
 expect "the host name is compared without regard to case" FAIL 'github.com の認証情報を取得できません'
 gitconfig credential.helper "$helper_ok"
 in_project git remote set-url origin https://github.com/owner/repo.git
-# A host setting that turns HTTPS back into SSH, on top of the image's rule: the
-# connection must go where a push goes (HTTPS), not through a second rewrite.
-gitconfig url.git@github.com:.insteadOf https://github.com/
-in_project git remote set-url origin git@github.com:owner/repo.git
-stub_ssh "touch '$tmp/ssh-was-used'"
-doctor --online PATH="$tmp/sshbin:$PATH"
-[ ! -e "$tmp/ssh-was-used" ] &&
-    ok "doctor: the connection check does not rewrite the push URL a second time" ||
-    ng "doctor: the connection check does not rewrite the push URL a second time"
-gitconfig --remove-section url.git@github.com:
-in_project git remote set-url origin https://github.com/owner/repo.git
-
-# Connection checks use the push URL. Use repositories on disk.
-git init -q --bare "$tmp/remote.git" 2>/dev/null
-in_project git remote set-url origin "$tmp/remote.git"
-in_project git push -q origin HEAD >/dev/null 2>&1
-doctor --online
-expect "a reachable remote passes the connection check" ok 'push 先に接続して'
-in_project git remote set-url --push origin "$tmp/proj-4010/missing.git"
-doctor --online
-expect "an unreachable push URL fails although fetching works" FAIL 'push 先に接続できない'
-printf '%s\n' "$doctor_report" | grep -q 'リモートの URL が正しいか' &&
-    ok "doctor: a missing repository gets the matching advice" ||
-    ng "doctor: a missing repository gets the matching advice"
-in_project git config --unset remote.origin.pushurl
-in_project git remote set-url --add --push origin "$tmp/remote.git"
-in_project git remote set-url --add --push origin "$tmp/second-missing.git"
-doctor --online
-expect "every push URL is checked, not only the first" FAIL 'push 先に接続できない'
+# Every push URL is looked at (a remote can have several).
+gitconfig --replace-all credential.helper '!f() { grep -q "^host=github.com" || exit 0; echo username=u; echo password=onlyforgithub1234; }; f'
+in_project git remote set-url --add --push origin https://github.com/owner/repo.git
+in_project git remote set-url --add --push origin https://git.example.org/owner/repo.git
+doctor
+expect "every push URL is checked, not only the first" warn 'git.example.org の認証情報を取得できません'
+printf '%s\n' "$doctor_report" | grep -q '^ok    github.com の認証情報を取得できます' &&
+    ok "doctor: each push URL gets its own verdict" || ng "doctor: each push URL gets its own verdict"
 in_project git config --unset-all remote.origin.pushurl
-# The user's credential helpers are only ever asked to "get": a server that
-# refuses the credential must not make Git erase it, and none is stored.
-python "$work/scripts/http_401_server.py" 8765 &
-server_pid=$!
+
+# The doctor stays local: it connects to nothing, and the user's credential
+# helpers are only ever asked to "get". A listener records any connection; the
+# remote, a proxy and an SSH remote all point at it or at a stand-in ssh.
+python - "$tmp/connections.log" <<'LISTENER' &
+import socket
+import sys
+
+server = socket.socket()
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("127.0.0.1", 8765))
+server.listen()
+while True:
+    connection, _ = server.accept()
+    with open(sys.argv[1], "a") as log:
+        log.write("connection\n")
+    connection.close()
+LISTENER
+listener_pid=$!
 sleep 1
 printf '#!/bin/sh\necho "$1" >>"%s/helper.log"\n[ "$1" = get ] && { echo username=u; echo password=storedtoken1234; }\nexit 0\n' "$tmp" >"$tmp/logging-helper"
 chmod +x "$tmp/logging-helper"
 gitconfig --replace-all credential.helper "$tmp/logging-helper"
 gitconfig --add credential.helper cache
+gitconfig http.proxy http://proxyuser@127.0.0.1:8765
 in_project git remote set-url origin http://127.0.0.1:8765/owner/repo.git
-doctor --online
-expect "a refused credential fails the connection check" FAIL 'push 先に接続できない'
-printf '%s\n' "$doctor_report" | grep -q '認証に失敗しています' &&
-    ok "doctor: a refused credential gets the advice about authentication" ||
-    ng "doctor: a refused credential gets the advice about authentication"
+stub_ssh "if [ \"\$1\" = -G ]; then echo 'identityfile $tmp/sign_key'; else touch '$tmp/ssh-connected'; fi"
+in_project git remote set-url --add --push origin http://127.0.0.1:8765/owner/repo.git
+in_project git remote set-url --add --push origin git@gitlab.example.org:owner/repo.git
+doctor env -u SSH_AUTH_SOCK PATH="$tmp/sshbin:$PATH"
+expect "credentials for the push URL are found" ok '127.0.0.1 の認証情報を取得できます'
+[ ! -e "$tmp/connections.log" ] && [ ! -e "$tmp/ssh-connected" ] &&
+    ok "doctor: connects to nothing (no remote, no proxy, no ssh)" ||
+    ng "doctor: connects to nothing (no remote, no proxy, no ssh)"
 [ "$(sort -u "$tmp/helper.log" | tr '\n' ' ')" = 'get ' ] &&
     ok "doctor: the user's credential helper is only asked to get" ||
     ng "doctor: the user's credential helper is only asked to get ($(tr '\n' ' ' <"$tmp/helper.log"))"
@@ -1290,10 +1297,35 @@ printf '%s\n' "$doctor_report" | grep -q '認証に失敗しています' &&
     ok "doctor: no credential is stored and no credential daemon is started" ||
     ng "doctor: no credential is stored and no credential daemon is started"
 expect_absent "does not print the stored credential" 'storedtoken'
-kill "$server_pid" 2>/dev/null
-wait "$server_pid" 2>/dev/null
+printf '%s\n' "$doctor_report" | grep -q '^info  リモートには接続していません' &&
+    ok "doctor: says that the remote was not contacted" ||
+    ng "doctor: says that the remote was not contacted"
+kill "$listener_pid" 2>/dev/null
+wait "$listener_pid" 2>/dev/null
+gitconfig --unset http.proxy
+in_project git config --unset-all remote.origin.pushurl
 gitconfig --replace-all credential.helper "$helper_ok"
 in_project git remote set-url origin https://github.com/owner/repo.git
+# The credential never reaches a file: while a helper is answering, nothing in
+# the doctor's temporary directory contains it.
+mkdir -p "$tmp/doctor-tmp-watch"
+cat >"$tmp/watching-helper" <<WATCH
+#!/bin/sh
+[ "\$1" = get ] || exit 0
+echo username=u
+echo password=watchedsecret1234
+( sleep 1; grep -rl watchedsecret1234 "$tmp/doctor-tmp-watch" >"$tmp/secret-on-disk" 2>/dev/null ) &
+sleep 2
+WATCH
+chmod +x "$tmp/watching-helper"
+gitconfig --replace-all credential.helper "$tmp/watching-helper"
+doctor TMPDIR="$tmp/doctor-tmp-watch"
+sleep 1
+expect "a slow helper still yields the credential" ok '認証情報を取得できます'
+[ -e "$tmp/secret-on-disk" ] && [ ! -s "$tmp/secret-on-disk" ] &&
+    ok "doctor: the credential is not written to a file" ||
+    ng "doctor: the credential is not written to a file"
+gitconfig --replace-all credential.helper "$helper_ok"
 # gh is asked whether it is logged in (a stand-in gh says yes).
 mkdir -p "$tmp/ghbin"
 printf '#!/bin/sh\n[ "$1 $2" = "auth token" ] && { echo ghp_fromghstub123456; exit 0; }\nexit 1\n' >"$tmp/ghbin/gh"
@@ -1301,6 +1333,20 @@ chmod +x "$tmp/ghbin/gh"
 doctor PATH="$tmp/ghbin:$PATH"
 expect "a logged-in gh is reported" ok 'gh で github.com に認証済みです'
 expect_absent "does not print the token that gh returns" 'fromghstub'
+# ... and the token that gh prints never reaches a file either.
+mkdir -p "$tmp/doctor-tmp-gh"
+cat >"$tmp/ghbin/gh" <<GH
+#!/bin/sh
+[ "\$1 \$2" = "auth token" ] || exit 1
+echo ghp_watchedghtoken1234
+( sleep 1; grep -rl watchedghtoken "$tmp/doctor-tmp-gh" >"$tmp/gh-token-on-disk" 2>/dev/null ) &
+sleep 2
+GH
+doctor PATH="$tmp/ghbin:$PATH" TMPDIR="$tmp/doctor-tmp-gh"
+sleep 1
+[ -e "$tmp/gh-token-on-disk" ] && [ ! -s "$tmp/gh-token-on-disk" ] &&
+    ok "doctor: the token that gh prints is not written to a file" ||
+    ng "doctor: the token that gh prints is not written to a file"
 # VS Code extensions (a stand-in `code`).
 mkdir -p "$tmp/codebin"
 printf '#!/bin/sh\nprintf "%%s\\n" ms-python.python MS-Python.Vscode-Pylance ms-python.debugpy\n' >"$tmp/codebin/code"
@@ -1317,6 +1363,25 @@ expect "a code command that cannot reach VS Code is not a warning" info 'VS Code
 doctor DEVCONTAINER_HOOK_MARKER=/nonexistent PATH=/usr/bin:/bin
 expect "outside the dev container it says so and skips the tools" info 'ツールの版と整形は確認しません'
 expect_absent "outside the dev container, missing tools are not failures" 'が見つかりません'
+# Interrupted while a credential helper hangs: it stops at once with the
+# status of an interrupted command, and leaves no process and no file. The
+# signal goes to the whole process group, as Ctrl-C does (SIGTERM, because a
+# command started in the background ignores SIGINT).
+gitconfig --replace-all credential.helper '!f() { sleep 47.1234; }; f'
+mkdir -p "$tmp/doctor-tmp-int"
+in_project env TMPDIR="$tmp/doctor-tmp-int" DOCTOR_PID_FILE="$tmp/doctor.pid" setsid sh -c \
+    'echo $$ >"$DOCTOR_PID_FILE"; exec bash scripts/doctor.sh' >/dev/null 2>&1 &
+sleep 4
+started=$(date +%s)
+kill -TERM -- "-$(cat "$tmp/doctor.pid")" 2>/dev/null
+wait $!
+interrupted_status=$?
+sleep 1
+[ $(($(date +%s) - started)) -lt 10 ] && [ "$(pgrep -fc 'sleep 47.1234')" = 0 ] &&
+    [ -z "$(ls -A "$tmp/doctor-tmp-int")" ] && [ "$interrupted_status" -eq 130 ] &&
+    ok "doctor: an interrupt stops it promptly, with no process or file left" ||
+    ng "doctor: an interrupt stops it promptly, with no process or file left (status $interrupted_status)"
+gitconfig --replace-all credential.helper "$helper_ok"
 # Nothing is left behind in the temporary directory.
 mkdir -p "$tmp/doctor-tmp"
 doctor TMPDIR="$tmp/doctor-tmp"
@@ -1358,12 +1423,13 @@ gitconfig core.autocrlf yes
 doctor
 expect "core.autocrlf=yes is a warning as well" warn 'core.autocrlf が有効です'
 gitconfig --unset core.autocrlf
-quiet_report=$(in_project bash scripts/doctor.sh --offline --quiet 2>&1)
+quiet_report=$(in_project bash scripts/doctor.sh --quiet 2>&1)
 [ -z "$quiet_report" ] && ok "doctor: --quiet prints nothing when all is well" ||
     ng "doctor: --quiet prints nothing when all is well"
 in_project make -s unhooks >/dev/null
-quiet_report=$(in_project bash scripts/doctor.sh --offline --quiet 2>&1)
+quiet_report=$(in_project bash scripts/doctor.sh --quiet 2>&1)
 printf '%s\n' "$quiet_report" | grep -q '^warn ' &&
+    printf '%s\n' "$quiet_report" | grep -q '^      → make hooks' &&
     [ "$(printf '%s\n' "$quiet_report" | head -n 1)" = '== コミット前フック' ] &&
     ! printf '%s\n' "$quiet_report" | grep -Eq '^(ok|info) ' &&
     ok "doctor: --quiet prints only the problems" ||
@@ -1414,14 +1480,16 @@ printf '%s\n' "$limited_test" | grep -qx 'status:3' &&
 in_project bash scripts/doctor.sh --no-such-option >/dev/null 2>&1
 [ $? -eq 2 ] && ok "doctor: an unknown option is rejected" ||
     ng "doctor: an unknown option is rejected"
+in_project bash scripts/doctor.sh --help | grep -q -- '--quiet' &&
+    ok "doctor: --help lists the option" || ng "doctor: --help lists the option"
 # Outside a repository, and where Git does not trust the owner.
-(cd "$tmp" && HOME="$tmp/home" bash "$work/scripts/doctor.sh" --offline 2>&1) |
+(cd "$tmp" && HOME="$tmp/home" bash "$work/scripts/doctor.sh" 2>&1) |
     grep -q '^FAIL  Git の作業ツリーの中で実行してください' &&
     ok "doctor: outside a repository it says so" ||
     ng "doctor: outside a repository it says so"
 if (cd "$project" && git rev-parse --show-toplevel 2>&1) | grep -q 'dubious ownership'; then
-    (cd "$project" && HOME="$tmp/home" bash scripts/doctor.sh --offline 2>&1) |
-        grep -q '^FAIL .*dubious ownership' &&
+    (cd "$project" && HOME="$tmp/home" bash scripts/doctor.sh 2>&1) |
+        grep -A1 '^FAIL .*dubious ownership' | grep -q "safe.directory \"$project\"" &&
         ok "doctor: an untrusted owner is reported as such" ||
         ng "doctor: an untrusted owner is reported as such"
 else
