@@ -245,7 +245,7 @@ render_prompt true >/dev/null
 git -C "$repo" checkout -q -b 'y`touch${IFS}pwned2`'
 render_prompt true >/dev/null
 render_prompt 'VIRTUAL_ENV='"'"'/tmp/$(touch${IFS}pwned3)`touch${IFS}pwned4`'"'" >/dev/null
-if ls "$repo" | grep -q pwned; then
+if [ -n "$(find "$repo" -maxdepth 1 -name '*pwned*')" ]; then
     ng "prompt does not execute branch or environment names"
 else
     ok "prompt does not execute branch or environment names"
@@ -932,6 +932,7 @@ in_project git branch -q -D 'someone@corp.example.com/ghp_branchnamesecret1234'
 in_project git remote rename ghp_remotenamesecret1234567890 origin
 # Each kind of secret, through the doctor's own mask().
 masked=$(
+    # shellcheck disable=SC2034 # read by the code that eval takes from doctor.sh
     home=/home/someone
     eval "$(sed -n '/^home_pattern=/,/^esac/p; /^mask() {/,/^}/p' "$work/scripts/doctor.sh")"
     printf '%s\n' 'file:/home/someone/.gitconfig' 'https://alice@github.com/o/r' \
@@ -1438,6 +1439,7 @@ in_project make -s hooks >/dev/null
 # The doctor's time limit: it must stop a command whose child keeps the output
 # open, leave no process behind, pass standard input through and keep the
 # exit status.
+# shellcheck disable=SC2034,SC2329 # used by the functions that eval takes from doctor.sh
 limited_test=$(
     scratch=$tmp
     # Without pgrep (Git for Windows has none): the process list comes from ps.

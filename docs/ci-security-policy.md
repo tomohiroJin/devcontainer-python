@@ -43,3 +43,46 @@ python3 scripts/check_container_audit.py REPORT.json security/container-baseline
 ```
 
 新規検出・修正版・版/深刻度変更・レポート欠落をブロックし、既知残件だけのレポートとクリーンな完全レポートが成功することを検証します。
+
+## ジョブの構成と、必須チェック（2026-11-22 追加）
+
+ワークフロー（`.github/workflows/ci.yml`）のジョブは、次のとおりです。
+
+| ジョブ | 内容 |
+| --- | --- |
+| `python` | テスト、lint、型チェック、カバレッジ、コミット前フック、Python 依存の監査 |
+| `container` | イメージのビルド、イメージ内での `make check` とターミナル環境の確認、**Dev Container としての起動の確認**、Trivy の収集、pip の実コードの検証 |
+| `security` | Trivy の結果と、ベースラインの照合 |
+| `static` | ワークフロー（actionlint、zizmor）、Dockerfile（hadolint）、シェルスクリプト（shellcheck）の静的解析 |
+| `host` | Windows と macOS のランナーで、改行コード、ホストでのコミット、`make doctor` のスクリプトを確認 |
+| `ci-ok` | 上のすべてが成功した場合にだけ成功する、合否の集約 |
+
+### main のルールセット（推奨の設定）
+
+**必須チェックにするのは、`ci-ok` の1つだけです。** ホスト（Dev Container の外）でのコミットは、コミット前の検査なしで通ります（README「コミット前フック」）。正しさを保証するのは CI なので、CI が成功していない変更が main に入らないようにします。
+
+設定は、GitHub の画面で行います（Settings → Rules → Rulesets → New branch ruleset）。
+
+| 項目 | 設定 |
+| --- | --- |
+| Target branches | Default branch（`main`） |
+| Restrict deletions | 有効 |
+| Block force pushes | 有効 |
+| Require a pull request before merging | 有効（直接の push を禁止します）。Required approvals は 0（所有者が1人のため。共同の管理者が増えたら 1 にします） |
+| Require status checks to pass | 有効。`ci-ok` を追加します。「Require branches to be up to date before merging」は、有効にしません（PR が少ないため。有効にすると、main が進むたびに更新が必要になります） |
+| Bypass list | 空にします（管理者も、CI を通します） |
+
+- `ci-ok` は、`needs` に並べたジョブが1つでも失敗・キャンセル・スキップになると、失敗します。ジョブを足すときは、`ci-ok` の `needs` にも足します（足し忘れは、`scripts/test_project_config.py` が検出します）。ルールセットの変更は要りません。
+- `ci-ok` 以外のジョブを、必須チェックに指定しないでください。ジョブの名前を変えたときに、マージできなくなります。
+- **設定したかどうかは、リポジトリのファイルからは分かりません。** 設定後に、失敗する PR でマージが止まることを、画面で確かめてください。
+
+### 決めたこと
+
+- **変更されたファイルによるジョブの絞り込みは、行いません。** ドキュメントだけの変更でも、すべてのジョブが動きます（合計で数分）。絞り込むと、「動かなかったジョブ」を `ci-ok` で成功扱いにする規則が必要になり、見逃しの原因になります。
+- **静的解析は、CI だけで実行します。** コミット前フックには入れません。フックは、イメージにある道具だけで動かす方針で（README「コミット前フック」）、これらの道具を入れると、イメージの監査の対象が増えるためです。手元で実行する場合のコマンドは、`ci.yml` の `static` ジョブにあります（Docker が要ります）。
+- **静的解析の道具は、イメージの digest（actionlint、hadolint、shellcheck）と、ハッシュ付きの要件ファイル（zizmor。`.github/ci/requirements.txt`）で固定します。** zizmor は Dependabot が更新を提案します。digest で固定した3つは、Dependabot が追わないため、手で更新します。
+- **Dev Container CLI は、ロックファイル（`.github/ci/devcontainer-cli/package-lock.json`）で固定します。** インストール時のスクリプトは実行しません（`--ignore-scripts`）。
+- **`CODEOWNERS` は置きません。** 所有者が1人で、レビューの割り当てが要らないためです。
+- **コミットメッセージと PR のタイトルの検査は、入れません。** 規約がまだ決まっていないためです（Issue #17）。
+- **定期実行は、引き続き行いません**（上の「コンテナ監査のCI判定」）。
+- **arm64 でのビルドは、まだ行っていません**（Issue #19 で、公開イメージと合わせて扱います）。

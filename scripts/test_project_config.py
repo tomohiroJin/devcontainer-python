@@ -162,6 +162,33 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertIn("sh scripts/git-hooks/install.sh install", makefile)
         self.assertIn("sh scripts/git-hooks/install.sh uninstall", makefile)
 
+    def test_ci_ok_waits_for_every_job(self):
+        # `ci-ok` is the one required check: a job that it does not wait for
+        # could fail without blocking a merge.
+        text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        body = text.split("\njobs:\n")[1]
+        jobs = set(re.findall(r"^  ([a-z][a-z-]*):$", body, flags=re.MULTILINE))
+        needs = re.search(
+            r"^  ci-ok:\n(?:    .*\n)*?    needs: \[([^\]]*)\]",
+            text,
+            flags=re.MULTILINE,
+        )
+        assert needs is not None
+        waited_for = {name.strip() for name in needs.group(1).split(",")}
+        self.assertEqual(waited_for, jobs - {"ci-ok"})
+        self.assertRegex(text, r"  ci-ok:\n(?:    #.*\n)*    if: always\(\)\n")
+
+    def test_ci_does_not_keep_credentials_after_checkout(self):
+        text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        checkouts = text.count("uses: actions/checkout@")
+        without_credentials = re.findall(
+            r"uses: actions/checkout@.*\n"
+            r"        with:\n          persist-credentials: false\n",
+            text,
+        )
+        self.assertGreater(checkouts, 0)
+        self.assertEqual(len(without_credentials), checkouts)
+
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")
         dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")

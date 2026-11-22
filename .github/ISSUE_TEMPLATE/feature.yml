@@ -1,0 +1,19 @@
+name: 改善の提案
+description: 追加したい機能、変えたい設定、足したいドキュメント
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 困っていること・目的
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案
+      description: わかる範囲でかまいません。イメージにツールを足す提案は、採用の基準（README「同梱ツール」）も確認してください。
+  - type: textarea
+    id: done
+    attributes:
+      label: 完了の条件

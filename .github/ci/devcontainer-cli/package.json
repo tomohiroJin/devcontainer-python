@@ -1,0 +1,8 @@
+{
+  "name": "devcontainer-cli-for-ci",
+  "description": "Pins the Dev Container CLI that CI uses to start the Dev Container.",
+  "private": true,
+  "dependencies": {
+    "@devcontainers/cli": "0.91.0"
+  }
+}

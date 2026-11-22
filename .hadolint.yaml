@@ -1,0 +1,10 @@
+# Settings for hadolint (run by CI; see the `static` job in ci.yml).
+ignored:
+  # apt packages are not pinned on purpose: `apt-get upgrade` takes Debian's
+  # security fixes, and the installed versions are recorded and audited
+  # (docs/os-packages.txt, docs/ci-security-policy.md).
+  - DL3008
+  # False positive: ARG USERNAME is the name of the login user, not a secret.
+  - DL3064
+  # Single quotes are used on purpose: the text is written to ~/.bashrc as is.
+  - SC2016
