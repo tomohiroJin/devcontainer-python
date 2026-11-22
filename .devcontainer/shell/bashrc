@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Interactive bash settings for the Dev Container.
 # Installed as /etc/devcontainer/bashrc and sourced from ~/.bashrc.
 # Put personal overrides in ~/.bashrc after the line that sources this file.
@@ -60,10 +61,13 @@ fi
 # < behind, > ahead, <> diverged, = in sync with upstream.
 if [ -r /usr/lib/git-core/git-sh-prompt ]; then
     . /usr/lib/git-core/git-sh-prompt
-    GIT_PS1_SHOWDIRTYSTATE=1
-    GIT_PS1_SHOWUNTRACKEDFILES=1
-    GIT_PS1_SHOWSTASHSTATE=1
-    GIT_PS1_SHOWUPSTREAM=auto
+    # shellcheck disable=SC2034 # read by __git_ps1
+    {
+        GIT_PS1_SHOWDIRTYSTATE=1
+        GIT_PS1_SHOWUNTRACKEDFILES=1
+        GIT_PS1_SHOWSTASHSTATE=1
+        GIT_PS1_SHOWUPSTREAM=auto
+    }
 fi
 # The prompt shows the virtual environment itself.
 export VIRTUAL_ENV_DISABLE_PROMPT=1

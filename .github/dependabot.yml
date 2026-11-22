@@ -1,14 +1,43 @@
 version: 2
+# Every update waits a week after a release (cooldown), and the updates of one
+# ecosystem come as one pull request (groups), so that a week has few of them.
 updates:
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns: ['*']
+  - package-ecosystem: pip
+    directory: /.github/ci
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+  - package-ecosystem: npm
+    directory: /.github/ci/devcontainer-cli
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      devcontainer-cli:
+        patterns: ['*']
   - package-ecosystem: docker
     directory: /.devcontainer
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']

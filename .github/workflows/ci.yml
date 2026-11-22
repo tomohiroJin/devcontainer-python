@@ -1,4 +1,4 @@
-name: Python and security
+name: CI
 on:
   push:
     branches: [main]
@@ -17,6 +17,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.15.2'
@@ -44,6 +46,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - run: docker build --pull -f .devcontainer/Dockerfile -t devcontainer-python:ci .
       # The runner and the image user have different UIDs, so mount the source
       # read-only and keep every tool cache out of the workspace.
@@ -59,6 +63,21 @@ jobs:
           docker run --rm
           --mount type=bind,src="$PWD",dst=/workspace,readonly -w /workspace
           devcontainer-python:ci bash scripts/check_devcontainer.sh
+      # Start the Dev Container the way VS Code does (devcontainer.json: the
+      # user, mounts, environment and postCreateCommand) and check the result.
+      # The image comes from the build cache of the step above.
+      - name: Install the Dev Container CLI
+        # From the lockfile, outside the workspace (the workspace is mounted
+        # into the container).
+        run: |
+          cp -r .github/ci/devcontainer-cli "$RUNNER_TEMP/devcontainer-cli"
+          npm ci --ignore-scripts --prefix "$RUNNER_TEMP/devcontainer-cli"
+      - name: Start the Dev Container
+        run: '"$RUNNER_TEMP/devcontainer-cli/node_modules/.bin/devcontainer" up --workspace-folder .'
+      - name: Check the started Dev Container
+        run: >
+          "$RUNNER_TEMP/devcontainer-cli/node_modules/.bin/devcontainer" exec --workspace-folder .
+          bash scripts/check_started_devcontainer.sh
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: v0.76.2
@@ -88,6 +107,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: container-audit
@@ -96,3 +117,65 @@ jobs:
         run: python3 -m unittest discover -s scripts -p 'test_audit_gate.py'
       - name: Check new, fixable, or expired findings
         run: python3 scripts/check_container_audit.py audit/trivy.json security/container-baseline.json
+  static:
+    # Static analysis of what the other jobs do not read: the workflows, the
+    # Dockerfile and the shell scripts. The tools are pinned by digest or hash;
+    # update them by hand (Dependabot does not follow these image references).
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ACTIONLINT_IMAGE: rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+      SHELLCHECK_IMAGE: koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d
+      HADOLINT_IMAGE: hadolint/hadolint:v2.15.1@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint (workflow syntax)
+        run: docker run --rm -v "$PWD":/repo:ro -w /repo "$ACTIONLINT_IMAGE" -color
+      - name: zizmor (workflow security)
+        run: |
+          python3 -m venv "$RUNNER_TEMP/zizmor"
+          "$RUNNER_TEMP/zizmor/bin/pip" install --require-hashes --only-binary :all: -r .github/ci/requirements.txt
+          "$RUNNER_TEMP/zizmor/bin/zizmor" --offline --no-progress .github
+      - name: hadolint (Dockerfile)
+        run: docker run --rm -v "$PWD":/repo:ro -w /repo "$HADOLINT_IMAGE" hadolint .devcontainer/Dockerfile
+      - name: shellcheck (shell scripts)
+        run: |
+          git ls-files -z '*.sh' 'scripts/git-hooks/*' .devcontainer/shell/bashrc |
+            xargs -0 docker run --rm -v "$PWD":/mnt:ro "$SHELLCHECK_IMAGE"
+  host:
+    # Outside the Dev Container, on the hosts that cannot run the image in CI:
+    # line endings after a checkout, a commit through the hook, and the doctor
+    # with the host's own bash and Git (bash 3.2 on macOS, Git for Windows).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: bash scripts/check_host.sh
+        shell: bash
+  ci-ok:
+    # The one check to require in the ruleset of main: it fails unless every
+    # other job succeeded, so jobs can be added without changing the ruleset.
+    # scripts/test_project_config.py checks that `needs` lists every job.
+    if: always()
+    needs: [python, container, security, static, host]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          echo "$RESULTS" | python3 -c '
+          import json, sys
+          failed = {name: job["result"] for name, job in json.load(sys.stdin).items() if job["result"] != "success"}
+          sys.exit(f"not successful: {failed}" if failed else 0)
+          '

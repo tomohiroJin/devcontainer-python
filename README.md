@@ -665,7 +665,7 @@ F5 の Python デバッガ、補完・定義ジャンプ・型診断、保存時
 | pytest | バージョン未指定 | 9.2.0（PyPI 最新安定版） |
 | Ruff | バージョン未指定 / py313 | 0.17.6 / py315（2026-11-20 時点の PyPI 最新安定版）。実行 Python と解析対象を統一 |
 | 開発依存 / pip | 未固定 / pip版のみ指定 | `requirements.txt` と `requirements-bootstrap.txt` に全依存・配布ハッシュを記録 |
-| CI | なし | テスト、lint、整形、型チェック、カバレッジ、コミット前フック、pip-audit、コンテナビルド・ターミナル環境の確認・Trivy（push・PR・手動実行時。定期実行はなし） |
+| CI | なし | テスト、lint、整形、型チェック、カバレッジ、コミット前フック、pip-audit、コンテナビルド・ターミナル環境の確認・Dev Container としての起動の確認・Trivy、ワークフローと Dockerfile とシェルスクリプトの静的解析、Windows と macOS での改行コードとホストでのコミットの確認（push・PR・手動実行時。定期実行はなし）。ジョブの構成と、main の必須チェックの推奨設定は [CI監査方針](docs/ci-security-policy.md) |
 | Dev Container Features | なし | 追加なし |
 
 推移的依存は `requirements.txt` で固定しています（2026-11-20 時点の PyPI 最新安定版）。Issue #11 で追加したツールと合わせて、直接依存6件・推移的依存24件です。
@@ -729,7 +729,7 @@ pip-compile --upgrade --generate-hashes --strip-extras --no-emit-index-url --no-
 
 ### 監査
 
-CI は最小権限で動き、Actions をコミット SHA に固定しています。
+CI は最小権限で動き、Actions をコミット SHA に固定しています。checkout した認証情報は残しません（`persist-credentials: false`）。ワークフローは、actionlint と zizmor で検査しています。
 `pip-audit==2.10.1` はpip bootstrapを含むロック済み全33依存を監査し、Trivy は完成イメージの
 OS と言語パッケージを検査します。サンプルと固定依存はコンパイラを必要としないため、
 build-essential は入れていません。追加した OS パッケージと、入れなかったものの理由は[同梱ツール](#同梱ツール)にあります。

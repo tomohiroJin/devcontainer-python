@@ -1,0 +1,9 @@
+# Settings for shellcheck (run by CI; see the `static` job in ci.yml).
+#
+# SC2015: `test && ok ... || ng ...` is the form of every check in
+#         scripts/check_devcontainer.sh; `ok` only prints and cannot fail.
+# SC2016: single quotes are used on purpose where a later shell (sh -c, a Git
+#         helper, a test fixture) must do the expansion.
+# SC2088: `~` in quotes is text shown to the reader, not a path to expand.
+# SC1091: files that exist only inside the image are not followed.
+disable=SC2015,SC2016,SC2088,SC1091

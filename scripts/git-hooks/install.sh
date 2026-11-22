@@ -38,7 +38,7 @@ fi
 common=$(git rev-parse --git-common-dir)
 hooks="$common/hooks"
 if [ -L "$hooks" ]; then
-    echo "フックのディレクトリ（$hooks）がシンボリックリンクで、他のリポジトリと共有されている可能性があるため、何もしませんでした。"
+    echo "フックのディレクトリ（${hooks}）がシンボリックリンクで、他のリポジトリと共有されている可能性があるため、何もしませんでした。"
     echo '検査は、make pre-commit を実行してください。'
     exit 0
 fi
@@ -118,7 +118,7 @@ case $action in
         [ -z "$aside" ] || keep_aside "$aside"
         cp "$source_hook" "$target" && chmod +x "$target" || exit 1
         remove_old_registration
-        echo "コミット前フックを登録しました（$target）。"
+        echo "コミット前フックを登録しました（${target}）。"
         report_hooks_path
         ;;
     uninstall)

@@ -152,10 +152,12 @@ kill_tree() {
     local pid
     for pid in $(tree_of "$1"); do kill "-$2" "$pid" 2>/dev/null; done
 }
+# shellcheck disable=SC2329 # called by the traps below
 cleanup() {
     [ -n "$limited_pid" ] && kill_tree "$limited_pid" TERM
     [ -n "$scratch" ] && rm -rf "$scratch"
 }
+# shellcheck disable=SC2329 # called by the traps below
 on_signal() {
     cleanup
     exit 130
@@ -272,7 +274,7 @@ else
         fi
         got=$(version_of "$tool")
         if [ -n "$want" ] && [ "$got" != "$want" ]; then
-            warn "$tool の版が requirements.txt と違います（必要: $want、実際: ${got:-不明}、場所: $(command -v "$tool")）"
+            warn "$tool の版が requirements.txt と違います（必要: ${want}、実際: ${got:-不明}、場所: $(command -v "$tool")）"
             hint 'Dev Container をリビルドしてください。後から pip install で入れた別の版があれば、pip uninstall で外してください。'
         else
             ok "$tool $got"
@@ -310,7 +312,7 @@ elif ! extensions=$(limited 20 code --list-extensions 2>/dev/null </dev/null) ||
     # A stale terminal (tmux, docker exec) has a `code` that cannot reach VS Code.
     info 'code コマンドが VS Code に接続できないため、拡張は確認していません（新しい統合ターミナルで実行してください）'
 else
-    extensions=$(printf '%s\n' "$extensions" | tr 'A-Z' 'a-z')
+    extensions=$(printf '%s\n' "$extensions" | tr '[:upper:]' '[:lower:]')
     for extension in ms-python.python ms-python.vscode-pylance ms-python.debugpy charliermarsh.ruff; do
         if printf '%s\n' "$extensions" | grep -qx "$extension"; then ok "$extension"; else
             warn "$extension が入っていません"
@@ -338,7 +340,7 @@ else
     hint 'git config --global user.name "..." と git config --global user.email "..." で設定してください。'
     hint 'ホストの設定が届かない条件は、README「Git と GitHub への接続」にあります。'
 fi
-case $(git config --get core.autocrlf 2>/dev/null | tr 'A-Z' 'a-z') in
+case $(git config --get core.autocrlf 2>/dev/null | tr '[:upper:]' '[:lower:]') in
     true | yes | on | 1)
         warn 'core.autocrlf が有効です（このリポジトリは .gitattributes で LF に固定しています）'
         hint '問題が出る場合は、このリポジトリだけ git config core.autocrlf false にしてください。'
@@ -372,6 +374,7 @@ if [ "$sign_commits" = true ] || [ "$sign_tags" = true ]; then
         if (
             export GIT_OBJECT_DIRECTORY="$scratch/objects"
             export SSH_ASKPASS_REQUIRE=force
+            # shellcheck disable=SC2030 # only this probe must see the change
             SSH_ASKPASS=$(command -v false)
             export SSH_ASKPASS
             unset GPG_TTY
@@ -488,6 +491,7 @@ host_of() {
 # An askpass program is a legitimate way to authenticate (VS Code sets one),
 # but it asks a person. Remember that there is one; it is not run here.
 askpass=0
+# shellcheck disable=SC2031 # the user's own value is wanted here
 [ -n "${GIT_ASKPASS:-}${SSH_ASKPASS:-}" ] || [ -n "$(git config --get core.askPass 2>/dev/null)" ] && askpass=1
 # A custom ssh command (a wrapper, another client) is used as it is.
 custom_ssh=0
@@ -506,7 +510,7 @@ check_push_url() {
     local url=$1 kind host ssh_host
     kind=$(kind_of "$url")
     ssh_host=$(host_of "$url")
-    host=$(printf '%s' "$ssh_host" | tr 'A-Z' 'a-z') # host names ignore case
+    host=$(printf '%s' "$ssh_host" | tr '[:upper:]' '[:lower:]') # host names ignore case
     case $kind in
         https)
             # Let Git run the credential helpers exactly as a push would (same
@@ -514,6 +518,7 @@ check_push_url() {
             # with every prompt disabled. Whether a password came back is
             # decided inside the pipe: the answer is not stored anywhere.
             if (
+                # shellcheck disable=SC2031 # set for this probe only
                 export GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=true SSH_ASKPASS=true
                 printf 'url=%s\n\n' "$url" |
                     limited 20 sh -c 'git credential fill | grep -q "^password=."' 2>"$scratch/credential.err"
@@ -596,11 +601,11 @@ if [ -z "$remote" ]; then
     fi
 else
     if [ -n "$configured" ] && ! is_remote "$configured"; then
-        warn "push 先に設定されているリモート（$configured）がありません。$remote を確認します"
+        warn "push 先に設定されているリモート（${configured}）がありません。$remote を確認します"
         hint 'git config の remote.pushDefault と branch.<ブランチ名>.pushRemote を確かめてください。'
     fi
     stored=$(git config --get "remote.$remote.url" 2>/dev/null)
-    info "push 先: $remote（$stored）"
+    info "push 先: ${remote}（${stored}）"
     if [ -n "$branch" ] && [ -z "$(git config --get "branch.$branch.remote" 2>/dev/null)" ]; then
         info "ブランチ $branch には、まだ push 先（upstream）がありません。最初の push は git push -u $remote $branch です"
     elif [ -z "$branch" ]; then
@@ -618,9 +623,9 @@ else
         if [ "$push_url" != "$stored" ]; then
             case "$in_container|$stored|$push_url" in
                 '1|git@github.com:'*'|https://github.com/'* | '1|ssh://git@github.com/'*'|https://github.com/'*)
-                    info "接続に使う URL: $push_url（コンテナ内では、github.com に HTTPS で接続します）"
+                    info "接続に使う URL: ${push_url}（コンテナ内では、github.com に HTTPS で接続します）"
                     ;;
-                *) info "接続に使う URL: $push_url（pushurl か、URL の読み替えの設定によるものです）" ;;
+                *) info "接続に使う URL: ${push_url}（pushurl か、URL の読み替えの設定によるものです）" ;;
             esac
         fi
         check_push_url "$push_url"
