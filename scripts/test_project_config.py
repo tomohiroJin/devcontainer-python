@@ -189,6 +189,17 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertGreater(checkouts, 0)
         self.assertEqual(len(without_credentials), checkouts)
 
+    def test_shell_variables_are_delimited_before_japanese_text(self):
+        # bash 3.2 (the /bin/sh and bash of macOS) takes the first byte of a
+        # multi-byte character as part of the name: "$name（" is an unbound
+        # variable there. "${name}（" works everywhere.
+        scripts = [*ROOT.glob("scripts/*.sh"), *ROOT.glob("scripts/git-hooks/*")]
+        self.assertGreater(len(scripts), 3)
+        for script in scripts:
+            text = script.read_text(encoding="utf-8")
+            found = re.findall(r"\$[A-Za-z_][A-Za-z0-9_]*[^\x00-\x7f]", text)
+            self.assertEqual(found, [], script.name)
+
     def test_remote_user_matches_the_image(self):
         container = load_json(".devcontainer/devcontainer.json")
         dockerfile = (ROOT / ".devcontainer/Dockerfile").read_text(encoding="utf-8")

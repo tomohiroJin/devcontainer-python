@@ -274,7 +274,7 @@ else
         fi
         got=$(version_of "$tool")
         if [ -n "$want" ] && [ "$got" != "$want" ]; then
-            warn "$tool の版が requirements.txt と違います（必要: $want、実際: ${got:-不明}、場所: $(command -v "$tool")）"
+            warn "$tool の版が requirements.txt と違います（必要: ${want}、実際: ${got:-不明}、場所: $(command -v "$tool")）"
             hint 'Dev Container をリビルドしてください。後から pip install で入れた別の版があれば、pip uninstall で外してください。'
         else
             ok "$tool $got"
@@ -601,11 +601,11 @@ if [ -z "$remote" ]; then
     fi
 else
     if [ -n "$configured" ] && ! is_remote "$configured"; then
-        warn "push 先に設定されているリモート（$configured）がありません。$remote を確認します"
+        warn "push 先に設定されているリモート（${configured}）がありません。$remote を確認します"
         hint 'git config の remote.pushDefault と branch.<ブランチ名>.pushRemote を確かめてください。'
     fi
     stored=$(git config --get "remote.$remote.url" 2>/dev/null)
-    info "push 先: $remote（$stored）"
+    info "push 先: ${remote}（${stored}）"
     if [ -n "$branch" ] && [ -z "$(git config --get "branch.$branch.remote" 2>/dev/null)" ]; then
         info "ブランチ $branch には、まだ push 先（upstream）がありません。最初の push は git push -u $remote $branch です"
     elif [ -z "$branch" ]; then
@@ -623,9 +623,9 @@ else
         if [ "$push_url" != "$stored" ]; then
             case "$in_container|$stored|$push_url" in
                 '1|git@github.com:'*'|https://github.com/'* | '1|ssh://git@github.com/'*'|https://github.com/'*)
-                    info "接続に使う URL: $push_url（コンテナ内では、github.com に HTTPS で接続します）"
+                    info "接続に使う URL: ${push_url}（コンテナ内では、github.com に HTTPS で接続します）"
                     ;;
-                *) info "接続に使う URL: $push_url（pushurl か、URL の読み替えの設定によるものです）" ;;
+                *) info "接続に使う URL: ${push_url}（pushurl か、URL の読み替えの設定によるものです）" ;;
             esac
         fi
         check_push_url "$push_url"
