@@ -615,7 +615,16 @@ ipython
 ## VS Code
 
 必須の拡張は Microsoft Python / Pylance / Python Debugger と Astral Ruff の4件です。
-このほかに、モブプログラミング・ペアプログラミングで画面を共有するための Live Share（`ms-vsliveshare.vsliveshare`）も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。Marketplace にはこの検証環境から接続できないため、公開状態は確認していません）。`make doctor` が確かめるのは、必須の4件だけです。
+このほかに、次の3件も、Dev Container と Codespaces に最初から入ります（2026-11-22 追加。[Issue #30](https://github.com/tomohiroJin/devcontainer-python/issues/30)）。Codespaces（特にブラウザー）では、`devcontainer.json` にない拡張は入らないため、モブプログラミングと TDD で使うものは、最初から入れています。
+
+| 拡張 | ID | 入れた理由 |
+| --- | --- | --- |
+| Live Share | `ms-vsliveshare.vsliveshare` | モブプログラミング・ペアプログラミングで、画面と編集を共有する |
+| Mypy Type Checker | `ms-python.mypy-type-checker` | CI とコミット前の検査が使う mypy の結果を、エディターに表示する。コンテナに固定した版の mypy を使います（`settings.json` の `mypy-type-checker.importStrategy`）。Pylance の型診断と、同じ箇所に2つ表示されることがあります。CI が失敗するのは、mypy のほうです |
+| Error Lens | `usernamehw.errorlens` | lint と型のエラーを、行の横に表示する。画面を共有しているときに、全員がエラーに気づけます |
+
+この3件は、Marketplace にこの検証環境から接続できないため、公開状態を確認していません。`make doctor` が確かめるのは、必須の4件だけです。
+
 各 ID は提供元の現行公式拡張であることと Marketplace の公開状態を確認済みです
 （Python 2026-10-29、Pylance 2026-10-16、Debugger 2026-11-02、Ruff 2026-10-27 更新）。
 [Python 公式ガイド](https://code.visualstudio.com/docs/python/python-tutorial)、
@@ -630,10 +639,8 @@ Marketplace にはこの検証環境から接続できないため、下の表�
 
 | 拡張 | ID | 用途 |
 | --- | --- | --- |
-| Mypy Type Checker | `ms-python.mypy-type-checker` | CI と同じ mypy の結果をエディターに表示。`settings.json` でコンテナ内の mypy を使う設定にしてあります |
 | GitLens | `eamodio.gitlens` | 行ごとの変更履歴（blame）や履歴の比較。機能が多く、一部は有料です。履歴を詳しく調べたい場合に向きます |
-| Git Graph | `mhutchie.git-graph` | コミットグラフの表示だけを行う軽い拡張です。グラフだけ見たい場合は GitLens よりこちらで足ります。端末では `gl` でも見られます |
-| Error Lens | `usernamehw.errorlens` | 診断を行の横に表示 |
+| Git Graph | `mhutchie.git-graph` | コミットグラフを表示する軽い拡張です。VS Code の「ソース管理」ビューにもグラフの表示があり、端末では `gl` でも見られるため、最初からは入れていません |
 | Even Better TOML | `tamasfe.even-better-toml` | `pyproject.toml` の補完と検証 |
 | Code Spell Checker | `streetsidesoftware.code-spell-checker` | 英単語のつづりの確認 |
 | Jupyter | `ms-toolsai.jupyter` | Notebook を使う場合（このリポジトリには含みません） |
