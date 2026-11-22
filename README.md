@@ -105,6 +105,7 @@
 | `make check` | `make lint`、`make typecheck`、`make test` をまとめて実行 |
 | `make test` | pytest（`tests/`）と、`scripts/` の単体テストを実行 |
 | `make watch` | ファイル（`*.py`）を保存するたびに pytest を再実行。Ctrl+C で終了 |
+| `make watch-fmt` | `make watch` に加えて、保存のたびに Ruff で整形（ファイルを書き換えます）。Live Share のゲストが保存した場合にも効きます |
 | `make lint` | `ruff check` と `ruff format --check`（ファイルは変更しません） |
 | `make fmt` | `ruff check --fix` と `ruff format`（ファイルを書き換えます） |
 | `make typecheck` | mypy で `src`・`tests`・`scripts` を型チェック |
@@ -473,6 +474,8 @@ make watch
 
 起動時に一度テストを実行し、そのあとは `*.py` のファイルを保存するたびに再実行します。Ctrl+C で終了します。VS Code では、タスク `watch` でも起動できます。
 
+`make watch-fmt` は、テストの前に、Ruff で整形も行います（`ruff format`。import の並べ替えなどの lint の修正は、行いません）。整形で書き換わったファイルがあると、整形後のコードで、もう一度テストを実行します。構文の誤りがあって整形できないファイルは、そのままにして、その旨を表示します。Live Share で使う場合の注意は、[VS Code](#vs-code) の節にあります。
+
 pytest に引数を渡したいときは、`ptw` を直接使います。`ptw <監視するディレクトリ> <pytest の引数>` の形です。
 
 ```bash
@@ -641,7 +644,10 @@ Python の整形は Ruff に統一します。
 **Live Share のゲストでは、保存時の整形が動きません**（2026-11-22 に、リポジトリの所有者が確認）。ホスト（Dev Container や Codespaces を開いている人）が保存すると、Ruff で整形されます。ゲストが保存しても、整形されません。保存時の整形は、このリポジトリの設定（`.vscode/settings.json`）と、コンテナに入っている Ruff の拡張で動いていて、ゲストの VS Code には、そのどちらも届かないためと考えられます。
 
 - **コミットされる内容は、そろいます。** ホストのコンテナでコミットすると、コミット前の検査が Ruff で整形するか、コミットを止めます。CI も、整形されていないコードを通しません。
-- 途中で見た目をそろえたい場合は、ホストが、そのファイルを保存し直す（Ctrl+S）か、ターミナルで `make fmt` を実行します。
+- **ゲストの保存でも整形したい場合は、ホストが、`make watch` の代わりに `make watch-fmt` を実行します。** ゲストが保存したファイルは、ホストのコンテナの中で書き換わります。`make watch-fmt` は、その変更を見つけて、Ruff で整形してから、テストを実行します（保存の1〜2秒後に、ゲストの画面の内容も、整形後のものに変わります）。ゲストは、何も入れる必要がありません。
+  - ゲストの VS Code に Ruff の拡張を入れても、ゲストの保存では整形されませんでした（2026-11-22 に確認）。
+  - 整形でファイルが書き換わるのと、誰かの入力が重なると、ホストの VS Code が、ファイルの競合を知らせることがあります。その場合は、保存してから一呼吸おくか、`make watch` に戻してください。
+- `make watch-fmt` を使わない場合は、ホストが、そのファイルを保存し直す（Ctrl+S）か、ターミナルで `make fmt` を実行します。
 - ゲストとして参加する人が、自分の画面でも保存時に整形したい場合は、Live Share のゲストではなく、自分で Codespaces を開く方法があります（[GitHub Codespaces で使う](#github-codespaces-で使う)）。ブラウザーだけで、ホストと同じ環境になります。
 
 **任意の拡張**は `devcontainer.json` と `extensions.json` には入れていません。必要な人だけ導入してください。

@@ -6,6 +6,12 @@ progress, so a file saved during a run would leave a stale result on screen.
 pyproject.toml). After each run the script looks for Python files modified
 since the run started and, if there are any, runs pytest once more for all of
 them together.
+
+With WATCH_FORMAT=1 in the environment (`make watch-fmt`), every run first
+formats the Python files with Ruff. That is for Live Share sessions: a guest's
+save does not trigger the host's format-on-save, but it does change the file
+on the host, where this script runs. A file that the formatter rewrites counts
+as changed during the run, so the tests run once more on the formatted code.
 """
 
 import os
@@ -73,8 +79,32 @@ def run_until_stable(
     return status
 
 
+def format_files(report: Callable[[str], None] = print) -> None:
+    """Format the Python files in place with the Ruff of this environment."""
+    try:
+        result = subprocess.run(
+            ["ruff", "format", "--quiet", "."],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as error:
+        report(f"[watch] ruff を実行できないため、整形していません（{error}）")
+        return
+    if result.returncode != 0:
+        # Usually a file that does not parse yet; the tests will say more.
+        reason = (result.stderr or result.stdout).strip().splitlines()[:3]
+        report("[watch] 整形できないファイルがあります（構文の誤りなど）")
+        for line in reason:
+            report(f"[watch]   {line}")
+
+
 def main(arguments: Sequence[str]) -> int:
+    format_first = os.environ.get("WATCH_FORMAT") == "1"
+
     def run_tests() -> int:
+        if format_first:
+            format_files()
         # sys.executable: the same interpreter, whatever `pytest` is on PATH.
         return subprocess.call([sys.executable, "-m", "pytest", *arguments])
 

@@ -12,7 +12,7 @@ PIP_TOOLS_VERSION ?= 7.7.0
 AUDIT_VENV ?= .venv-audit
 LOCK_VENV ?= .venv-lock
 
-.PHONY: help test watch lint fmt typecheck cov check pre-commit hooks unhooks \
+.PHONY: help test watch watch-fmt lint fmt typecheck cov check pre-commit hooks unhooks \
 	doctor audit audit-container lock clean
 
 help: ## このヘルプを表示
@@ -25,6 +25,9 @@ test: ## テストを実行（pytest と scripts/ の単体テスト）
 
 watch: ## ファイルを保存するたびに pytest を再実行（Ctrl+C で終了）
 	ptw .
+
+watch-fmt: ## watch に加えて、保存のたびに Ruff で整形（Live Share のゲストの保存にも効く）
+	WATCH_FORMAT=1 ptw .
 
 lint: ## lint と整形の確認（ファイルは変更しない）
 	ruff check .

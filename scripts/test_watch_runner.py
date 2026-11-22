@@ -80,3 +80,54 @@ class WatchRunnerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FormatFilesTests(unittest.TestCase):
+    """`make watch-fmt`: the files are formatted with the real Ruff."""
+
+    def setUp(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        previous = Path.cwd()
+        os.chdir(self.root)
+        self.addCleanup(os.chdir, previous)
+        self.messages: list[str] = []
+
+    def test_formats_a_file_in_place(self) -> None:
+        source = self.root / "sample.py"
+        source.write_text("x=1\n", encoding="utf-8")
+        watch_runner.format_files(self.messages.append)
+        self.assertEqual(source.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(self.messages, [])
+
+    def test_leaves_a_formatted_file_untouched(self) -> None:
+        source = self.root / "sample.py"
+        source.write_text("x = 1\n", encoding="utf-8")
+        os.utime(source, ns=(100, 100))
+        watch_runner.format_files(self.messages.append)
+        self.assertEqual(source.stat().st_mtime_ns, 100)
+
+    def test_reports_a_file_that_does_not_parse_and_formats_the_rest(self) -> None:
+        broken = self.root / "broken.py"
+        broken.write_text("def f(:\n", encoding="utf-8")
+        other = self.root / "other.py"
+        other.write_text("y=2\n", encoding="utf-8")
+        watch_runner.format_files(self.messages.append)
+        self.assertEqual(broken.read_text(encoding="utf-8"), "def f(:\n")
+        self.assertEqual(other.read_text(encoding="utf-8"), "y = 2\n")
+        self.assertIn("整形できないファイルがあります", self.messages[0])
+
+    def test_formatted_files_cause_one_more_run(self) -> None:
+        source = self.root / "sample.py"
+        source.write_text("x=1\n", encoding="utf-8")
+        runs = 0
+
+        def run_tests() -> int:
+            nonlocal runs
+            runs += 1
+            watch_runner.format_files(self.messages.append)
+            return 0
+
+        watch_runner.run_until_stable(run_tests, self.root, report=self.messages.append)
+        self.assertEqual(runs, 2)
