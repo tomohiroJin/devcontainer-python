@@ -86,7 +86,10 @@ class ProjectConfigTests(unittest.TestCase):
         # The Dev Container registers the commit hook when it is created, and
         # a failure there does not stop the container from starting.
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
-        self.assertRegex(makefile, r"post-create:.*\n\t@\$\(MAKE\) -s hooks \|\| echo ")
+        recipe = makefile.split("\npost-create:")[1].split("\n\n")[0]
+        self.assertIn("if sh scripts/git-hooks/install.sh install; then", recipe)
+        self.assertIn("else", recipe)
+        self.assertNotIn("exit 1", recipe)
 
     def test_files_are_checked_out_with_lf(self):
         # CRLF in the bashrc or the shell scripts breaks them inside the image.
@@ -162,7 +165,7 @@ class ProjectConfigTests(unittest.TestCase):
         # The installer and the doctor recognise the installed copy by this text.
         self.assertIn("devcontainer-python pre-commit hook", hook.read_text("utf-8"))
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
-        self.assertIn("sh scripts/git-hooks/install.sh install", makefile)
+        self.assertIn("\t@sh scripts/git-hooks/install.sh install\n", makefile)
         self.assertIn("sh scripts/git-hooks/install.sh uninstall", makefile)
 
     def test_ci_ok_waits_for_every_job(self):

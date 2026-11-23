@@ -57,7 +57,13 @@ unhooks: ## コミット前フックの登録を外す
 # message lives here, not in devcontainer.json: VS Code shows the command
 # itself in its log, where the text of a failure reads like a failure.
 post-create: ## Dev Container の作成時の処理（コミット前フックの登録）
-	@$(MAKE) -s hooks || echo 'コミット前フックを登録できませんでした。原因を直してから make hooks を実行してください。'
+	@echo '[準備] コミット前の検査を登録します（git commit のたびに、整形・lint・型チェックを自動で実行する仕組みです）。'
+	@if sh scripts/git-hooks/install.sh install; then \
+		echo '[準備] 完了しました。問題はありません。make doctor で、開発を始められる状態かを確認できます。'; \
+	else \
+		echo '[準備] コミット前の検査を登録できませんでした。開発は続けられますが、コミットのときの自動の検査が動きません。'; \
+		echo '[準備] 上に表示された原因を直してから、ターミナルで make hooks を実行してください。'; \
+	fi
 
 doctor: ## 開発を始められる状態かを確認（make doctor ARGS=--quiet で問題だけを表示）
 	@bash scripts/doctor.sh $(ARGS)
