@@ -79,11 +79,14 @@ class ProjectConfigTests(unittest.TestCase):
 
     def test_post_create_command_calls_an_existing_make_target(self):
         command = load_json(".devcontainer/devcontainer.json")["postCreateCommand"]
-        match = re.match(r"make ([a-z-]+) \|\| echo ", command)
-        assert match is not None
-        self.assertIn(match.group(1), make_targets())
-        # The Dev Container registers the commit hook when it is created.
-        self.assertEqual(match.group(1), "hooks")
+        # Only the target: VS Code shows the command in its log, and the text
+        # of a fallback message there was read as a warning.
+        self.assertEqual(command, "make post-create")
+        self.assertIn("post-create", make_targets())
+        # The Dev Container registers the commit hook when it is created, and
+        # a failure there does not stop the container from starting.
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        self.assertRegex(makefile, r"post-create:.*\n\t@\$\(MAKE\) -s hooks \|\| echo ")
 
     def test_files_are_checked_out_with_lf(self):
         # CRLF in the bashrc or the shell scripts breaks them inside the image.

@@ -10,7 +10,7 @@
   "containerEnv": {
     "TZ": "${localEnv:TZ:Asia/Tokyo}"
   },
-  "postCreateCommand": "make hooks || echo 'コミット前フックを登録できませんでした。原因を直してから make hooks を実行してください。'",
+  "postCreateCommand": "make post-create",
   "customizations": {
     "vscode": {
       "extensions": [

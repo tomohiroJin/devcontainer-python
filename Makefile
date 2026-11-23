@@ -12,7 +12,7 @@ PIP_TOOLS_VERSION ?= 7.7.0
 AUDIT_VENV ?= .venv-audit
 LOCK_VENV ?= .venv-lock
 
-.PHONY: help test watch lint fmt typecheck cov check pre-commit hooks unhooks \
+.PHONY: help test watch lint fmt typecheck cov check pre-commit hooks unhooks post-create \
 	doctor audit audit-container lock clean
 
 help: ## このヘルプを表示
@@ -51,6 +51,13 @@ hooks: ## コミット前フックを Git に登録（Git リポジトリでな�
 
 unhooks: ## コミット前フックの登録を外す
 	@sh scripts/git-hooks/install.sh uninstall
+
+# Run by the Dev Container when it is created (postCreateCommand). A failure
+# must not stop the container from starting, so it only says what to do. The
+# message lives here, not in devcontainer.json: VS Code shows the command
+# itself in its log, where the text of a failure reads like a failure.
+post-create: ## Dev Container の作成時の処理（コミット前フックの登録）
+	@$(MAKE) -s hooks || echo 'コミット前フックを登録できませんでした。原因を直してから make hooks を実行してください。'
 
 doctor: ## 開発を始められる状態かを確認（make doctor ARGS=--quiet で問題だけを表示）
 	@bash scripts/doctor.sh $(ARGS)
